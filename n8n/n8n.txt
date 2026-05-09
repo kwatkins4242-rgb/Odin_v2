@@ -1,0 +1,207 @@
+n8n
+
+
+
+
+
+import openai
+from n8n_client import N8NClient  # From above
+
+class EnhancedAIBot:
+    def __init__(self):
+        self.n8n = N8NClient("http://localhost:5678", "n8n_api_key")
+        self.memory = []
+        
+    def smart_process(self, user_input: str):
+        # Route complex tasks to n8n workflows
+        if "research" in user_input.lower():
+            return self.n8n.execute_workflow(
+                "workflow_id_here", 
+                {"query": user_input}
+            )
+        
+        # Standard processing with 'smarter' prompting
+        response = openai.ChatCompletion.create(
+            model="gpt-4",  # or local LLM
+            messages=[
+                {"role": "system", "content": "You are an advanced reasoning engine. Break complex problems into steps."},
+                {"role": "user", "content": user_input}
+            ]
+        )
+        return response.choices[0].message.content
+
+
+
+
+
+import requests
+import json
+from typing import Dict, List, Optional
+
+class N8NClient:
+    def __init__(self, base_url: str, api_key: str):
+        self.base_url = base_url.rstrip('/')
+        self.api_key = api_key
+        self.headers = {
+            "X-N8N-API-KEY": api_key,
+            "Content-Type": "application/json"
+        }
+    
+    def get_workflows(self) -> List[Dict]:
+        """List all workflows"""
+        response = requests.get(
+            f"{self.base_url}/api/v1/workflows",
+            headers=self.headers
+        )
+        return response.json().get('data', [])
+    
+    def execute_workflow(self, workflow_id: str, data: Dict = None) -> Dict:
+        """Trigger a workflow execution"""
+        response = requests.post(
+            f"{self.base_url}/webhook/{workflow_id}",
+            json=data or {},
+            headers={"Content-Type": "application/json"}
+        )
+        return response.json()
+    
+    def create_workflow(self,|
+
+
+import requests
+import json
+from typing import Dict, List, Optional
+
+class N8NClient:
+    def __init__(self, base_url: str, api_key: str):
+        self.base_url = base_url.rstrip('/')
+        self.api_key = api_key
+        self.headers = {
+            "X-N8N-API-KEY": api_key,
+            "Content-Type": "application/json"
+        }
+    
+    def get_workflows(self) -> List[Dict]:
+        """List all workflows"""
+        response = requests.get(
+            f"{self.base_url}/api/v1/workflows",
+            headers=self.headers
+        )
+        return response.json().get('data', [])
+    
+    def execute_workflow(self, workflow_id: str, data: Dict = None) -> Dict:
+        """Trigger a workflow execution"""
+        response = requests.post(
+            f"{self.base_url}/webhook/{workflow_id}",
+            json=data or {},
+            headers={"Content-Type": "application/json"}
+        )
+        return response.json()
+    
+    def create_workflow(self, name: str, nodes: List[Dict], connections: Dict) -> Dict:
+        """Programmatically create a workflow"""
+        payload = {
+            "name": name,
+            "nodes": nodes,
+            "connections": connections,
+            "settings": {"executionOrder": "v1"}
+        }
+        response = requests.post(
+            f"{self.base_url}/api/v1/workflows",
+            headers=self.headers,
+            json=payload
+        )
+        return response.json()
+
+# Usage Example:
+# client = N8NClient("http://localhost:5678", "your-api-key")
+# workflows = client.get_workflows()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import subdomains
+import requests
+from concurrent.futures import ThreadPoolExecutor
+
+class BugHunter:
+    def __init__(self, target_domain: str):
+        self.target = target_domain
+        self.findings = []
+    
+    def subdomain_enum(self):
+        """Find subdomains"""
+        # Use tools like subfinder, assetfinder via subprocess
+        pass
+    
+    def check_vulnerabilities(self, url: str):
+        """Basic checks for common bugs"""
+        checks = [
+            self.check_open_redirect,
+            self.check_sql_injection,
+            self.check_cors_misconfig
+        ]
+        
+        for check in checks:
+            try:
+                check(url)
+            except Exception as e:
+                continue
+    
+    def check_cors_misconfig(self, url: str):
+        headers = {
+            'Origin': 'https://evil.com'
+        }
+        resp = requests.get(url, headers=headers, timeout=10)
+        if 'Access-Control-Allow-Origin' in resp.headers:
+            if resp.headers['Access-Control-Allow-Origin'] == '*':
+                print(f"[VULNERABLE] CORS wildcard on {url}")
+                self.findings.append({
+                    "type": "CORS Misconfiguration",
+                    "url": url,
+                    "severity": "Medium"import openai
+from n8n_client import N8NClient  # From above
+
+class EnhancedAIBot:
+    def __init__(self):
+        self.n8n = N8NClient("http://localhost:5678", "n8n_api_key")
+        self.memory = []
+        
+    def smart_process(self, user_input: str):
+        # Route complex tasks to n8n workflows
+        if "research" in user_input.lower():
+            return self.n8n.execute_workflow(
+                "workflow_id_here", 
+                {"query": user_input}
+            )
+        
+        # Standard processing with 'smarter' prompting
+        response = openai.ChatCompletion.create(
+            model="gpt-4",  # or local LLM
+            messages=[
+                {"role": "system", "content": "You are an advanced reasoning engine. Break complex problems into steps."},
+                {"role": "user", "content": user_input}
+            ]
+        )
+        return response.choices[0].message.content
+
+                })
+
+# Usage: hunter = BugHunter("target.com")
+
+
+
+
+
+
+For bug bounty, study OWASP Top 10 and practice on HackTheBox/TryHackMe first

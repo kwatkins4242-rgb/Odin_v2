@@ -1,0 +1,288 @@
+n8n workflows
+
+Recommended Stack: Webhook → Code → SQLite/File
+Since you're local-first, here's the cleanest pattern:
+
+[Webhook Trigger]
+     ↓
+[Switch Node]  →  action == "write"  →  [Code: Save to JSON/SQLite]
+               →  action == "read"   →  [Code: Query memories]
+               →  action == "prune"  →  [Code: Delete old entries]
+     ↓
+[Respond to Webhook]
+
+Step-by-Step Build
+1. Webhook Trigger
+
+Method: POST
+Path: odin-memory
+Auth: Header — x-api-key: odin-super-secret-2026
+
+2. Switch Node — routes by {{ $json.body.action }}
+
+Route 1: write
+Route 2: read
+Route 3: prune
+
+3. Write Branch — Code Node
+__________________________________________________
+const fs = require('fs');
+const path = '/home/charles/.odin/memory.json'; // adjust path
+
+let memories = [];
+try { memories = JSON.parse(fs.readFileSync(path, 'utf8')); } catch {}
+
+memories.push({
+  id: Date.now(),
+  tag: $input.first().json.body.tag,
+  content: $input.first().json.body.content,
+  timestamp: new Date().toISOString()
+});
+
+fs.writeFileSync(path, JSON.stringify(memories, null, 2));
+return [{ json: { status: 'saved', count: memories.length } }];
+
+_____________________________________________________
+
+read branch ---code nodes 
+
+_____________________________________________________
+
+const fs = require('fs');
+const path = '/home/charles/.odin/memory.json';
+const tag = $input.first().json.body.tag;
+
+let memories = [];
+try { memories = JSON.parse(fs.readFileSync(path, 'utf8')); } catch {}
+
+const results = tag
+  ? memories.filter(m => m.tag === tag)
+  : memories.slice(-20); // last 20 if no tag
+
+return [{ json: { memories: results } }];
+
+____________________________________________________
+
+5. Prune Branch — Code Node
+
+__________________________________________________
+const fs = require('fs');
+const path = '/home/charles/.odin/memory.json';
+const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7 days
+
+let memories = [];
+try { memories = JSON.parse(fs.readFileSync(path, 'utf8')); } catch {}
+
+const kept = memories.filter(m => new Date(m.timestamp).getTime() > cutoff);
+fs.writeFileSync(path, JSON.stringify(kept, null, 2));
+
+return [{ json: { pruned: memories.length - kept.length, remaining: kept.length } }];
+
+____________________________________________________
+6. Respond to Webhook
+
+Response body: {{ $json }}
+
+
+Test Payloads
+Write:
+
+_____________________________________________________
+POST http://localhost:5678/webhook/odin-memory
+{ "action": "write", "tag": "project", "content": "ODIN_PRO bridge is on port 8099" }
+
+______________________________________________________
+read
+______________________________________________________
+
+{ "action": "read", "tag": "project" }
+_________________________________________________-
+prune
+_________________________________________________
+{ "action": "prune" }
+___________________________________________________
+
+Upgrading Later
+Once this is solid, swap the JSON file for SQLite (faster queries, no race conditions) or pipe reads directly into your ODIN Brain workflow so context auto-injects before every AI call.
+
+
+___________________________________________________
+
+Odin memory workflow · JSON
+
+
+Yes{
+  "name": "ODIN Memory Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "odin-memory",
+        "options": {
+          "rawBody": false
+        }
+      },
+      "id": "node-webhook",
+      "name": "Memory Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "odin-memory-hook"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.body.action }}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "write",
+              "output": 0
+            },
+            {
+              "value2": "read",
+              "output": 1
+            },
+            {
+              "value2": "prune",
+              "output": 2
+            }
+          ]
+        }
+      },
+      "id": "node-switch",
+      "name": "Route Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\nconst memPath = 'C:/AI/MyOdin/memory/odin_memory.json';\n\n// Ensure directory exists\nconst dir = path.dirname(memPath);\nif (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });\n\nlet memories = [];\ntry { memories = JSON.parse(fs.readFileSync(memPath, 'utf8')); } catch {}\n\nconst body = $input.first().json.body;\n\nmemories.push({\n  id: Date.now(),\n  tag: body.tag || 'general',\n  content: body.content,\n  timestamp: new Date().toISOString()\n});\n\nfs.writeFileSync(memPath, JSON.stringify(memories, null, 2));\n\nreturn [{ json: { status: 'saved', id: memories[memories.length-1].id, count: memories.length } }];"
+      },
+      "id": "node-write",
+      "name": "Write Memory",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 160]
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst memPath = 'C:/AI/MyOdin/memory/odin_memory.json';\n\nlet memories = [];\ntry { memories = JSON.parse(fs.readFileSync(memPath, 'utf8')); } catch {}\n\nconst body = $input.first().json.body;\nconst tag = body.tag || null;\nconst limit = body.limit || 20;\n\nconst results = tag\n  ? memories.filter(m => m.tag === tag)\n  : memories.slice(-limit);\n\nreturn [{ json: { memories: results, count: results.length } }];"
+      },
+      "id": "node-read",
+      "name": "Read Memory",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst memPath = 'C:/AI/MyOdin/memory/odin_memory.json';\n\nconst body = $input.first().json.body;\nconst days = body.days || 7;\nconst cutoff = Date.now() - (days * 24 * 60 * 60 * 1000);\n\nlet memories = [];\ntry { memories = JSON.parse(fs.readFileSync(memPath, 'utf8')); } catch {}\n\nconst kept = memories.filter(m => new Date(m.timestamp).getTime() > cutoff);\nfs.writeFileSync(memPath, JSON.stringify(kept, null, 2));\n\nreturn [{ json: { status: 'pruned', removed: memories.length - kept.length, remaining: kept.length } }];"
+      },
+      "id": "node-prune",
+      "name": "Prune Memory",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 440]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "node-respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [940, 300]
+    }
+  ],
+  "connections": {
+    "Memory Trigger": {
+      "main": [
+        [
+          {
+            "node": "Route Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Action": {
+      "main": [
+        [
+          {
+            "node": "Write Memory",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read Memory",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prune Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Memory": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Memory": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prune Memory": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "odin-memory-v1",
+  "meta": {
+    "instanceId": "odin-local"
+  },
+  "tags": []
+}
+
+______________________________________________________
+
+Hello
+
+

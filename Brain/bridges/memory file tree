@@ -1,0 +1,50 @@
+4. Deployment Blueprint (USB stick)
+───────────────────────────────────
+Drop everything into a folder named `ODIN_MEMORY` at the root of the drive:
+
+```
+F:\ODIN_MEMORY\
+│
+├── main.py                 # launcher
+├── requirements.txt
+│
+├── relevance_scorer.py     # standalone, imported by search
+├── memory_manager.py       # legacy compat (optional)
+│
+├── server.py               # FastAPI entry
+├── api\
+│   └── endpoints.py
+│
+├── layers\
+│   ├── layer1_raw\
+│   │   ├── raw_logger.py
+│   │   └── raw_store\           # auto-created
+│   ├── layer2_longterm\
+│   │   ├── longterm_memory.py
+│   │   ├── extractor.py
+│   │   └── long_term_memory.json
+│   ├── layer3_knowledge\
+│   │   ├── knowledge_graph.py
+│   │   └── graph_builder.py
+│   └── layer4_summaries\
+│       ├── summary_engine.py
+│       └── digest_builder.py
+│
+├── search\
+│   └── memory_search.py
+│
+├── data\
+│   └── odin_memory.db        # sqlite created on first run
+│
+└── tools\
+    └── migrate_existing_data.py
+```
+
+Quick start
+-----------
+1. Plug USB.  
+2. `cd F:\ODIN_MEMORY`  
+3. `python -m pip install -r requirements.txt` (first time)  
+4. `python main.py` → API listening on http://0.0.0.0:8001  
+
+You’re done.
