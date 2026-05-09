@@ -1,329 +1,187 @@
+#!/usr/bin/env python3
 """
-ROOT MAIN.PY — System Orchestrator
-====================================
-Location: ~/AI/brain/main.py
-Author:   Built for Charles by Claude
-Platform: Ubuntu / Linux
-
-Boots the entire stack in order:
-  1. Brain      :7000
-  2. Dashboards :7500
-  3. Sense      :8000
-  4. Hunter     :8500
-  5. Bridge     :8099
-  6. n8n        :5678  (external, just checked)
-
-Usage:
-  python3 main.py              # boot everything
-  python3 main.py --only brain # boot one module
-  python3 main.py --skip sense # boot all except one
-  python3 main.py --list       # show all modules
-  python3 main.py --status     # check what's alive
-
-Ctrl+C shuts everything down clean.
+M3: SENSE & ACT
+Main entry point for ODIN's autonomous loop.
+Integrates Vision, Tool Calling, and Mouse/Keyboard control.
 """
 
-import sys
+import asyncio
+import logging
+import os
+import json
 import time
-import signal
-import argparse
-import subprocess
-import threading
-from pathlib import Path
-from datetime import datetime
+from typing import Dict, Any, List
+from dotenv import load_dotenv
 
-import httpx  # pip install httpx
+# Import SDK modules
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'sdk'))
 
-# ── Root path ─────────────────────────────────────────────────────────────────
-ROOT = Path(__file__).resolve().parent
+try:
+    from vision_tool import capture_screen, analyze_screen
+    from tool_call import client, MODEL, get_weather
+    import mouse_control
+except ImportError as e:
+    print(f"Error importing SDK modules: {e}")
 
-# Use python3 on Ubuntu — respects venv if active
-PYTHON = sys.executable
+# Load environment variables
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
-# ── Color output (works on Windows 10+ terminals) ─────────────────────────────
-class C:
-    GOLD   = "\033[38;5;220m"
-    GREEN  = "\033[92m"
-    RED    = "\033[91m"
-    YELLOW = "\033[93m"
-    GREY   = "\033[90m"
-    RESET  = "\033[0m"
-    BOLD   = "\033[1m"
-
-def log(msg: str, color: str = C.GREY):
-    ts = datetime.now().strftime("%H:%M:%S")
-    print(f"{C.GREY}[{ts}]{C.RESET} {color}{msg}{C.RESET}")
-
-def banner():
-    print(f"""
-{C.GOLD}{C.BOLD}
-  ██████╗ ██████╗  █████╗ ██╗███╗   ██╗
-  ██╔══██╗██╔══██╗██╔══██╗██║████╗  ██║
-  ██████╔╝██████╔╝███████║██║██╔██╗ ██║
-  ██╔══██╗██╔══██╗██╔══██║██║██║╚██╗██║
-  ██████╔╝██║  ██║██║  ██║██║██║ ╚████║
-  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝
-{C.RESET}
-  {C.GREY}Root Orchestrator  //  Charles's AI Stack{C.RESET}
-""")
-
-# ── Module definitions ─────────────────────────────────────────────────────────
-# Each entry:
-#   name       - short id used in --only / --skip
-#   label      - display name
-#   script     - path relative to ROOT
-#   port       - health check port (None = skip check)
-#   health_url - override if not /health
-#   delay      - seconds to wait AFTER launching before next module
-#   required   - if True, failure aborts the whole boot
-
-MODULES = [
-    {
-        "name":       "memory",
-        "label":      "M1  MEMORY PRO",
-        "script":     "M1/memory/main.py",
-        "port":       7001,
-        "health_url": "http://localhost:7001/health",
-        "delay":      2,
-        "required":   False,
-    },
-    {
-        "name":       "brain",
-        "label":      "M1  BRAIN",
-        "script":     "M1/main.py",
-        "port":       7000,
-        "health_url": "http://localhost:7000/health",
-        "delay":      3,
-        "required":   True,
-    },
-    {
-        "name":       "dashboards",
-        "label":      "M1  DASHBOARDS",
-        "script":     "M1/dashboards/server.py",
-        "port":       7500,
-        "health_url": "http://localhost:7500/health",
-        "delay":      2,
-        "required":   False,
-    },
-    {
-        "name":       "sense",
-        "label":      "M2  SENSE",
-        "script":     "M2/main.py",
-        "port":       8000,
-        "health_url": "http://localhost:8000/health",
-        "delay":      2,
-        "required":   False,
-    },
-    {
-        "name":       "hunter",
-        "label":      "P1  HUNTER",
-        "script":     "hunter/main.py",
-        "port":       8500,
-        "health_url": "http://localhost:8500/health",
-        "delay":      2,
-        "required":   False,
-    },
-    {
-        "name":       "bridge",
-        "label":      "BRIDGE",
-        "script":     "bridge.py",
-        "port":       8099,
-        "health_url": "http://localhost:8099/health",
-        "delay":      1,
-        "required":   False,
-    },
-]
-
-# n8n is NOT launched by Python — it's a separate process.
-# We just check if it's already running and report status.
-N8N_URL = "http://localhost:5678/healthz"
-
-# ── Process registry ───────────────────────────────────────────────────────────
-_procs: list[dict] = []   # {"name": str, "proc": subprocess.Popen}
-
-# ── Launch a module ────────────────────────────────────────────────────────────
-def launch(module: dict, dry_run: bool = False) -> subprocess.Popen | None:
-    script = ROOT / module["script"]
-
-    if not script.exists():
-        log(f"  {module['label']:<20} MISSING  ({module['script']})", C.YELLOW)
-        return None
-
-    if dry_run:
-        log(f"  {module['label']:<20} would launch  python {script}", C.GREY)
-        return None
-
-    log(f"  {module['label']:<20} launching...", C.GOLD)
-
-    proc = subprocess.Popen(
-        [PYTHON, str(script)],
-        cwd=str(ROOT),
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.PIPE,
-        # No Windows flags needed on Ubuntu
-    )
-
-    # Stderr forwarder — prints errors prefixed with module name
-    def _forward_stderr(p: subprocess.Popen, label: str):
-        for line in p.stderr:
-            decoded = line.decode(errors="replace").rstrip()
-            if decoded:
-                print(f"{C.GREY}[{label}]{C.RESET} {C.RED}{decoded}{C.RESET}")
-
-    t = threading.Thread(target=_forward_stderr, args=(proc, module["name"]), daemon=True)
-    t.start()
-
-    return proc
-
-# ── Health check ──────────────────────────────────────────────────────────────
-def wait_for_health(url: str, timeout: int = 20, label: str = "") -> bool:
-    deadline = time.time() + timeout
-    while time.time() < deadline:
+class OdinAgent:
+    """Main ODIN autonomous agent orchestrator"""
+    
+    def __init__(self):
+        self.setup_logging()
+        self.running = False
+        self.vision_interval = 300  # 5 minutes
+        
+    def setup_logging(self):
+        """Setup logging configuration"""
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.FileHandler('odin_agent.log'),
+                logging.StreamHandler()
+            ]
+        )
+        self.logger = logging.getLogger("ODIN-AGENT")
+        
+    async def sense(self):
+        """Capture environmental data (Vision)"""
+        self.logger.info("Sensing environment...")
         try:
-            r = httpx.get(url, timeout=2)
-            if r.status_code < 500:
-                return True
-        except Exception:
-            pass
-        time.sleep(0.5)
-    return False
-
-# ── Status table ──────────────────────────────────────────────────────────────
-def print_status():
-    print(f"\n{C.GOLD}{'─'*52}{C.RESET}")
-    print(f"{C.GOLD}  SYSTEM STATUS{C.RESET}")
-    print(f"{C.GOLD}{'─'*52}{C.RESET}")
-    for m in MODULES:
-        url = m.get("health_url", f"http://localhost:{m['port']}/health")
-        try:
-            r = httpx.get(url, timeout=2)
-            alive = r.status_code < 500
-        except Exception:
-            alive = False
-        dot  = f"{C.GREEN}●{C.RESET}" if alive else f"{C.RED}●{C.RESET}"
-        stat = f"{C.GREEN}ONLINE {C.RESET}" if alive else f"{C.RED}OFFLINE{C.RESET}"
-        port = m.get("port", "----")
-        print(f"  {dot}  {m['label']:<20} :{port:<6}  {stat}")
-
-    # n8n external check
-    try:
-        r = httpx.get(N8N_URL, timeout=2)
-        alive = r.status_code < 500
-    except Exception:
-        alive = False
-    dot  = f"{C.GREEN}●{C.RESET}" if alive else f"{C.YELLOW}●{C.RESET}"
-    stat = f"{C.GREEN}ONLINE {C.RESET}" if alive else f"{C.YELLOW}NOT DETECTED{C.RESET}"
-    print(f"  {dot}  {'n8n (external)':<20} :5678   {stat}")
-
-    print(f"{C.GOLD}{'─'*52}{C.RESET}\n")
-
-# ── Shutdown ───────────────────────────────────────────────────────────────────
-def shutdown(signum=None, frame=None):
-    print(f"\n{C.YELLOW}  Shutting down...{C.RESET}")
-    for entry in reversed(_procs):
-        p = entry["proc"]
-        name = entry["name"]
-        try:
-            p.terminate()          # SIGTERM — clean shutdown
-            p.wait(timeout=5)
-            log(f"  {name} stopped", C.GREY)
-        except subprocess.TimeoutExpired:
-            log(f"  {name} not responding — killing", C.RED)
-            p.kill()
+            filepath = capture_screen()
+            analysis = analyze_screen(filepath, prompt="What is happening on the screen? Identify any tasks or notifications.")
+            self.logger.info(f"Sense analysis: {analysis}")
+            return {"type": "vision", "content": analysis, "file": filepath}
         except Exception as e:
-            log(f"  {name} error during shutdown ({e})", C.RED)
-    print(f"{C.GOLD}  Stack offline. Good night, sir.{C.RESET}\n")
-    sys.exit(0)
+            self.logger.error(f"Sensing failed: {e}")
+            return {"error": str(e)}
 
-signal.signal(signal.SIGINT,  shutdown)
-signal.signal(signal.SIGTERM, shutdown)
+    async def think_and_act(self, sense_data: Dict[str, Any]):
+        """Decide what to do based on sense data and current state"""
+        self.logger.info("Thinking...")
+        
+        prompt = f"System Status: {sense_data.get('content')}\nUser Instructions: Maintain system stability and respond to notifications."
+        
+        messages = [
+            {"role": "system", "content": "You are ODIN, an autonomous AI agent. Use your tools to help the user. Always respond in JSON format if calling a tool."},
+            {"role": "user", "content": prompt}
+        ]
+        
+        # Tools available to the agent
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_weather",
+                    "description": "Get current weather",
+                    "parameters": {"type": "object", "properties": {"location": {"type": "string"}}}
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "mouse_move",
+                    "description": "Move the mouse to a specific location",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "x": {"type": "integer"},
+                            "y": {"type": "integer"}
+                        },
+                        "required": ["x", "y"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "mouse_click",
+                    "description": "Click the mouse at a specific location",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "x": {"type": "integer"},
+                            "y": {"type": "integer"},
+                            "button": {"type": "string", "enum": ["left", "right", "middle"]}
+                        },
+                        "required": ["x", "y"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "type_text",
+                    "description": "Type a string of text",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "text": {"type": "string"},
+                            "interval": {"type": "number"}
+                        },
+                        "required": ["text"]
+                    }
+                }
+            }
+        ]
 
-# ── Main ──────────────────────────────────────────────────────────────────────
-def main():
-    banner()
+        try:
+            response = client.chat.completions.create(
+                model=MODEL,
+                messages=messages,
+                tools=tools,
+                tool_choice="auto"
+            )
+            
+            response_message = response.choices[0].message
+            tool_calls = response_message.tool_calls
 
-    parser = argparse.ArgumentParser(description="Brain Orchestrator")
-    parser.add_argument("--only",    help="Boot only this module")
-    parser.add_argument("--skip",    help="Skip this module (comma-separated)")
-    parser.add_argument("--list",    action="store_true", help="List modules and exit")
-    parser.add_argument("--status",  action="store_true", help="Show live status and exit")
-    parser.add_argument("--dry-run", action="store_true", help="Print what would run, don't launch")
-    args = parser.parse_args()
+            if tool_calls:
+                for tool_call in tool_calls:
+                    fname = tool_call.function.name
+                    args = json.loads(tool_call.function.arguments)
+                    self.logger.info(f"Executing tool: {fname} with {args}")
+                    
+                    if fname == "get_weather":
+                        res = get_weather(**args)
+                        self.logger.info(f"Tool result: {res}")
+                    elif fname == "mouse_move":
+                        mouse_control.mouse_move(**args)
+                        self.logger.info("Mouse moved.")
+                    elif fname == "mouse_click":
+                        mouse_control.mouse_click(**args)
+                        self.logger.info(f"Clicked {args.get('button', 'left')} at {args['x']}, {args['y']}")
+                    elif fname == "type_text":
+                        mouse_control.type_text(**args)
+                        self.logger.info(f"Typed text: {args['text']}")
+            else:
+                self.logger.info(f"Agent feedback: {response_message.content}")
 
-    # ── --list ──
-    if args.list:
-        print(f"{C.GOLD}  Available modules:{C.RESET}")
-        for m in MODULES:
-            req = " (required)" if m["required"] else ""
-            print(f"    {m['name']:<15} :{m['port']}  {m['script']}{req}")
-        return
+        except Exception as e:
+            self.logger.error(f"Thinking failed: {e}")
 
-    # ── --status ──
-    if args.status:
-        print_status()
-        return
+    async def loop(self):
+        """Main autonomous loop"""
+        self.logger.info("ODIN Autonomous Loop starting...")
+        self.running = True
+        
+        while self.running:
+            sense_data = await self.sense()
+            await self.think_and_act(sense_data)
+            
+            self.logger.info(f"Sleeping for {self.vision_interval} seconds...")
+            await asyncio.sleep(self.vision_interval)
 
-    skip_names = [s.strip() for s in (args.skip or "").split(",") if s.strip()]
-
-    # Filter modules
-    to_run = []
-    for m in MODULES:
-        if args.only and m["name"] != args.only:
-            continue
-        if m["name"] in skip_names:
-            log(f"  {m['label']:<20} SKIPPED", C.GREY)
-            continue
-        to_run.append(m)
-
-    if not to_run:
-        log("  No modules selected. Use --list to see options.", C.YELLOW)
-        return
-
-    # Boot sequence
-    print(f"{C.GOLD}  Boot sequence starting...{C.RESET}\n")
-
-    for m in to_run:
-        proc = launch(m, dry_run=args.dry_run)
-
-        if proc is None:
-            if m["required"] and not args.dry_run:
-                log(f"  {m['label']} is REQUIRED and failed to launch. Aborting.", C.RED)
-                shutdown()
-            continue
-
-        _procs.append({"name": m["name"], "proc": proc})
-
-        # Wait for health
-        url = m.get("health_url", f"http://localhost:{m['port']}/health")
-        ok  = wait_for_health(url, timeout=20, label=m["label"])
-
-        if ok:
-            log(f"  {m['label']:<20} :{m['port']}  ONLINE", C.GREEN)
-        else:
-            log(f"  {m['label']:<20} :{m['port']}  NOT RESPONDING (still may be starting)", C.YELLOW)
-            if m["required"]:
-                log(f"  Required module failed health check. Aborting.", C.RED)
-                shutdown()
-
-        time.sleep(m.get("delay", 1))
-
-    # Final status board
-    print_status()
-
-    if args.dry_run:
-        log("  Dry run complete. Nothing was actually launched.", C.YELLOW)
-        return
-
-    log("  All systems up. Press Ctrl+C to shut down.\n", C.GREEN)
-
-    # Keep alive — monitor for dead processes
-    while True:
-        time.sleep(10)
-        for entry in _procs:
-            p = entry["proc"]
-            if p.poll() is not None:
-                log(f"  WARNING: {entry['name']} has died (exit {p.returncode})", C.RED)
-
+    def stop(self):
+        self.running = False
+        self.logger.info("ODIN Autonomous Loop stopping...")
 
 if __name__ == "__main__":
-    main()
+    agent = OdinAgent()
+    try:
+        asyncio.run(agent.loop())
+    except KeyboardInterrupt:
+        agent.stop()

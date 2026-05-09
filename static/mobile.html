@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#060c18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ODIN">
+<title>ODIN Mobile</title>
+
+<!-- PWA Manifest inline -->
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22ODIN+Mobile%22%2C%22short_name%22%3A%22ODIN%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23060c18%22%2C%22theme_color%22%3A%22%23060c18%22%2C%22description%22%3A%22ODIN+AI+Mobile+Companion%22%7D">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ══════════════════════════════════════════
+   ODIN MOBILE — Design System
+══════════════════════════════════════════ */
+:root {
+  --bg:       #060c18;
+  --bg2:      #0b1322;
+  --bg3:      #101b2e;
+  --card:     #0e1828;
+  --border:   #162035;
+  --border2:  #1e2d48;
+  --text:     #d0dff5;
+  --muted:    #4a6080;
+  --dim:      #2a3a55;
+  --accent:   #2d7dff;
+  --accent2:  #5599ff;
+  --glow:     rgba(45,125,255,0.25);
+  --green:    #22d98a;
+  --orange:   #f08a3e;
+  --red:      #f05149;
+  --purple:   #a855f7;
+  --cyan:     #22d5d5;
+
+  /* safe areas */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+
+  --nav-h: 64px;
+  --header-h: 60px;
+  --font-ui: 'Syne', system-ui, sans-serif;
+  --font-code: 'JetBrains Mono', monospace;
+  --radius: 14px;
+  --radius-sm: 8px;
+  touch-action: pan-y;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  background: var(--bg);
+}
+
+body {
+  font-family: var(--font-ui);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--sat);
+  padding-bottom: var(--sab);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+}
+
+/* ── NOISE TEXTURE OVERLAY ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* ── HEADER ───────────────────────────────── */
+#appHeader {
+  height: var(--header-h);
+  background: linear-gradient(180deg, rgba(6,12,24,0.98) 0%, rgba(6,12,24,0.9) 100%);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 12px;
+  flex-shrink: 0;
+  position: relative;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, var(--accent) 0%, #1a4fa0 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 0 16px var(--glow);
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--text);
+}
+
+.logo-text span { color: var(--accent); }
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.conn-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-code);
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.conn-pill:active { transform: scale(0.96); }
+.conn-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); transition: all 0.3s; }
+.conn-dot.live { background: var(--green); box-shadow: 0 0 8px var(--green); }
+
+.header-btn {
+  width: 36px; height: 36px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+}
+.header-btn:active { transform: scale(0.92); background: var(--border2); }
+
+/* ── MAIN CONTENT ─────────────────────────── */
+#mainContent {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── SCREENS ──────────────────────────────── */
+.screen {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+}
+.screen.active { display: flex; }
+
+/* ── NAV BAR ──────────────────────────────── */
+#navBar {
+  height: var(--nav-h);
+  background: linear-gradient(0deg, rgba(6,12,24,0.98) 0%, rgba(6,12,24,0.9) 100%);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--muted);
+  transition: color 0.2s;
+  position: relative;
+  padding-bottom: 4px;
+}
+.nav-item.active { color: var(--accent); }
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 2px 2px;
+}
+.nav-icon { font-size: 22px; line-height: 1; transition: transform 0.15s; }
+.nav-item:active .nav-icon { transform: scale(0.85); }
+.nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; }
+.nav-badge {
+  position: absolute;
+  top: 6px; right: calc(50% - 16px);
+  background: var(--red);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 1px 4px;
+  min-width: 14px;
+  text-align: center;
+  display: none;
+}
+.nav-badge.show { display: block; }
+
+/* ── CARDS ────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  overflow: hidden;
+}
+.card-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-title::before {
+  content: '';
+  width: 3px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
+   SCREEN: HOME
+══════════════════════════════════════════ */
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.status-cell {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+}
+.status-cell-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 4px;
+  font-family: var(--font-code);
+}
+.status-cell-val.green { color: var(--green); }
+.status-cell-val.orange { color: var(--orange); }
+.status-cell-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.quick-btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.quick-btn:active { transform: scale(0.94); background: var(--border2); border-color: var(--accent); }
+.quick-btn-icon { font-size: 28px; line-height: 1; }
+.quick-btn-label { font-size: 12px; font-weight: 700; color: var(--text); text-align: center; }
+.quick-btn-sub { font-size: 10px; color: var(--muted); text-align: center; }
+
+.activity-feed { display: flex; flex-direction: column; gap: 8px; }
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--bg3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.activity-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.activity-dot.green { background: var(--green); }
+.activity-dot.orange { background: var(--orange); }
+.activity-dot.blue { background: var(--accent); }
+.activity-text { flex: 1; font-size: 12px; color: var(--text); }
+.activity-time { font-size: 10px; color: var(--muted); font-family: var(--font-code); }
+
+/* ══════════════════════════════════════════
+   SCREEN: UPLOAD
+══════════════════════════════════════════ */
+.drop-zone {
+  border: 2px dashed var(--border2);
+  border-radius: var(--radius);
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  background: var(--bg3);
+  position: relative;
+}
+.drop-zone.dragover, .drop-zone:active { border-color: var(--accent); background: rgba(45,125,255,0.06); }
+.drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.drop-icon { font-size: 42px; }
+.drop-label { font-size: 15px; font-weight: 700; color: var(--text); }
+.drop-sub { font-size: 12px; color: var(--muted); }
+
+.upload-type-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.upload-type-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+}
+.upload-type-btn:active { transform: scale(0.93); border-color: var(--accent); }
+.upload-type-btn .icon { font-size: 24px; }
+.upload-type-btn .label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.upload-type-btn input { display: none; }
+
+.file-preview-list { display: flex; flex-direction: column; gap: 8px; }
+.file-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  animation: slideIn 0.2s ease;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.file-thumb {
+  width: 44px; height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.file-thumb img { width: 100%; height: 100%; border-radius: 8px; object-fit: cover; }
+.file-info { flex: 1; min-width: 0; }
+.file-name { font-size: 13px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-size { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.file-status { font-size: 11px; margin-top: 2px; }
+.file-status.uploading { color: var(--orange); }
+.file-status.done { color: var(--green); }
+.file-status.error { color: var(--red); }
+.file-remove {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--border2);
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--muted);
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.file-remove:active { background: var(--red); color: white; }
+
+.upload-progress {
+  height: 3px;
+  background: var(--border2);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.upload-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  border-radius: 2px;
+  transition: width 0.3s;
+  width: 0%;
+}
+
+.upload-send-btn {
+  background: linear-gradient(135deg, var(--accent) 0%, #1a5cc7 100%);
+  border: none;
+  border-radius: var(--radius);
+  color: white;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 700;
+  padding: 18px;
+  width: 100%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 20px var(--glow);
+  transition: all 0.15s;
+  letter-spacing: 0.5px;
+}
+.upload-send-btn:active { transform: scale(0.97); }
+.upload-send-btn:disabled { opacity: 0.5; }
+
+/* ══════════════════════════════════════════
+   SCREEN: CAMERA
+══════════════════════════════════════════ */
+.camera-preview-wrap {
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 4/3;
+  position: relative;
+}
+#cameraPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.camera-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.camera-corner {
+  position: absolute;
+  width: 20px; height: 20px;
+  border-color: var(--accent);
+  border-style: solid;
+  opacity: 0.8;
+}
+.camera-corner.tl { top: 12px; left: 12px; border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+.camera-corner.tr { top: 12px; right: 12px; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
+.camera-corner.bl { bottom: 12px; left: 12px; border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
+.camera-corner.br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
+
+.camera-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+.cam-side-btn {
+  width: 48px; height: 48px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+}
+.cam-side-btn:active { transform: scale(0.9); }
+
+.shutter-btn {
+  width: 72px; height: 72px;
+  background: white;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.1s;
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.2), 0 0 20px rgba(255,255,255,0.1);
+  position: relative;
+}
+.shutter-btn::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: white;
+  transition: all 0.1s;
+}
+.shutter-btn.recording::after { background: var(--red); }
+.shutter-btn:active { transform: scale(0.93); }
+.shutter-btn:active::after { inset: 8px; }
+
+#capturedCanvas { display: none; }
+.capture-preview {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+.capture-preview.show { display: flex; }
+.captured-img {
+  width: 100%;
+  border-radius: var(--radius);
+  object-fit: cover;
+}
+.capture-actions { display: flex; gap: 10px; }
+.cap-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--radius);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+  border: none;
+}
+.cap-btn:active { transform: scale(0.96); }
+.cap-btn.retake { background: var(--card); border: 1px solid var(--border2); color: var(--text); }
+.cap-btn.send { background: var(--accent); color: white; }
+
+/* ══════════════════════════════════════════
+   SCREEN: VOICE
+══════════════════════════════════════════ */
+.voice-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 0;
+}
+
+.voice-ring-wrap {
+  position: relative;
+  width: 180px;
+  height: 180px;
+}
+
+.voice-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  opacity: 0;
+  animation: voiceRingIdle 3s ease-in-out infinite;
+}
+.voice-ring:nth-child(1) { inset: 0; animation-delay: 0s; }
+.voice-ring:nth-child(2) { inset: -20px; animation-delay: 0.6s; }
+.voice-ring:nth-child(3) { inset: -40px; animation-delay: 1.2s; }
+
+@keyframes voiceRingIdle {
+  0% { opacity: 0; transform: scale(0.9); }
+  50% { opacity: 0.25; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.1); }
+}
+.voice-ring.recording {
+  animation: voiceRingActive 0.8s ease-in-out infinite alternate;
+  border-color: var(--red);
+}
+@keyframes voiceRingActive {
+  from { opacity: 0.3; transform: scale(0.95); }
+  to { opacity: 0.7; transform: scale(1.05); }
+}
+
+.voice-btn-center {
+  position: absolute;
+  inset: 40px;
+  background: linear-gradient(135deg, var(--accent) 0%, #1045a0 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 0 30px var(--glow);
+  transition: all 0.2s;
+  z-index: 2;
+}
+.voice-btn-center:active { transform: scale(0.93); }
+.voice-btn-center.recording {
+  background: linear-gradient(135deg, var(--red) 0%, #800000 100%);
+  box-shadow: 0 0 30px rgba(240,81,73,0.3);
+}
+
+.voice-status {
+  font-size: 15px;
+  color: var(--muted);
+  text-align: center;
+  font-weight: 600;
+}
+.voice-status.recording { color: var(--red); }
+.voice-timer {
+  font-size: 32px;
+  font-weight: 800;
+  font-family: var(--font-code);
+  color: var(--text);
+  display: none;
+}
+.voice-timer.show { display: block; }
+
+.voice-waveform {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 40px;
+}
+.waveform-bar {
+  width: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+  height: 8px;
+  transition: height 0.1s;
+}
+.waveform-bar.active {
+  animation: waveAnim 0.5s ease-in-out infinite alternate;
+}
+@keyframes waveAnim {
+  from { height: 8px; opacity: 0.5; }
+  to { height: var(--h, 30px); opacity: 1; }
+}
+
+.voice-recordings { display: flex; flex-direction: column; gap: 8px; }
+.recording-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.recording-play {
+  width: 38px; height: 38px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+}
+.recording-play:active { transform: scale(0.9); }
+.recording-info { flex: 1; }
+.recording-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.recording-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.recording-send {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+}
+.recording-send:active { transform: scale(0.95); background: var(--accent); color: white; }
+
+/* ══════════════════════════════════════════
+   SCREEN: CHAT
+══════════════════════════════════════════ */
+#chatScreen {
+  padding: 0;
+  gap: 0;
+}
+
+#chatMessages {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.msg-row {
+  display: flex;
+  gap: 8px;
+  animation: msgIn 0.2s ease;
+}
+@keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.msg-row.user { flex-direction: row-reverse; }
+
+.msg-avatar {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.msg-row.odin .msg-avatar { background: rgba(45,125,255,0.2); }
+.msg-row.user .msg-avatar { background: rgba(168,85,247,0.2); }
+
+.msg-bubble {
+  max-width: 78%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.55;
+  word-break: break-word;
+}
+.msg-row.odin .msg-bubble {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top-left-radius: 4px;
+  color: var(--text);
+}
+.msg-row.user .msg-bubble {
+  background: linear-gradient(135deg, var(--accent) 0%, #1a4fa0 100%);
+  border-bottom-right-radius: 4px;
+  color: white;
+}
+.msg-bubble code {
+  font-family: var(--font-code);
+  background: rgba(0,0,0,0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.msg-bubble pre {
+  background: rgba(0,0,0,0.4);
+  border-radius: 8px;
+  padding: 10px;
+  overflow-x: auto;
+  margin-top: 8px;
+  font-family: var(--font-code);
+  font-size: 12px;
+}
+
+.typing-bubble {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 14px 16px;
+}
+.t-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: tdot 1.2s infinite;
+}
+.t-dot:nth-child(2) { animation-delay: 0.2s; }
+.t-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes tdot { 0%,80%,100%{opacity:0.2;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
+
+#chatInputBar {
+  padding: 12px 14px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.chat-input-tools {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.chat-tool-btn {
+  width: 36px; height: 36px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.chat-tool-btn:active { transform: scale(0.88); background: var(--border2); }
+#chatTextInput {
+  flex: 1;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 18px;
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  padding: 9px 16px;
+  outline: none;
+  resize: none;
+  min-height: 38px;
+  max-height: 100px;
+  line-height: 1.4;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+#chatTextInput:focus { border-color: var(--accent); }
+#chatTextInput::placeholder { color: var(--dim); }
+.chat-send-btn {
+  width: 38px; height: 38px;
+  background: var(--accent);
+  border: none;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px var(--glow);
+}
+.chat-send-btn:active { transform: scale(0.88); }
+.chat-send-btn:disabled { opacity: 0.5; }
+
+/* agent mode indicator */
+.agent-bar {
+  padding: 6px 14px;
+  background: rgba(168,85,247,0.1);
+  border-bottom: 1px solid rgba(168,85,247,0.25);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--purple);
+  font-weight: 600;
+}
+.agent-bar.hidden { display: none; }
+.agent-pill {
+  background: rgba(168,85,247,0.2);
+  border: 1px solid rgba(168,85,247,0.3);
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+/* ══════════════════════════════════════════
+   SCREEN: SETTINGS (slide-up sheet)
+══════════════════════════════════════════ */
+#settingsSheet {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  border-radius: 20px 20px 0 0;
+  padding: 0 0 calc(var(--sab) + 20px);
+  z-index: 5000;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-height: 85vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#settingsSheet.open { transform: translateY(0); }
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--border2);
+  border-radius: 2px;
+  margin: 12px auto 16px;
+}
+.sheet-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  padding: 0 20px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sheet-close {
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--muted);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-list { padding: 8px 0; }
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.settings-item:last-child { border-bottom: none; }
+.settings-item-icon {
+  width: 38px; height: 38px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.settings-item-info { flex: 1; }
+.settings-item-label { font-size: 14px; font-weight: 600; color: var(--text); }
+.settings-item-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.settings-item-control { flex-shrink: 0; }
+
+.ios-toggle {
+  width: 50px; height: 28px;
+  background: var(--dim);
+  border-radius: 14px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.25s;
+  flex-shrink: 0;
+}
+.ios-toggle.on { background: var(--accent); }
+.ios-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 22px; height: 22px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.ios-toggle.on::after { transform: translateX(22px); }
+
+.settings-input-field {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  font-family: var(--font-code);
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  outline: none;
+  width: 130px;
+  text-align: right;
+  -webkit-appearance: none;
+}
+
+.sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 4999;
+  display: none;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.sheet-overlay.open { display: block; }
+
+/* ── INSTALL BANNER ───────────────────────── */
+#installBanner {
+  position: fixed;
+  bottom: calc(var(--sab) + var(--nav-h) + 10px);
+  left: 16px; right: 16px;
+  background: var(--card);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  z-index: 3000;
+  box-shadow: 0 8px 32px var(--glow);
+  animation: bannerUp 0.3s ease;
+}
+@keyframes bannerUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform:none; } }
+#installBanner.show { display: flex; }
+.install-text { flex: 1; font-size: 13px; color: var(--text); }
+.install-text strong { display: block; font-size: 14px; margin-bottom: 2px; }
+.install-text span { color: var(--muted); font-size: 12px; }
+.install-btn {
+  background: var(--accent);
+  border: none;
+  color: white;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s;
+}
+.install-btn:active { transform: scale(0.94); }
+.install-dismiss {
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--muted);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── TOAST ────────────────────────────────── */
+#toast {
+  position: fixed;
+  top: calc(var(--sat) + var(--header-h) + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s;
+  z-index: 9000;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.success { border-color: var(--green); color: var(--green); }
+#toast.error { border-color: var(--red); color: var(--red); }
+
+/* ── MISC ─────────────────────────────────── */
+button { -webkit-appearance: none; }
+input[type=file] { display: none; }
+select { -webkit-appearance: none; appearance: none; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="appHeader">
+  <div class="header-logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">ODIN</div>
+  </div>
+  <div class="header-right">
+    <div class="conn-pill" id="connPill" onclick="pingServer()">
+      <span class="conn-dot" id="connDot"></span>
+      <span id="connLabel" style="font-size:11px">:8000</span>
+    </div>
+    <div class="header-btn" onclick="openSettings()">⚙️</div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div id="mainContent">
+
+  <!-- HOME SCREEN -->
+  <div class="screen active" id="screenHome">
+
+    <div class="card">
+      <div class="card-title">System Status</div>
+      <div class="status-grid">
+        <div class="status-cell">
+          <div class="status-cell-val green" id="stModules">—</div>
+          <div class="status-cell-label">Modules Online</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-cell-val" id="stPort2">8000</div>
+          <div class="status-cell-label">CORE Port</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-cell-val orange" id="stUploads">0</div>
+          <div class="status-cell-label">Uploads Today</div>
+        </div>
+        <div class="status-cell">
+          <div class="status-cell-val" id="stMsgs">0</div>
+          <div class="status-cell-label">Messages Sent</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Quick Actions</div>
+      <div class="quick-actions">
+        <div class="quick-btn" onclick="goScreen('screenUpload')">
+          <span class="quick-btn-icon">📤</span>
+          <span class="quick-btn-label">Upload Files</span>
+          <span class="quick-btn-sub">Photos, docs, code</span>
+        </div>
+        <div class="quick-btn" onclick="goScreen('screenCamera')">
+          <span class="quick-btn-icon">📷</span>
+          <span class="quick-btn-label">Camera</span>
+          <span class="quick-btn-sub">Capture & send</span>
+        </div>
+        <div class="quick-btn" onclick="goScreen('screenVoice')">
+          <span class="quick-btn-icon">🎙️</span>
+          <span class="quick-btn-label">Voice Note</span>
+          <span class="quick-btn-sub">Record & transcribe</span>
+        </div>
+        <div class="quick-btn" onclick="goScreen('screenChat'); switchToChat()">
+          <span class="quick-btn-icon">💬</span>
+          <span class="quick-btn-label">Chat ODIN</span>
+          <span class="quick-btn-sub">Ask anything</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Recent Activity</div>
+      <div class="activity-feed" id="activityFeed">
+        <div class="activity-item">
+          <span class="activity-dot blue"></span>
+          <span class="activity-text">ODIN IDE opened — ready</span>
+          <span class="activity-time">now</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ODIN Modules Quick Status -->
+    <div class="card">
+      <div class="card-title">ODIN Modules</div>
+      <div id="modulesList" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+
+  </div><!-- /screenHome -->
+
+  <!-- UPLOAD SCREEN -->
+  <div class="screen" id="screenUpload">
+
+    <div class="card">
+      <div class="card-title">Upload to ODIN</div>
+      <div class="drop-zone" id="dropZone" onclick="triggerUpload()">
+        <input type="file" id="mainFileInput" multiple accept="*/*" onchange="handleFiles(this.files)">
+        <span class="drop-icon">📂</span>
+        <span class="drop-label">Tap to select files</span>
+        <span class="drop-sub">Any file type • No size limit</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Upload Type</div>
+      <div class="upload-type-row">
+        <label class="upload-type-btn">
+          <input type="file" accept="image/*" onchange="handleFiles(this.files)">
+          <span class="icon">🖼️</span>
+          <span class="label">Photo</span>
+        </label>
+        <label class="upload-type-btn">
+          <input type="file" accept="video/*" onchange="handleFiles(this.files)">
+          <span class="icon">🎥</span>
+          <span class="label">Video</span>
+        </label>
+        <label class="upload-type-btn">
+          <input type="file" accept=".py,.js,.ts,.html,.css,.json,.md,.txt,.sh,.env,.yml,.yaml" onchange="handleFiles(this.files)">
+          <span class="icon">💻</span>
+          <span class="label">Code</span>
+        </label>
+        <label class="upload-type-btn">
+          <input type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv" onchange="handleFiles(this.files)">
+          <span class="icon">📄</span>
+          <span class="label">Doc</span>
+        </label>
+      </div>
+    </div>
+
+    <div id="filePreviewCard" class="card" style="display:none">
+      <div class="card-title">Queued Files</div>
+      <div class="file-preview-list" id="filePreviewList"></div>
+    </div>
+
+    <div id="uploadMsgCard" class="card" style="display:none">
+      <div class="card-title">Message (optional)</div>
+      <textarea id="uploadMessage" style="width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--font-ui);font-size:14px;padding:12px;border-radius:10px;resize:none;outline:none;min-height:70px;-webkit-appearance:none" placeholder="Tell ODIN what to do with these files..."></textarea>
+    </div>
+
+    <button class="upload-send-btn" id="uploadSendBtn" onclick="sendUpload()" disabled>
+      <span>⬆</span> Send to ODIN
+    </button>
+
+  </div><!-- /screenUpload -->
+
+  <!-- CAMERA SCREEN -->
+  <div class="screen" id="screenCamera">
+    <div class="card" style="padding:0">
+      <div class="camera-preview-wrap" id="cameraWrap">
+        <video id="cameraPreview" playsinline autoplay muted></video>
+        <div class="camera-overlay">
+          <div class="camera-corner tl"></div>
+          <div class="camera-corner tr"></div>
+          <div class="camera-corner bl"></div>
+          <div class="camera-corner br"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="camera-controls" id="cameraControls">
+      <div class="cam-side-btn" onclick="switchCamera()" title="Flip camera">🔄</div>
+      <div class="shutter-btn" id="shutterBtn" onclick="capturePhoto()"></div>
+      <div class="cam-side-btn" onclick="startVideoRecord()" id="videoBtn" title="Record video">🎬</div>
+    </div>
+
+    <canvas id="capturedCanvas"></canvas>
+
+    <div class="capture-preview card" id="capturePreview">
+      <img id="capturedImg" class="captured-img">
+      <div style="padding:4px 0">
+        <textarea id="captureMsg" style="width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--font-ui);font-size:14px;padding:12px;border-radius:10px;resize:none;outline:none;min-height:60px;-webkit-appearance:none" placeholder="Tell ODIN what you captured..."></textarea>
+      </div>
+      <div class="capture-actions">
+        <button class="cap-btn retake" onclick="retakePhoto()">↩ Retake</button>
+        <button class="cap-btn send" onclick="sendCapture()">⬆ Send to ODIN</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Camera Tips</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6">
+        📸 Tap shutter to capture photo<br>
+        🔄 Flip switches front/back camera<br>
+        🎬 Hold video button to record<br>
+        💡 ODIN can analyze any image you send
+      </div>
+    </div>
+
+  </div><!-- /screenCamera -->
+
+  <!-- VOICE SCREEN -->
+  <div class="screen" id="screenVoice">
+    <div class="card">
+      <div class="card-title">Voice Recording</div>
+      <div class="voice-center">
+        <div class="voice-ring-wrap">
+          <div class="voice-ring" id="vr1"></div>
+          <div class="voice-ring" id="vr2"></div>
+          <div class="voice-ring" id="vr3"></div>
+          <div class="voice-btn-center" id="voiceBtn" onclick="toggleRecording()">🎙️</div>
+        </div>
+        <div class="voice-status" id="voiceStatus">Tap to start recording</div>
+        <div class="voice-timer" id="voiceTimer">0:00</div>
+        <div class="voice-waveform" id="voiceWaveform">
+          <div class="waveform-bar"></div><div class="waveform-bar"></div>
+          <div class="waveform-bar"></div><div class="waveform-bar"></div>
+          <div class="waveform-bar"></div><div class="waveform-bar"></div>
+          <div class="waveform-bar"></div><div class="waveform-bar"></div>
+          <div class="waveform-bar"></div><div class="waveform-bar"></div>
+          <div class="waveform-bar"></div><div class="waveform-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="recordingsCard" style="display:none">
+      <div class="card-title">Recordings</div>
+      <div class="voice-recordings" id="recordingsList"></div>
+    </div>
+
+  </div><!-- /screenVoice -->
+
+  <!-- CHAT SCREEN -->
+  <div class="screen" id="screenChat" style="padding:0;gap:0">
+    <div class="agent-bar" id="agentBar" class="hidden">
+      🤖 Agent Mode Active <span class="agent-pill">ODIN can create & run</span>
+    </div>
+    <div id="chatMessages">
+      <div class="msg-row odin">
+        <div class="msg-avatar">⚡</div>
+        <div class="msg-bubble">
+          Ready. Send me files, voice notes, or just ask. Agent mode is one tap away.
+        </div>
+      </div>
+    </div>
+    <div id="chatInputBar">
+      <div class="chat-input-tools">
+        <label class="chat-tool-btn" title="Attach file">
+          📎<input type="file" multiple onchange="attachFilesToChat(this.files)">
+        </label>
+        <div class="chat-tool-btn" onclick="goScreen('screenCamera'); switchToCamera()" title="Camera">📷</div>
+      </div>
+      <textarea id="chatTextInput" placeholder="Message ODIN..." rows="1" oninput="growChatInput(this)" onkeydown="chatKeyHandler(event)"></textarea>
+      <div class="chat-send-btn" id="chatSendBtn" onclick="sendChatMsg()">↑</div>
+    </div>
+  </div><!-- /screenChat -->
+
+</div><!-- /mainContent -->
+
+<!-- Nav Bar -->
+<div id="navBar">
+  <div class="nav-item active" id="nav-home" onclick="goScreen('screenHome', 'nav-home')">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Home</span>
+  </div>
+  <div class="nav-item" id="nav-upload" onclick="goScreen('screenUpload', 'nav-upload')">
+    <span class="nav-icon">📤</span>
+    <span class="nav-label">Upload</span>
+    <span class="nav-badge" id="uploadBadge">0</span>
+  </div>
+  <div class="nav-item" id="nav-camera" onclick="goScreen('screenCamera', 'nav-camera'); startCamera()">
+    <span class="nav-icon">📷</span>
+    <span class="nav-label">Camera</span>
+  </div>
+  <div class="nav-item" id="nav-voice" onclick="goScreen('screenVoice', 'nav-voice')">
+    <span class="nav-icon">🎙️</span>
+    <span class="nav-label">Voice</span>
+  </div>
+  <div class="nav-item" id="nav-chat" onclick="goScreen('screenChat', 'nav-chat')">
+    <span class="nav-icon">💬</span>
+    <span class="nav-label">Chat</span>
+    <span class="nav-badge" id="chatBadge">0</span>
+  </div>
+</div>
+
+<!-- Settings Sheet -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSettings()"></div>
+<div id="settingsSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title">
+    Settings
+    <span class="sheet-close" onclick="closeSettings()">✕</span>
+  </div>
+  <div class="settings-list">
+    <div class="settings-item">
+      <div class="settings-item-icon">🔌</div>
+      <div class="settings-item-info">
+        <div class="settings-item-label">ODIN Host / IP</div>
+        <div class="settings-item-sub">Local or Tailscale IP</div>
+      </div>
+      <div class="settings-item-control">
+        <input class="settings-input-field" id="set-host" value="localhost" placeholder="192.168.x.x">
+      </div>
+    </div>
+    <div class="settings-item">
+      <div class="settings-item-icon">🔢</div>
+      <div class="settings-item-info">
+        <div class="settings-item-label">ODIN Port</div>
+        <div class="settings-item-sub">Default: 8000</div>
+      </div>
+      <div class="settings-item-control">
+        <input class="settings-input-field" id="set-port" type="number" value="8000" min="1000" max="9999">
+      </div>
+    </div>
+    <div class="settings-item">
+      <div class="settings-item-icon">🔐</div>
+      <div class="settings-item-info">
+        <div class="settings-item-label">API Key</div>
+        <div class="settings-item-sub">If ODIN requires auth</div>
+      </div>
+      <div class="settings-item-control">
+        <input class="settings-input-field" id="set-apikey" type="password" placeholder="optional">
+      </div>
+    </div>
+    <div class="settings-item">
+      <div class="settings-item-icon">🔒</div>
+      <div class="settings-item-info">
+        <div class="settings-item-label">Use HTTPS</div>
+        <div class="settings-item-sub">For remote / Tailscale</div>
+      </div>
+      <div class="settings-item-control">
+        <div class="ios-toggle" id="tog-https" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+    <div class="settings-item">
+      <div class="settings-item-icon">🤖</div>
+      <div class="settings-item-info">
+        <div class="settings-item-label">Agent Mode</div>
+        <div class="settings-item-sub">ODIN creates & runs files</div>
+      </div>
+      <div class="settings-item-control">
+        <div class="ios-toggle" id="tog-agent" onclick="this.classList.toggle('on'); updateAgentBar()"></div>
+      </div>
+    </div>
+    <div class="settings-item">
+      <div class="settings-item-icon">📳</div>
+      <div class="settings-item-info">
+        <div class="settings-item-label">Haptic Feedback</div>
+        <div class="settings-item-sub">Vibrate on send / receive</div>
+      </div>
+      <div class="settings-item-control">
+        <div class="ios-toggle on" id="tog-haptic" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+    <div class="settings-item" onclick="saveSettings()">
+      <div class="settings-item-icon">💾</div>
+      <div class="settings-item-info">
+        <div class="settings-item-label">Save Settings</div>
+        <div class="settings-item-sub">Apply and close</div>
+      </div>
+      <div style="color:var(--accent);font-size:18px">›</div>
+    </div>
+    <div class="settings-item" onclick="pingServer()">
+      <div class="settings-item-icon">📡</div>
+      <div class="settings-item-info">
+        <div class="settings-item-label">Test Connection</div>
+        <div class="settings-item-sub" id="pingResult">Tap to ping ODIN_CORE</div>
+      </div>
+    </div>
+    <div class="settings-item" onclick="promptInstall()">
+      <div class="settings-item-icon">📱</div>
+      <div class="settings-item-info">
+        <div class="settings-item-label">Install App</div>
+        <div class="settings-item-sub">Add to Home Screen</div>
+      </div>
+      <div style="color:var(--accent);font-size:18px">›</div>
+    </div>
+    <div class="settings-item">
+      <div class="settings-item-icon">ℹ️</div>
+      <div class="settings-item-info">
+        <div class="settings-item-label">ODIN Mobile v1.0</div>
+        <div class="settings-item-sub">iOS & Android companion</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Install Banner -->
+<div id="installBanner">
+  <div style="font-size:28px">📱</div>
+  <div class="install-text">
+    <strong>Install ODIN App</strong>
+    <span>Add to your home screen for full access</span>
+  </div>
+  <button class="install-btn" onclick="promptInstall()">Install</button>
+  <div class="install-dismiss" onclick="dismissInstall()">✕</div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  ODIN MOBILE — Core State
+// ═══════════════════════════════════════════════════
+const M = {
+  host: localStorage.getItem('odin_host') || 'localhost',
+  port: parseInt(localStorage.getItem('odin_port') || '8000'),
+  apiKey: localStorage.getItem('odin_api_key') || '',
+  https: localStorage.getItem('odin_https') === '1',
+  agentMode: false,
+  haptic: true,
+  connected: false,
+  uploadQueue: [],
+  chatHistory: [],
+  uploadCount: parseInt(localStorage.getItem('odin_upload_count') || '0'),
+  msgCount: parseInt(localStorage.getItem('odin_msg_count') || '0'),
+  activeNav: 'nav-home',
+  deferredInstallPrompt: null,
+};
+
+function baseUrl() {
+  const proto = M.https ? 'https' : 'http';
+  return `${proto}://${M.host}:${M.port}`;
+}
+
+// ── Haptic ─────────────────────────────────────────
+function haptic(type = 'light') {
+  if (!M.haptic) return;
+  try {
+    if (navigator.vibrate) {
+      const patterns = { light: [10], medium: [20], heavy: [50], success: [10, 50, 10] };
+      navigator.vibrate(patterns[type] || [10]);
+    }
+  } catch(_) {}
+}
+
+// ── Toast ──────────────────────────────────────────
+function toast(msg, type = '', duration = 2500) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', duration);
+}
+
+// ── Navigation ─────────────────────────────────────
+function goScreen(screenId, navId) {
+  haptic('light');
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const nav = navId || `nav-${screenId.replace('screen', '').toLowerCase()}`;
+  document.getElementById(nav)?.classList.add('active');
+  M.activeNav = nav;
+}
+
+function switchToChat() { goScreen('screenChat', 'nav-chat'); }
+function switchToCamera() { startCamera(); }
+
+// ═══════════════════════════════════════════════════
+//  CONNECTION
+// ═══════════════════════════════════════════════════
+async function pingServer() {
+  const label = document.getElementById('pingResult');
+  label && (label.textContent = 'Pinging...');
+  try {
+    const r = await fetch(`${baseUrl()}/`, { signal: AbortSignal.timeout(4000) });
+    setConnected(true);
+    toast('✓ ODIN_CORE online', 'success');
+    label && (label.textContent = `✓ Online — ${M.host}:${M.port}`);
+    checkModules();
+  } catch(_) {
+    setConnected(false);
+    toast(`✗ Can't reach :${M.port}`, 'error');
+    label && (label.textContent = `✗ No response from ${M.host}:${M.port}`);
+  }
+}
+
+function setConnected(state) {
+  M.connected = state;
+  const dot = document.getElementById('connDot');
+  const label = document.getElementById('connLabel');
+  dot.classList.toggle('live', state);
+  label.textContent = state ? `:${M.port} ✓` : `:${M.port}`;
+  document.getElementById('stModules').textContent = state ? '●' : '—';
+  document.getElementById('stModules').style.color = state ? 'var(--green)' : 'var(--red)';
+}
+
+// ═══════════════════════════════════════════════════
+//  MODULES
+// ═══════════════════════════════════════════════════
+const MODULES = [
+  { name: 'ODIN_CORE',    port: 8000, icon: '⚡' },
+  { name: 'ODIN_MEMORY',  port: 8003, icon: '🧠' },
+  { name: 'ODIN_FACE',    port: 8001, icon: '🌐' },
+  { name: 'ODIN_HUNTER',  port: 8010, icon: '🎯' },
+  { name: 'ODIN_ENGINEER',port: 8006, icon: '🔧' },
+];
+
+function buildModulesList() {
+  const list = document.getElementById('modulesList');
+  list.innerHTML = '';
+  MODULES.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'activity-item';
+    el.id = `module-${m.name}`;
+    el.innerHTML = `
+      <span style="font-size:18px">${m.icon}</span>
+      <span class="activity-text" style="font-family:var(--font-code);font-size:12px">${m.name} <span style="color:var(--dim)">:${m.port}</span></span>
+      <span class="activity-dot" id="mdot-${m.name}" style="background:var(--dim)"></span>`;
+    list.appendChild(el);
+  });
+}
+
+async function checkModules() {
+  let online = 0;
+  for (const m of MODULES) {
+    try {
+      await fetch(`${M.https ? 'https' : 'http'}://${M.host}:${m.port}/`, { signal: AbortSignal.timeout(2000), mode: 'no-cors' });
+      const dot = document.getElementById(`mdot-${m.name}`);
+      if (dot) { dot.style.background = 'var(--green)'; dot.style.boxShadow = '0 0 6px var(--green)'; }
+      online++;
+    } catch(_) {
+      const dot = document.getElementById(`mdot-${m.name}`);
+      if (dot) { dot.style.background = 'var(--red)'; dot.style.boxShadow = 'none'; }
+    }
+  }
+  document.getElementById('stModules').textContent = `${online}/${MODULES.length}`;
+}
+
+// ═══════════════════════════════════════════════════
+//  FILE UPLOAD
+// ═══════════════════════════════════════════════════
+function triggerUpload() {
+  document.getElementById('mainFileInput').click();
+}
+
+function handleFiles(files) {
+  if (!files || files.length === 0) return;
+  haptic('medium');
+  Array.from(files).forEach(file => addToQueue(file));
+  document.getElementById('filePreviewCard').style.display = '';
+  document.getElementById('uploadMsgCard').style.display = '';
+  document.getElementById('uploadSendBtn').disabled = false;
+  updateUploadBadge();
+}
+
+function addToQueue(file) {
+  const id = Date.now() + Math.random();
+  const isImage = file.type.startsWith('image/');
+  M.uploadQueue.push({ id, file, status: 'pending' });
+
+  const list = document.getElementById('filePreviewList');
+  const el = document.createElement('div');
+  el.className = 'file-preview-item';
+  el.id = `fp-${id}`;
+
+  const thumbEl = `<div class="file-thumb" id="fthumb-${id}">${getFileIcon(file.name)}</div>`;
+
+  el.innerHTML = `${thumbEl}
+    <div class="file-info">
+      <div class="file-name">${file.name}</div>
+      <div class="file-size">${formatSize(file.size)}</div>
+      <div class="file-status" id="fstat-${id}">Ready</div>
+      <div class="upload-progress"><div class="upload-progress-bar" id="fprog-${id}"></div></div>
+    </div>
+    <div class="file-remove" onclick="removeFromQueue('${id}')">✕</div>`;
+  list.appendChild(el);
+
+  if (isImage) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const thumb = document.getElementById(`fthumb-${id}`);
+      if (thumb) thumb.innerHTML = `<img src="${e.target.result}">`;
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function removeFromQueue(id) {
+  haptic('light');
+  M.uploadQueue = M.uploadQueue.filter(f => String(f.id) !== String(id));
+  document.getElementById(`fp-${id}`)?.remove();
+  if (M.uploadQueue.length === 0) {
+    document.getElementById('filePreviewCard').style.display = 'none';
+    document.getElementById('uploadMsgCard').style.display = 'none';
+    document.getElementById('uploadSendBtn').disabled = true;
+  }
+  updateUploadBadge();
+}
+
+async function sendUpload() {
+  if (M.uploadQueue.length === 0) return;
+  haptic('heavy');
+  const btn = document.getElementById('uploadSendBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span>⏳</span> Sending...';
+  const msg = document.getElementById('uploadMessage').value;
+
+  for (const item of M.uploadQueue) {
+    if (item.status === 'done') continue;
+    item.status = 'uploading';
+    setFileStatus(item.id, 'uploading', 'Uploading...');
+    setFileProgress(item.id, 30);
+
+    try {
+      const fd = new FormData();
+      fd.append('file', item.file);
+      fd.append('message', msg);
+      fd.append('filename', item.file.name);
+
+      const res = await fetch(`${baseUrl()}/api/upload`, {
+        method: 'POST',
+        headers: M.apiKey ? { 'Authorization': `Bearer ${M.apiKey}` } : {},
+        body: fd,
+      });
+
+      setFileProgress(item.id, 100);
+      if (res.ok) {
+        const data = await res.json();
+        item.status = 'done';
+        setFileStatus(item.id, 'done', '✓ Sent to ODIN');
+        addActivity('blue', `Uploaded: ${item.file.name}`);
+        if (data.reply) addActivityRaw(data.reply);
+      } else {
+        // Backend might not have /api/upload — try /api/chat with base64
+        await uploadViaChat(item, msg);
+      }
+    } catch(_) {
+      // Fallback: send via chat as base64 attachment
+      await uploadViaChat(item, msg);
+    }
+  }
+
+  M.uploadCount += M.uploadQueue.filter(f => f.status === 'done').length;
+  localStorage.setItem('odin_upload_count', M.uploadCount);
+  document.getElementById('stUploads').textContent = M.uploadCount;
+
+  btn.innerHTML = '<span>⬆</span> Send to ODIN';
+  btn.disabled = false;
+  toast('✓ Upload complete!', 'success');
+  haptic('success');
+  updateUploadBadge();
+}
+
+async function uploadViaChat(item, msg) {
+  // Read file as base64 or text and send to /api/chat
+  try {
+    const content = await readFileContent(item.file);
+    const isText = item.file.type.startsWith('text') || /\.(py|js|ts|html|css|json|md|txt|sh|env|yml|yaml)$/i.test(item.file.name);
+    const message = `[FILE UPLOAD: ${item.file.name}]\n${msg ? msg + '\n' : ''}${isText ? '```\n' + content + '\n```' : '[Binary file - base64 attached]'}`;
+
+    const res = await fetch(`${baseUrl()}/api/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(M.apiKey ? { 'Authorization': `Bearer ${M.apiKey}` } : {}),
+      },
+      body: JSON.stringify({
+        message,
+        history: [],
+        file_name: item.file.name,
+        file_type: item.file.type,
+        file_content: content,
+      }),
+    });
+
+    if (res.ok) {
+      item.status = 'done';
+      setFileStatus(item.id, 'done', '✓ Sent via chat');
+    } else {
+      item.status = 'error';
+      setFileStatus(item.id, 'error', '✗ Upload failed');
+    }
+  } catch(e) {
+    item.status = 'error';
+    setFileStatus(item.id, 'error', '✗ Cannot reach ODIN_CORE');
+  }
+}
+
+function readFileContent(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    const isText = file.type.startsWith('text') || /\.(py|js|ts|html|css|json|md|txt|sh|env|yml|yaml)$/i.test(file.name);
+    reader.onload = e => res(e.target.result);
+    reader.onerror = rej;
+    if (isText) reader.readAsText(file);
+    else reader.readAsDataURL(file);
+  });
+}
+
+function setFileStatus(id, type, text) {
+  const el = document.getElementById(`fstat-${id}`);
+  if (el) { el.className = `file-status ${type}`; el.textContent = text; }
+}
+function setFileProgress(id, pct) {
+  const el = document.getElementById(`fprog-${id}`);
+  if (el) el.style.width = pct + '%';
+}
+function updateUploadBadge() {
+  const count = M.uploadQueue.filter(f => f.status === 'pending').length;
+  const badge = document.getElementById('uploadBadge');
+  badge.textContent = count;
+  badge.classList.toggle('show', count > 0);
+}
+
+// ═══════════════════════════════════════════════════
+//  CAMERA
+// ═══════════════════════════════════════════════════
+let cameraStream = null;
+let facingMode = 'environment';
+let capturedBlob = null;
+
+async function startCamera() {
+  if (cameraStream) return;
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      audio: false,
+    });
+    const video = document.getElementById('cameraPreview');
+    video.srcObject = cameraStream;
+  } catch(e) {
+    toast('Camera permission denied', 'error');
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+}
+
+async function switchCamera() {
+  haptic('light');
+  facingMode = facingMode === 'environment' ? 'user' : 'environment';
+  stopCamera();
+  await startCamera();
+}
+
+function capturePhoto() {
+  haptic('heavy');
+  const video = document.getElementById('cameraPreview');
+  const canvas = document.getElementById('capturedCanvas');
+  canvas.width = video.videoWidth || 1280;
+  canvas.height = video.videoHeight || 720;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+
+  canvas.toBlob(blob => {
+    capturedBlob = blob;
+    const url = URL.createObjectURL(blob);
+    document.getElementById('capturedImg').src = url;
+    document.getElementById('cameraWrap').style.display = 'none';
+    document.getElementById('cameraControls').style.display = 'none';
+    document.getElementById('capturePreview').classList.add('show');
+  }, 'image/jpeg', 0.9);
+}
+
+function retakePhoto() {
+  haptic('light');
+  document.getElementById('cameraWrap').style.display = '';
+  document.getElementById('cameraControls').style.display = 'flex';
+  document.getElementById('capturePreview').classList.remove('show');
+  capturedBlob = null;
+}
+
+async function sendCapture() {
+  if (!capturedBlob) return;
+  haptic('heavy');
+  const msg = document.getElementById('captureMsg').value || 'Here is a photo from my camera.';
+  const file = new File([capturedBlob], `capture-${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+  M.uploadQueue.push({ id: Date.now(), file, status: 'pending' });
+  document.getElementById('uploadMessage').value = msg;
+
+  // Send directly
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('message', msg);
+  fd.append('filename', file.name);
+
+  try {
+    const res = await fetch(`${baseUrl()}/api/upload`, {
+      method: 'POST', headers: M.apiKey ? { 'Authorization': `Bearer ${M.apiKey}` } : {}, body: fd,
+    });
+    toast('✓ Photo sent to ODIN!', 'success');
+  } catch(_) {
+    // fallback: read as base64 -> /api/chat
+    const reader = new FileReader();
+    reader.onload = async e => {
+      await fetch(`${baseUrl()}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(M.apiKey ? { 'Authorization': `Bearer ${M.apiKey}` } : {}) },
+        body: JSON.stringify({ message: msg, file_name: file.name, file_type: 'image/jpeg', file_content: e.target.result, history: [] }),
+      }).then(() => toast('✓ Photo sent!', 'success')).catch(() => toast('✗ Send failed', 'error'));
+    };
+    reader.readAsDataURL(capturedBlob);
+  }
+
+  M.uploadCount++;
+  localStorage.setItem('odin_upload_count', M.uploadCount);
+  document.getElementById('stUploads').textContent = M.uploadCount;
+  addActivity('blue', `Photo captured & sent`);
+  retakePhoto();
+}
+
+// Video recording
+let mediaRecorder = null;
+let videoChunks = [];
+let videoRecording = false;
+
+async function startVideoRecord() {
+  if (videoRecording) {
+    stopVideoRecord();
+    return;
+  }
+  haptic('heavy');
+  if (!cameraStream) return;
+  const btn = document.getElementById('videoBtn');
+  const shutter = document.getElementById('shutterBtn');
+  try {
+    const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const combined = new MediaStream([
+      ...cameraStream.getVideoTracks(),
+      ...audioStream.getAudioTracks(),
+    ]);
+    mediaRecorder = new MediaRecorder(combined);
+    videoChunks = [];
+    mediaRecorder.ondataavailable = e => videoChunks.push(e.data);
+    mediaRecorder.onstop = () => saveVideoRecording(audioStream);
+    mediaRecorder.start();
+    videoRecording = true;
+    btn.textContent = '⏹️';
+    shutter.classList.add('recording');
+    toast('● Recording video...', '', 99999);
+  } catch(_) { toast('Mic permission needed for video', 'error'); }
+}
+
+function stopVideoRecord() {
+  if (mediaRecorder && videoRecording) {
+    mediaRecorder.stop();
+    videoRecording = false;
+    const btn = document.getElementById('videoBtn');
+    btn.textContent = '🎬';
+    document.getElementById('shutterBtn').classList.remove('recording');
+    toast('Video saved!', 'success');
+    haptic('success');
+  }
+}
+
+function saveVideoRecording(audioStream) {
+  audioStream.getTracks().forEach(t => t.stop());
+  const blob = new Blob(videoChunks, { type: 'video/webm' });
+  const file = new File([blob], `video-${Date.now()}.webm`, { type: 'video/webm' });
+  M.uploadQueue.push({ id: Date.now(), file, status: 'pending' });
+  handleFiles([file]);
+  addActivity('green', `Video recorded: ${formatSize(blob.size)}`);
+}
+
+// ═══════════════════════════════════════════════════
+//  VOICE RECORDING
+// ═══════════════════════════════════════════════════
+let voiceRecorder = null;
+let voiceChunks = [];
+let voiceRecording = false;
+let voiceTimerInterval = null;
+let voiceStartTime = null;
+let voiceAnimInterval = null;
+let audioContext = null;
+let analyser = null;
+
+async function toggleRecording() {
+  if (voiceRecording) {
+    stopVoiceRecording();
+  } else {
+    await startVoiceRecording();
+  }
+}
+
+async function startVoiceRecording() {
+  haptic('heavy');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    voiceRecorder = new MediaRecorder(stream);
+    voiceChunks = [];
+    voiceRecorder.ondataavailable = e => voiceChunks.push(e.data);
+    voiceRecorder.onstop = () => { stream.getTracks().forEach(t => t.stop()); saveVoiceRecording(); };
+    voiceRecorder.start();
+    voiceRecording = true;
+    voiceStartTime = Date.now();
+
+    // UI
+    document.getElementById('voiceBtn').classList.add('recording');
+    document.getElementById('voiceStatus').textContent = 'Recording... tap to stop';
+    document.getElementById('voiceStatus').classList.add('recording');
+    document.getElementById('voiceTimer').classList.add('show');
+    document.querySelectorAll('.voice-ring').forEach(r => r.classList.add('recording'));
+
+    voiceTimerInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - voiceStartTime) / 1000);
+      const m = Math.floor(elapsed / 60);
+      const s = elapsed % 60;
+      document.getElementById('voiceTimer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    }, 500);
+
+    // Animate waveform
+    const bars = document.querySelectorAll('.waveform-bar');
+    voiceAnimInterval = setInterval(() => {
+      bars.forEach(bar => {
+        const h = Math.random() * 30 + 6;
+        bar.style.height = h + 'px';
+        bar.style.opacity = 0.5 + Math.random() * 0.5;
+      });
+    }, 100);
+
+    // Audio analyzer for real waveform
+    try {
+      audioContext = new AudioContext();
+      analyser = audioContext.createAnalyser();
+      const src = audioContext.createMediaStreamSource(stream);
+      src.connect(analyser);
+    } catch(_) {}
+
+  } catch(e) {
+    toast('Microphone permission denied', 'error');
+  }
+}
+
+function stopVoiceRecording() {
+  if (!voiceRecorder || !voiceRecording) return;
+  haptic('medium');
+  voiceRecorder.stop();
+  voiceRecording = false;
+  clearInterval(voiceTimerInterval);
+  clearInterval(voiceAnimInterval);
+
+  document.getElementById('voiceBtn').classList.remove('recording');
+  document.getElementById('voiceStatus').textContent = 'Tap to start recording';
+  document.getElementById('voiceStatus').classList.remove('recording');
+  document.getElementById('voiceTimer').classList.remove('show');
+  document.querySelectorAll('.voice-ring').forEach(r => r.classList.remove('recording'));
+  document.querySelectorAll('.waveform-bar').forEach(b => { b.style.height = '8px'; b.style.opacity = '1'; });
+
+  if (audioContext) { audioContext.close(); audioContext = null; }
+}
+
+function saveVoiceRecording() {
+  const blob = new Blob(voiceChunks, { type: 'audio/webm' });
+  const duration = Math.floor((Date.now() - voiceStartTime) / 1000);
+  const id = Date.now();
+  const name = `voice-${new Date().toLocaleTimeString()}.webm`;
+  const url = URL.createObjectURL(blob);
+
+  const list = document.getElementById('recordingsList');
+  const card = document.getElementById('recordingsCard');
+  card.style.display = '';
+
+  const el = document.createElement('div');
+  el.className = 'recording-item';
+  el.innerHTML = `
+    <audio id="aud-${id}" src="${url}" style="display:none"></audio>
+    <div class="recording-play" onclick="playRecording('${id}')">▶</div>
+    <div class="recording-info">
+      <div class="recording-name">${name}</div>
+      <div class="recording-meta">${formatDuration(duration)} · ${formatSize(blob.size)}</div>
+    </div>
+    <button class="recording-send" onclick="sendVoiceRecording('${id}', '${name}')">Send ↑</button>`;
+  list.prepend(el);
+
+  addActivity('green', `Voice note recorded (${formatDuration(duration)})`);
+  toast('✓ Recording saved', 'success');
+  haptic('success');
+
+  // Store blob for sending
+  el._blob = blob;
+  el._id = id;
+}
+
+function playRecording(id) {
+  haptic('light');
+  const aud = document.getElementById(`aud-${id}`);
+  if (aud.paused) aud.play();
+  else aud.pause();
+}
+
+async function sendVoiceRecording(id, name) {
+  haptic('heavy');
+  const el = document.querySelector(`.recording-item:has(#aud-${id})`);
+  const blob = el?._blob;
+  if (!blob) { toast('Recording not found', 'error'); return; }
+
+  const file = new File([blob], name, { type: 'audio/webm' });
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('message', 'Voice note from ODIN Mobile');
+  fd.append('filename', name);
+
+  try {
+    const res = await fetch(`${baseUrl()}/api/upload`, {
+      method: 'POST',
+      headers: M.apiKey ? { 'Authorization': `Bearer ${M.apiKey}` } : {},
+      body: fd,
+    });
+    if (res.ok) {
+      toast('✓ Voice note sent!', 'success');
+      M.uploadCount++;
+      localStorage.setItem('odin_upload_count', M.uploadCount);
+    } else {
+      throw new Error('upload failed');
+    }
+  } catch(_) {
+    // Fallback: send as base64
+    const reader = new FileReader();
+    reader.onload = async e => {
+      try {
+        await fetch(`${baseUrl()}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(M.apiKey ? { 'Authorization': `Bearer ${M.apiKey}` } : {}) },
+          body: JSON.stringify({ message: '[VOICE NOTE ATTACHED]', file_name: name, file_type: 'audio/webm', file_content: e.target.result, history: [] }),
+        });
+        toast('✓ Voice note sent!', 'success');
+      } catch(_) { toast('✗ Send failed. Is ODIN_CORE running?', 'error'); }
+    };
+    reader.readAsDataURL(blob);
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  CHAT
+// ═══════════════════════════════════════════════════
+function chatKeyHandler(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMsg();
+  }
+}
+
+function growChatInput(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+async function sendChatMsg() {
+  const input = document.getElementById('chatTextInput');
+  const text = input.value.trim();
+  if (!text) return;
+  haptic('light');
+  input.value = '';
+  input.style.height = '';
+  addMsg('user', text);
+  document.getElementById('chatSendBtn').disabled = true;
+  M.chatHistory.push({ role: 'user', content: text });
+
+  const typing = showTyping();
+
+  try {
+    const res = await fetch(`${baseUrl()}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(M.apiKey ? { 'Authorization': `Bearer ${M.apiKey}` } : {}) },
+      body: JSON.stringify({
+        message: text,
+        history: M.chatHistory.slice(-8),
+        agent_mode: M.agentMode,
+      }),
+    });
+    typing.remove();
+    if (res.ok) {
+      const data = await res.json();
+      const reply = data.reply || data.message || data.response || JSON.stringify(data);
+      M.chatHistory.push({ role: 'assistant', content: reply });
+      addMsg('odin', reply);
+      haptic('light');
+      setConnected(true);
+      M.msgCount++;
+      localStorage.setItem('odin_msg_count', M.msgCount);
+      document.getElementById('stMsgs').textContent = M.msgCount;
+    } else {
+      addMsg('odin', `⚠ HTTP ${res.status} from ODIN_CORE`);
+    }
+  } catch(_) {
+    typing.remove();
+    addMsg('odin', `✗ Can't reach ODIN_CORE at ${M.host}:${M.port}.\n\nTip: Check Settings → Host/IP. For remote access, use your Tailscale IP.`);
+    setConnected(false);
+  }
+  document.getElementById('chatSendBtn').disabled = false;
+}
+
+function addMsg(role, text) {
+  const container = document.getElementById('chatMessages');
+  const el = document.createElement('div');
+  el.className = `msg-row ${role}`;
+  const avatar = role === 'user' ? '👤' : '⚡';
+  const fmt = formatMsgText(text);
+  el.innerHTML = `<div class="msg-avatar">${avatar}</div><div class="msg-bubble">${fmt}</div>`;
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+
+  // Badge if not on chat screen
+  if (role === 'odin' && M.activeNav !== 'nav-chat') {
+    const badge = document.getElementById('chatBadge');
+    badge.textContent = parseInt(badge.textContent || '0') + 1;
+    badge.classList.add('show');
+  }
+}
+
+function formatMsgText(text) {
+  let t = text
+    .replace(/```(\w*)\n([\s\S]*?)```/g, (_, l, c) => `<pre><code>${esc(c.trim())}</code></pre>`)
+    .replace(/`([^`]+)`/g, (_, c) => `<code>${esc(c)}</code>`)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+  return t;
+}
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function showTyping() {
+  const container = document.getElementById('chatMessages');
+  const el = document.createElement('div');
+  el.className = 'msg-row odin';
+  el.innerHTML = `<div class="msg-avatar">⚡</div><div class="msg-bubble"><div class="typing-bubble"><div class="t-dot"></div><div class="t-dot"></div><div class="t-dot"></div></div></div>`;
+  container.appendChild(el);
+  container.scrollTop = container.scrollHeight;
+  return el;
+}
+
+function attachFilesToChat(files) {
+  if (!files || files.length === 0) return;
+  haptic('medium');
+  Array.from(files).forEach(file => {
+    addMsg('user', `📎 Attached: ${file.name} (${formatSize(file.size)})`);
+    M.uploadQueue.push({ id: Date.now(), file, status: 'pending' });
+  });
+  toast(`${files.length} file(s) queued — go to Upload tab to send`, '', 3000);
+}
+
+function updateAgentBar() {
+  M.agentMode = document.getElementById('tog-agent').classList.contains('on');
+  const bar = document.getElementById('agentBar');
+  bar.classList.toggle('hidden', !M.agentMode);
+}
+
+// ═══════════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════════
+function openSettings() {
+  haptic('light');
+  document.getElementById('settingsSheet').classList.add('open');
+  document.getElementById('sheetOverlay').classList.add('open');
+}
+function closeSettings() {
+  document.getElementById('settingsSheet').classList.remove('open');
+  document.getElementById('sheetOverlay').classList.remove('open');
+}
+
+function saveSettings() {
+  M.host = document.getElementById('set-host').value || 'localhost';
+  M.port = parseInt(document.getElementById('set-port').value) || 8000;
+  M.apiKey = document.getElementById('set-apikey').value;
+  M.https = document.getElementById('tog-https').classList.contains('on');
+  M.haptic = document.getElementById('tog-haptic').classList.contains('on');
+
+  localStorage.setItem('odin_host', M.host);
+  localStorage.setItem('odin_port', M.port);
+  localStorage.setItem('odin_api_key', M.apiKey);
+  localStorage.setItem('odin_https', M.https ? '1' : '0');
+
+  document.getElementById('connLabel').textContent = `:${M.port}`;
+  document.getElementById('stPort2').textContent = M.port;
+
+  closeSettings();
+  toast('✓ Settings saved', 'success');
+  haptic('success');
+  pingServer();
+}
+
+// ═══════════════════════════════════════════════════
+//  ACTIVITY LOG
+// ═══════════════════════════════════════════════════
+function addActivity(color, text) {
+  const feed = document.getElementById('activityFeed');
+  const el = document.createElement('div');
+  el.className = 'activity-item';
+  el.innerHTML = `<span class="activity-dot ${color}"></span><span class="activity-text">${text}</span><span class="activity-time">${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>`;
+  feed.insertBefore(el, feed.firstChild);
+  if (feed.children.length > 10) feed.lastChild.remove();
+}
+function addActivityRaw(text) { addActivity('blue', text.slice(0, 60) + (text.length > 60 ? '...' : '')); }
+
+// ═══════════════════════════════════════════════════
+//  INSTALL PWA
+// ═══════════════════════════════════════════════════
+let installDeferred = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installDeferred = e;
+  setTimeout(() => {
+    if (!localStorage.getItem('odin_install_dismissed')) {
+      document.getElementById('installBanner').classList.add('show');
+    }
+  }, 3000);
+});
+
+async function promptInstall() {
+  haptic('medium');
+  if (installDeferred) {
+    installDeferred.prompt();
+    const result = await installDeferred.userChoice;
+    if (result.outcome === 'accepted') {
+      toast('✓ ODIN installed!', 'success');
+      dismissInstall();
+    }
+    installDeferred = null;
+  } else {
+    // iOS instructions
+    toast('On iOS: Share → Add to Home Screen', '', 4000);
+    addMsg('odin', `📱 **Install on iOS:**\n1. Tap the Share button (box with arrow up)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add"\n\n📱 **Install on Android:**\nChrome will show an "Add to Home Screen" prompt automatically. Or tap the menu (⋮) → "Add to Home Screen".`);
+    goScreen('screenChat', 'nav-chat');
+  }
+}
+
+function dismissInstall() {
+  document.getElementById('installBanner').classList.remove('show');
+  localStorage.setItem('odin_install_dismissed', '1');
+}
+
+// ═══════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════
+function getFileIcon(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  const map = { py:'🐍', js:'📜', ts:'📘', html:'🌐', css:'🎨', json:'📋', md:'📄', txt:'📃', sh:'⬛', mp4:'🎥', webm:'🎥', mp3:'🎵', wav:'🎵', pdf:'📑', jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🖼️', webp:'🖼️' };
+  return map[ext] || '📁';
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function formatDuration(s) {
+  const m = Math.floor(s / 60);
+  return m > 0 ? `${m}m ${s % 60}s` : `${s}s`;
+}
+
+// Stop camera when leaving camera screen
+document.querySelectorAll('.nav-item:not(#nav-camera)').forEach(el => {
+  el.addEventListener('click', () => {
+    if (M.activeNav === 'nav-camera') {
+      stopCamera();
+    }
+  });
+});
+
+// Clear chat badge when entering chat
+document.getElementById('nav-chat').addEventListener('click', () => {
+  document.getElementById('chatBadge').textContent = '0';
+  document.getElementById('chatBadge').classList.remove('show');
+});
+
+// Drag & drop
+const dropZone = document.getElementById('dropZone');
+['dragover', 'dragenter'].forEach(ev => {
+  dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+});
+['dragleave', 'drop'].forEach(ev => {
+  dropZone.addEventListener(ev, e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    if (ev === 'drop' && e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+  });
+});
+
+// ═══════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════
+(function boot() {
+  // Load settings
+  document.getElementById('set-host').value = M.host;
+  document.getElementById('set-port').value = M.port;
+  document.getElementById('set-apikey').value = M.apiKey;
+  if (M.https) document.getElementById('tog-https').classList.add('on');
+
+  document.getElementById('stPort2').textContent = M.port;
+  document.getElementById('stUploads').textContent = M.uploadCount;
+  document.getElementById('stMsgs').textContent = M.msgCount;
+
+  buildModulesList();
+  pingServer();
+  setInterval(pingServer, 30000);
+  addActivity('blue', 'ODIN Mobile initialized');
+})();
+
+// Service Worker for PWA
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'odin-mobile-v1';
+    self.addEventListener('fetch', e => {
+      if (e.request.url.includes('localhost') || e.request.url.includes('192.168') || e.request.url.includes('100.')) return;
+      e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+}
+</script>
+
+<!--
+════════════════════════════════════════════════════════════════
+  ODIN MOBILE — SETUP GUIDE
+════════════════════════════════════════════════════════════════
+
+  QUICKSTART
+  ──────────
+  1. Start ODIN_CORE: python start.py in F:\ODIN\ODIN_CORE
+  2. Open ODIN_MOBILE.html in Chrome (Android) or Safari (iOS)
+  3. Tap ⚙ Settings → set Host to your PC's local IP (e.g. 192.168.1.x)
+  4. Set Port to 8000 → Save → tap "Test Connection"
+
+
+  FINDING YOUR PC's LOCAL IP
+  ──────────────────────────
+  Windows: Open Command Prompt → ipconfig → look for IPv4 Address
+  
+  Example: Host = 192.168.1.105, Port = 8000
+  
+  For remote access outside home network: use Tailscale IP (100.x.x.x)
+    → Both PC and phone must be on Tailscale
+    → Tailscale IP never changes — set it once
+
+
+  BACKEND ENDPOINTS NEEDED
+  ────────────────────────
+  All in your ODIN_CORE main.py:
+
+  POST /api/chat
+    (already required by ODIN IDE - same endpoint)
+    Body: { message, history, agent_mode, file_name?, file_content?, file_type? }
+    Returns: { reply: str }
+
+  POST /api/upload    ← Add this for native file upload
+    Body: multipart/form-data with 'file' and 'message' fields
+    Returns: { reply: str, filename: str, size: int }
+    
+    Example FastAPI route:
+    
+    from fastapi import UploadFile, File, Form
+    import shutil, os
+    
+    @app.post("/api/upload")
+    async def upload_file(
+        file: UploadFile = File(...),
+        message: str = Form(""),
+        filename: str = Form("")
+    ):
+        upload_dir = "F:/ODIN/uploads"
+        os.makedirs(upload_dir, exist_ok=True)
+        dest = os.path.join(upload_dir, file.filename)
+        with open(dest, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+        return {
+            "reply": f"Received {file.filename} ({file.size} bytes). {message}",
+            "filename": file.filename,
+            "size": file.size,
+        }
+
+  NOTE: If /api/upload is not set up, the app automatically falls back to
+  sending files as base64 via /api/chat — so it always works.
+
+
+  INSTALL AS APP (iOS)
+  ────────────────────
+  1. Open ODIN_MOBILE.html in Safari
+  2. Tap the Share button (box with up arrow)
+  3. Tap "Add to Home Screen"
+  4. Name it "ODIN" → tap Add
+  → App icon appears on your home screen, opens full-screen
+
+  INSTALL AS APP (Android)
+  ────────────────────────
+  1. Open ODIN_MOBILE.html in Chrome
+  2. Chrome will show "Add to Home Screen" banner automatically
+     OR tap menu (⋮) → "Add to Home Screen" or "Install App"
+  3. Tap Install
+  → App appears in app drawer and home screen
+
+  TAILSCALE SETUP (access from anywhere)
+  ────────────────────────────────────────
+  1. Install Tailscale on your PC: tailscale.com
+  2. Install Tailscale on phone
+  3. Sign in to same account on both
+  4. Find your PC's Tailscale IP: ipconfig → Tailscale adapter (100.x.x.x)
+  5. In ODIN Mobile Settings: Host = 100.x.x.x, HTTPS = OFF (for local Tailscale)
+  → Now you can access ODIN from anywhere your phone has internet
+
+════════════════════════════════════════════════════════════════
+-->
+</body>
+</html>

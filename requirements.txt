@@ -1,20 +1,56 @@
-fastapi>=0.110.0
-uvicorn[standard]>=0.27.0
-httpx>=0.27.0
-pydantic>=2.0
-pydantic-settings>=2.0
-python-dotenv>=1.0.0
-openai>=1.30.0
-anthropic>=0.40.0
-pillow>=10.0.0
-mss>=9.0.0
-pyautogui>=0.9.54
-sqlalchemy>=2.0.0
-websockets>=12.0
-groq>=0.4.0
+# ODIN-INFO Dependencies
+# Information processing and communication
 
-# Optional: voice / NLP / vision fallbacks (install as needed)
-# spacy>=3.7.0
-# pyaudio
-# pvporcupine
-# google-generativeai
+# Email processing
+imaplib2>=3.6
+smtplib2
+email-validator>=1.3.0
+beautifulsoup4>=4.11.0
+
+# Document processing
+python-docx>=0.8.11
+PyPDF2>=3.0.1
+reportlab>=3.6.0
+markdown>=3.4.0
+pandoc>=2.3.0
+
+# Image generation and processing
+openai>=0.27.0
+Pillow>=9.4.0
+opencv-python>=4.7.0
+imageio>=2.25.0
+
+# Web research and scraping
+scrapy>=2.8.0
+newspaper3k>=0.2.8
+goose3>=3.1.9
+trafilatura>=1.4.0
+
+# News and RSS
+feedparser>=6.0.10
+newspaper>=0.3.0
+
+# Text analysis and NLP
+nltk>=3.8.0
+spacy>=3.5.0
+transformers>=4.26.0
+torch>=1.13.0
+
+# Code analysis
+pygments>=2.14.0
+astroid>=2.14.0
+radon>=5.1.0
+
+# Communication APIs
+twilio>=7.16.0
+telethon>=1.27.0
+discord.py>=2.2.0
+
+# File transmission
+ftplib
+paramiko>=3.0.0
+boto3>=1.26.0
+
+# Search and research
+google-search-results>=2.4.0
+duckduckgo-search>=2.8.0

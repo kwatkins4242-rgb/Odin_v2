@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ODIN HEADHUNTER — Bug Hunt</title>
+<link rel="stylesheet" href="hunt.css"/>
+</head>
+<body>
+
+<div id="hunt-topbar">
+  <div class="hunt-title">
+    <a id="back-link" href="../dashboard.html">← DASHBOARD</a>
+    <h1>HEADHUNTER</h1>
+    <span>// BUG HUNTING INTERFACE</span>
+  </div>
+  <div class="hunt-controls">
+    <button class="h-btn" onclick="clearOutput()">CLEAR</button>
+    <button class="h-btn" onclick="resetCtx()">RESET</button>
+    <button class="h-btn" id="mode-btn" onclick="cycleMode()">MODE: RECON</button>
+  </div>
+</div>
+
+<div id="hunt-layout">
+
+  <!-- SIDEBAR: Quick Tools -->
+  <div id="hunt-sidebar">
+
+    <div id="target-bar">
+      <div id="target-label">// TARGET</div>
+      <input id="target-input" type="text" placeholder="IP / URL / scope..."/>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">// QUICK PROMPTS</div>
+      <button class="tool-btn" onclick="quickPrompt('recon')">🔍 RECON TARGET</button>
+      <button class="tool-btn" onclick="quickPrompt('ports')">📡 PORT SCAN PLAN</button>
+      <button class="tool-btn" onclick="quickPrompt('cve')">⚠️ CVE LOOKUP</button>
+      <button class="tool-btn" onclick="quickPrompt('xss')">💉 XSS VECTORS</button>
+      <button class="tool-btn" onclick="quickPrompt('sqli')">🗄️ SQL INJECTION</button>
+      <button class="tool-btn" onclick="quickPrompt('payload')">🧨 PAYLOAD GEN</button>
+      <button class="tool-btn" onclick="quickPrompt('report')">📋 WRITE REPORT</button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">// KALI TOOLS</div>
+      <button class="tool-btn" onclick="quickPrompt('nmap')">NMAP COMMAND</button>
+      <button class="tool-btn" onclick="quickPrompt('gobuster')">GOBUSTER</button>
+      <button class="tool-btn" onclick="quickPrompt('nikto')">NIKTO</button>
+      <button class="tool-btn" onclick="quickPrompt('burp')">BURP SETUP</button>
+      <button class="tool-btn" onclick="quickPrompt('metasploit')">METASPLOIT</button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">// SESSION</div>
+      <button class="tool-btn" onclick="exportSession()">EXPORT LOG</button>
+    </div>
+  </div>
+
+  <!-- MAIN OUTPUT + INPUT -->
+  <div id="hunt-main">
+    <div id="hunt-output">
+      <div class="hmsg sys">
+        <div class="hmsg-label">// SYSTEM</div>
+        <div class="hmsg-body">ODIN HEADHUNTER online. Set a target above, pick a mode, and start hunting. I'll guide recon, enumerate attack surface, suggest payloads, and help write reports.
+
+Current mode: RECON
+Kali Linux integration: ready for command generation.</div>
+      </div>
+    </div>
+
+    <div id="hunt-input-bar">
+      <textarea id="hunt-input" placeholder="Describe the bug, paste a response, ask for a payload..." rows="1"></textarea>
+      <button id="hunt-send" onclick="sendHunt()">HUNT ›</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const MODES = ['RECON','ENUM','EXPLOIT','REPORT'];
+let modeIdx = 0;
+let history = [];
+
+const SYSTEM = `You are ODIN Headhunter — Charles's AI bug hunting co-pilot. You assist with ethical penetration testing, bug bounty research, and security analysis.
+
+Your role:
+- Help plan and execute recon, enumeration, and exploitation phases
+- Generate precise Kali Linux commands with flags explained
+- Suggest payloads for XSS, SQLi, SSRF, IDOR, RCE and other common vulns
+- Analyze HTTP responses, error messages, and code snippets for vulnerabilities
+- Write professional bug bounty reports when asked
+- Always operate within the defined scope — remind Charles if a target looks out of scope
+
+Current mode is injected per message. Modes: RECON, ENUM, EXPLOIT, REPORT.
+Be direct. Format commands in code blocks. No filler. Think like a senior pentester.`;
+
+const QUICK_PROMPTS = {
+  recon:      t => `Target: ${t || '[TARGET]'}. Start full passive recon. What should I gather first?`,
+  ports:      t => `Target: ${t || '[TARGET]'}. Give me a layered nmap port scan strategy with exact commands.`,
+  cve:        t => `Search known CVEs for: ${t || '[SOFTWARE/VERSION]'}. Which are most critical and exploitable?`,
+  xss:        t => `Target: ${t || '[TARGET]'}. Generate a range of XSS payloads to test, including DOM-based and blind XSS.`,
+  sqli:       t => `Target: ${t || '[TARGET]'}. Give me manual SQLi test payloads for login forms and URL parameters.`,
+  payload:    t => `Generate a targeted payload for: ${t || '[DESCRIBE VULNERABILITY]'}`,
+  report:     t => `Write a professional bug bounty report for a vulnerability I found on: ${t || '[TARGET]'}. Ask me for the details.`,
+  nmap:       t => `Give me the best nmap command for enumerating ${t || '[TARGET]'} — services, versions, scripts.`,
+  gobuster:   t => `Gobuster command to bruteforce directories and files on ${t || '[TARGET]'} with a good wordlist strategy.`,
+  nikto:      t => `Nikto scan command and what to look for in the results on ${t || '[TARGET]'}.`,
+  burp:       t => `How to set up Burp Suite to intercept and test ${t || '[TARGET]'} — proxy setup and key tests.`,
+  metasploit: t => `Walk me through using Metasploit against ${t || '[TARGET]'} for the vulnerability I describe.`,
+};
+
+function cycleMode() {
+  modeIdx = (modeIdx + 1) % MODES.length;
+  document.getElementById('mode-btn').textContent = 'MODE: ' + MODES[modeIdx];
+  addSysMsg('Mode switched to: ' + MODES[modeIdx]);
+}
+
+function quickPrompt(key) {
+  const target = document.getElementById('target-input').value.trim();
+  const promptFn = QUICK_PROMPTS[key];
+  if (promptFn) {
+    document.getElementById('hunt-input').value = promptFn(target);
+    document.getElementById('hunt-input').focus();
+  }
+}
+
+function addMsg(role, text) {
+  const out = document.getElementById('hunt-output');
+  const div = document.createElement('div');
+  div.className = 'hmsg ' + role;
+  const label = document.createElement('div');
+  label.className = 'hmsg-label';
+  label.textContent = role === 'user' ? '// CHARLES' : role === 'hunter' ? '// HEADHUNTER' : '// SYSTEM';
+  const body = document.createElement('div');
+  body.className = 'hmsg-body';
+  const formatted = text.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre>$2</pre>');
+  body.innerHTML = formatted;
+  div.appendChild(label);
+  div.appendChild(body);
+  out.appendChild(div);
+  out.scrollTop = out.scrollHeight;
+}
+
+function addSysMsg(text) {
+  addMsg('sys', text);
+}
+
+function showThinking() {
+  const out = document.getElementById('hunt-output');
+  const wrap = document.createElement('div');
+  wrap.className = 'hmsg hunter';
+  wrap.id = 'hunt-thinking';
+  const label = document.createElement('div');
+  label.className = 'hmsg-label';
+  label.textContent = '// HEADHUNTER';
+  const dots = document.createElement('div');
+  dots.className = 'hunt-thinking';
+  dots.innerHTML = '<span></span><span></span><span></span>';
+  wrap.appendChild(label);
+  wrap.appendChild(dots);
+  out.appendChild(wrap);
+  out.scrollTop = out.scrollHeight;
+}
+
+function removeThinking() {
+  const t = document.getElementById('hunt-thinking');
+  if (t) t.remove();
+}
+
+async function sendHunt() {
+  const input = document.getElementById('hunt-input');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  const target = document.getElementById('target-input').value.trim();
+  const mode   = MODES[modeIdx];
+  const content = `[MODE: ${mode}]${target ? ` [TARGET: ${target}]` : ''}\n${text}`;
+
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('hunt-send').disabled = true;
+
+  addMsg('user', text);
+  history.push({ role: 'user', content });
+  showThinking();
+
+  const key = window.ODIN_KEY || localStorage.getItem('odin_api_key') || prompt('Enter Anthropic API key:');
+  if (key && !localStorage.getItem('odin_api_key')) localStorage.setItem('odin_api_key', key);
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:2048,
+        system: SYSTEM,
+        messages: history
+      })
+    });
+    removeThinking();
+    const data  = await resp.json();
+    const reply = data.content[0].text;
+    history.push({ role:'assistant', content: reply });
+    addMsg('hunter', reply);
+  } catch(e) {
+    removeThinking();
+    addMsg('sys', 'ERROR: ' + e.message);
+  }
+
+  document.getElementById('hunt-send').disabled = false;
+  input.focus();
+}
+
+function clearOutput() {
+  document.getElementById('hunt-output').innerHTML = '';
+}
+
+function resetCtx() {
+  history = [];
+  addSysMsg('Context reset. Fresh hunt session.');
+}
+
+function exportSession() {
+  const lines = history.map(m => `[${m.role.toUpperCase()}]\n${m.content}\n`).join('\n---\n');
+  const blob  = new Blob([lines], { type: 'text/plain' });
+  const a     = document.createElement('a');
+  a.href      = URL.createObjectURL(blob);
+  a.download  = 'odin-hunt-session-' + Date.now() + '.txt';
+  a.click();
+}
+
+// Input auto-resize + enter key
+const inp = document.getElementById('hunt-input');
+inp.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHunt(); }
+});
+inp.addEventListener('input', () => {
+  inp.style.height = 'auto';
+  inp.style.height = Math.min(inp.scrollHeight, 100) + 'px';
+});
+</script>
+</body>
+</html>

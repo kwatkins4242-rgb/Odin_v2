@@ -1,0 +1,395 @@
+
+BRAIN
+A I   S Y S T E M   W O R K O R D E R
+
+Owner: Charles   //   Platform: Ubuntu Linux   //   Primary Dev Tool: Cursor AI
+
+This document is the single source of truth for the entire Brain AI stack. Cursor reads this. Charles references this. No other briefing exists.
+
+
+1.  WHAT WE ARE BUILDING
+Brain is Charles's personal AI operating system. It runs locally on Ubuntu Linux and ties together voice, vision, memory, web automation, file control, and multiple AI providers into one unified stack. Think of it like a personal Jarvis — but real, local, and fully under Charles's control.
+
+This is not a chatbot. This is an agent operating system with:
+    • A reasoning brain that thinks, remembers, and acts
+    • Eyes (vision module) that can see the screen
+    • Ears and a voice (wake word, STT, TTS)
+    • Hands (keyboard/mouse automation via bridge)
+    • A bug hunter that monitors and self-repairs
+    • A bridge to n8n for workflow automation
+    • A memory system with short-term, long-term, and layered storage
+
+Charles built the first version of this system (called Odin) from scratch over 3 months with zero prior coding experience. It was destroyed by malware. This is the rebuild — cleaner, modular, Ubuntu-native.
+
+⚑  CURSOR: Do NOT rename modules to 'Odin'. Everything is named by function: brain, sense, bridge, hunter, etc.
+
+2.  PLATFORM & ENVIRONMENT
+Operating System
+    • Ubuntu Linux (NOT Windows — all paths, signals, and process handling must be Linux-native)
+    • No backslashes in paths. No C:\ anything. Use ~/AI/brain/ as root.
+    • Use python3, not python
+    • Use SIGTERM / SIGKILL for process management — no CTRL_BREAK_EVENT
+    • Virtual environment expected at ~/AI/brain/venv — always activate before running
+
+Primary Dev Tool
+    • Cursor AI — reads this workorder and the existing files to understand context
+    • Claude (this conversation) — architecture, planning, new file generation
+    • These two tools are the ONLY helpers. No team. No other context.
+
+Project Root
+~/AI/brain/
+⚑  All file paths in all Python files must use pathlib.Path(__file__).resolve().parent — never hardcoded strings.
+
+Python Dependencies (requirements.txt)
+    • fastapi, uvicorn — all services are FastAPI
+    • httpx — async HTTP between services
+    • pydantic, pydantic-settings — settings and models
+    • python-dotenv — .env loading
+    • openai — used for ALL LLM providers (OpenAI-compatible API)
+    • spacy — NLP for memory module
+    • pyautogui — mouse/keyboard control (bridge hands)
+    • pillow — image handling for vision
+    • mss — screen capture
+    • sqlalchemy — SQLite memory database
+    • websockets — real-time dashboard updates
+    • groq — voice transcription (Whisper)
+    • pyaudio — microphone input for wake word / STT
+    • pvporcupine — wake word detection (Picovoice)
+
+3.  AI PROVIDERS & PRIORITY ORDER
+All providers use the OpenAI-compatible SDK. Switching providers = changing base_url + api_key. No special SDKs except Groq for voice.
+
+#
+Provider
+Model
+Role
+1
+Moonshot / Kimi
+kimi-k2-turbo-preview
+PRIMARY brain — reasoning + thinking stream
+2
+Qwen (Alibaba Cloud)
+qwen-max / qwen-vl
+Co-primary — may become main. Vision capable.
+3
+NVIDIA NIM
+moonshotai/kimi-k2.5
+FALLBACK — always available if Moonshot is down
+4
+Groq
+whisper-large-v3
+VOICE ONLY — STT transcription, not chat
+
+⚑  CURSOR: All LLM calls go through a single call_ai() function in brain/core/engine.py. Never call providers directly from feature code.
+
+4.  FILE & FOLDER STRUCTURE
+This is the target structure. Some files exist from the original Odin system and need to be rewired for Ubuntu. Some need to be rebuilt from scratch. Status column tells Cursor what to do.
+
+Path
+Status
+Notes
+main.py
+EXISTS
+Root orchestrator — boots all services in order. Ubuntu-native. DONE.
+settings.py
+REBUILD
+Remove all Windows paths. Use pathlib. Single source of truth for all ports/keys.
+bridge.py
+REBUILD
+Port from Windows to Ubuntu. Remove Windows file paths. All tool routes intact.
+.env
+CREATE
+All API keys go here. Never hardcode keys in any Python file.
+requirements.txt
+CREATE
+Full dependency list — see Section 2.
+start.sh
+CREATE
+Shell script: activate venv, then python3 main.py
+M1/main.py
+REBUILD
+Brain core FastAPI — port to Ubuntu paths, update provider priority to Moonshot->Qwen->NVIDIA.
+M1/core/engine.py
+CREATE
+Extracted call_ai() and call_vision_ai() into standalone module.
+M1/core/tool_dispatcher.py
+EXISTS
+Needs review — verify tool names match bridge routes.
+M1/Brain/config/personality.py
+EXISTS
+Keep. Personality: sharp, funny, swears occasionally, short responses, calls Charles 'sir'.
+M1/memory_pro/main.py
+REBUILD
+Memory Pro service. Ubuntu paths. Port stays 8001.
+M1/memory_pro/database/db_manager.py
+EXISTS
+SQLite manager — verify Linux path handling.
+M1/memory_pro/nlp_pro.py
+EXISTS
+spaCy NLP layer — check spaCy model install on Ubuntu.
+M1/dashboards/server.py
+CREATE
+Simple static file server for dashboard HTML. Port 7500.
+M2/main.py
+CREATE
+Sense module entry point. Port 8000. Boots voice + vision subsystems.
+M2/voice/wake.py
+CREATE
+Wake word detection using Picovoice Porcupine.
+M2/voice/stt.py
+CREATE
+Speech-to-text via Groq Whisper.
+M2/voice/tts.py
+CREATE
+Text-to-speech output. Use pyttsx3 or edge-tts.
+M2/vision/screen.py
+CREATE
+Screen capture using mss. Returns base64 PNG.
+M2/vision/analyzer.py
+CREATE
+Sends screenshot to vision LLM (Moonshot vision / Qwen-VL).
+hunter/main.py
+CREATE
+Bug hunter service. Port 8500. Monitors other services, restarts dead ones.
+hunter/monitor.py
+CREATE
+Health check loop — pings all /health endpoints every 30s.
+hunter/reaper.py
+CREATE
+Restarts a dead service by name using subprocess.
+tools/web_search.py
+EXISTS
+Web search utility called via bridge run_command tool.
+tools/pyauto.py
+EXISTS
+Mouse/keyboard automation — verify pyautogui works on Ubuntu (needs display).
+utils/vision_utils.py
+EXISTS
+Screenshot capture utility — port mss calls for Linux.
+
+5.  PORT MAP
+Every service has a dedicated port. Health endpoint at /health is REQUIRED on every service.
+
+Service
+Port
+Status
+Description
+brain (M1)
+:7000
+REQUIRED
+Core brain, chat API, memory, dashboard serving
+memory_pro
+:7001
+REQUIRED
+Memory Pro REST API — SQLite + NLP
+dashboards
+:7500
+OPTIONAL
+Static dashboard server
+sense (M2)
+:8000
+OPTIONAL
+Voice + vision module
+bridge
+:8099
+REQUIRED
+Agent bridge — n8n relay, file/cmd tools
+hunter
+:8500
+OPTIONAL
+Bug hunter + service watchdog
+n8n
+:5678
+EXTERNAL
+n8n workflow engine — launched separately
+
+⚑  CURSOR: Brain at 7000, NOT 8000. Sense owns 8000. Do not mix these up — the old Odin had brain at 8000 which conflicted with sense.
+
+6.  MEMORY ARCHITECTURE
+Memory is the most important part of this system. It is what makes Brain feel alive between sessions. There are multiple layers:
+
+Layer 1 — Short Term (In-Memory)
+    • Conversation history held in RAM for the current session
+    • Last 20 turns passed into every LLM call as context
+    • Lives in ContextEngine — resets on service restart
+
+Layer 2 — Session Log (JSON)
+    • Every turn written to conversation_log.json
+    • Rolling 500 turn limit
+    • Location: ~/AI/brain/M1/memory_pro/data/conversation_log.json
+
+Layer 3 — Long Term (SQLite)
+    • Important facts, preferences, decisions extracted by NLP
+    • Searched via keyword + semantic similarity on every request (RAG)
+    • Managed by Memory Pro service at port 7001
+    • Database: ~/AI/brain/M1/memory_pro/data/odin_memory.db
+
+Layer 4 — Knowledge Graph (JSON)
+    • Entities, relationships, and topics extracted over time
+    • Used to give Brain awareness of ongoing projects, people, context
+    • Location: ~/AI/brain/M1/memory_pro/data/knowledge_graph.json
+
+Layer 5 — n8n Cloud Sync (Optional)
+    • Memory can be pushed to n8n webhook for cloud backup
+    • Falls back to local_recovery.json if n8n is offline
+    • Not required for core operation
+
+⚑  CURSOR: Memory search (RAG) runs on EVERY chat request. The top 3 relevant memory hits are prepended to the system prompt. This is what gives Brain long-term awareness.
+
+7.  TOOL USE & AGENT LOOP
+Brain is not a passive chatbot. It is an agent. When it receives a message it can use tools to act on the world before responding. This is the loop:
+
+User Message  →  RAG Memory Search  →  Build System Prompt  →  Call LLM →  Parse Tool Calls  →  Execute via Bridge  →  Feed Result Back to LLM →  Repeat up to 6 turns  →  Final response to user  →  Save to Memory
+
+Available Tools (via Bridge)
+    • list_dir — list files in a directory
+    • read_file — read file contents
+    • write_file — write or create a file
+    • delete_file — delete file or folder
+    • run_command — execute a shell command
+    • run_script — execute a Python script string
+    • make_dir — create a directory
+    • move_file — move or rename a file
+    • see — take a screenshot and analyze with vision LLM
+    • send_mail — send email via MailService
+    • check_mail — check inbox
+    • chat — send a message to Brain from n8n
+
+⚑  CURSOR: Tool calls are parsed from LLM output using [TOOL: name {json}] syntax. The ToolDispatcher in M1/core/tool_dispatcher.py handles parsing and HTTP calls to the bridge. Do not change this syntax.
+
+8.  THE BRIDGE
+The bridge is the hands of the system. It sits at port 8099 and exposes all tool routes. Brain calls the bridge via HTTP. n8n calls the bridge via HTTP. All calls require the X-ODIN-KEY header.
+
+    • Auth key stored in .env as BRIDGE_KEY
+    • All routes under /n8n/trigger accept a task name + payload
+    • Direct routes also available: /write_file, /read_file, /run_command, etc.
+    • Vision screenshot via /n8n/trigger with task: take_screenshot
+    • Screenshot uses mss on Linux — NOT Windows screen capture
+
+⚑  CURSOR: The bridge file (bridge.py) needs all Windows path references removed. screenshot capture must use mss library (Linux compatible). pyautogui needs a display — on Ubuntu use Xvfb if running headless.
+
+9.  SENSE MODULE (M2)
+Sense is the ears, mouth, and eyes of the system. It is one of the most important modules. It has three subsystems:
+
+Voice — Wake Word
+    • Picovoice Porcupine — always-on wake word detection
+    • Wake word triggers STT recording session
+    • Runs in background thread — does not block
+
+Voice — STT (Speech to Text)
+    • Records audio from microphone using pyaudio
+    • Sends audio to Groq Whisper API for transcription
+    • Returns text string to brain chat endpoint
+
+Voice — TTS (Text to Speech)
+    • Receives brain response text
+    • Speaks it aloud using edge-tts or pyttsx3
+    • edge-tts preferred — better voice quality, free
+
+Vision
+    • Screen capture using mss (Linux native)
+    • Screenshot sent as base64 to Moonshot vision or Qwen-VL
+    • Vision description returned as text context to brain
+    • Triggered by [TOOL: see] in agent loop
+
+⚑  CURSOR: On Ubuntu, pyautogui and mss require a running display (DISPLAY env var). If running headless, set up Xvfb. For desktop use, this works out of the box.
+
+10.  HUNTER (BUG HUNTER / WATCHDOG)
+Hunter is a background service that keeps everything else alive. It monitors all services and restarts them if they die.
+
+    • Runs health checks on all services every 30 seconds
+    • If a service fails 3 consecutive checks, it is restarted
+    • Uses subprocess to relaunch the correct main.py for each service
+    • Logs all events to hunter/logs/hunter.log
+    • Exposes /health and /status endpoints for dashboard
+    • Has a /restart/{service_name} endpoint for manual restarts
+
+⚑  CURSOR: Hunter must NOT restart itself. Build a self-exclusion check. Also exclude n8n — that is external.
+
+11.  PERSONALITY
+Brain has a personality. This is not optional. The personality file lives at:
+M1/Brain/config/personality.py
+
+Core Traits
+    • Sharp, direct, no fluff — gets to the point
+    • Highly capable — coding, teaching, research, system management
+    • Funny — dry humor, occasional sarcasm
+    • Swears occasionally — natural, not forced. Not every response.
+    • Calls Charles 'sir' — always
+    • Short and sweet by default — does not waste tokens
+    • Does not apologize or hedge unnecessarily
+    • Takes ownership — 'I will handle that' not 'I can try to...'
+
+Wake / Voice Specific
+    • Voice responses must be SHORT — spoken word, not essays
+    • No markdown in voice responses — no asterisks, no bullet points
+    • Confirm commands before executing destructive actions
+
+⚑  CURSOR: The personality is loaded hot-reload every turn from the personality.py file. Do not cache it. This allows Charles to edit the personality without restarting the service.
+
+12.  SETTINGS — CRITICAL RULES
+Settings is the single source of truth for the entire stack. All configuration lives in settings.py and is loaded from .env.
+
+Rules Cursor Must Follow
+    • ALL API keys go in .env — never hardcoded in any .py file
+    • settings.py uses pydantic-settings BaseSettings
+    • All paths use pathlib.Path — no string concatenation for paths
+    • get_settings() is decorated with @lru_cache() — one instance per process
+    • Ports are all defined in settings — never hardcoded elsewhere
+
+Known Issue to Fix
+    • openai_api_key is declared TWICE in the original settings.py — this causes a Pydantic validation error. Remove the duplicate.
+    • All C:\\AI\\MyOdin\\ paths must be replaced with pathlib references
+    • BRIDGE_KEY must move from hardcoded string to .env
+
+⚑  CURSOR: When you see settings.some_path — it must return a pathlib.Path object, not a string. Use .exists(), .mkdir(), .read_text() etc directly on it.
+
+13.  CURSOR IMMEDIATE PRIORITIES
+Do these in order. Do not skip ahead.
+
+    1. Fix settings.py
+    • Remove duplicate openai_api_key field
+    • Replace all Windows paths with pathlib
+    • Move BRIDGE_KEY, n8n_pass, and all keys to .env only
+    • Update ports: brain=7000, memory=7001
+    2. Fix bridge.py
+    • Replace all Windows path strings
+    • Replace screenshot capture with mss (Linux)
+    • Verify all tool routes work on Ubuntu
+    3. Fix M1/main.py (brain)
+    • Update provider order: Moonshot → Qwen → NVIDIA → Groq
+    • Update port to 7000
+    • Replace all Windows paths
+    • Extract call_ai() into M1/core/engine.py
+    4. Create .env template
+    • All keys with placeholder values
+    • Document what each key is for
+    5. Create requirements.txt
+    • Full list from Section 2
+    6. Create start.sh
+    • Activate venv, then python3 main.py
+    • chmod +x start.sh
+    7. Build M2 Sense module
+    • Wake word, STT, TTS, screen capture — see Section 9
+    8. Build Hunter watchdog
+    • Health monitor + auto-restart — see Section 10
+
+14.  WHAT NOT TO DO
+⚑  CURSOR: Read this section. These are real mistakes from the first build.
+
+    • Do NOT use Windows paths anywhere — no C:\\ no backslashes
+    • Do NOT rename anything to Odin — it is all named by function now
+    • Do NOT hardcode API keys in Python files
+    • Do NOT use subprocess.CREATE_NEW_PROCESS_GROUP — Linux only uses SIGTERM
+    • Do NOT use python — always python3
+    • Do NOT make Brain sandbox only — it must have real tools and real hands
+    • Do NOT use Groq for chat — Groq is VOICE ONLY (Whisper STT)
+    • Do NOT put Brain on port 8000 — that is Sense
+    • Do NOT cache the personality — reload it every turn
+    • Do NOT return markdown in voice responses — spoken word only
+    • Do NOT skip the /health endpoint on any service — Hunter needs it
+
+
+This is the full picture. Charles built this from nothing in 3 months. Cursor — don't mess it up.
+
+BRAIN  //  WORKORDER v1.0  //  Built by Claude

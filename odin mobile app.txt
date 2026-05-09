@@ -1,0 +1,19 @@
+Home — live module status grid (CORE, MEMORY, FACE, HUNTER, ENGINEER all showing online/offline), quick action buttons, activity feed
+Upload — drop zone + type buttons (Photo / Video / Code / Doc), file queue with preview thumbnails and progress bars, optional message to ODIN, sends to /api/upload and auto-falls back to /api/chat as base64 if that endpoint isn't ready yet
+Camera — live camera feed with viewfinder corners, front/back flip, photo capture + preview + send, video recording with MediaRecorder
+Voice — animated pulse rings, tap to record/stop, real-time waveform animation, playback, "Send" button that uploads to ODIN
+Chat — full mobile chat with ODIN, file attachment from chat screen, agent mode indicator bar
+
+Install as App
+
+iOS: Safari → Share → Add to Home Screen → full-screen icon, no browser chrome
+Android: Chrome shows install banner automatically (code handles beforeinstallprompt)
+Service Worker registered for offline caching of the shell
+
+Settings sheet (slide-up)
+
+Host field — set your PC's local IP (192.168.1.x) or Tailscale IP (100.x.x.x)
+Port, API key, HTTPS toggle, agent mode toggle, haptic toggle
+Test Connection button pings ODIN_CORE live
+
+Setup guide is embedded at the bottom — includes the one FastAPI route you need to add to ODIN_CORE for native uploads, plus Tailscale setup so you can reach ODIN from anywhere.
