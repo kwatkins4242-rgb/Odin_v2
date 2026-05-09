@@ -1,0 +1,27 @@
+
+sensor_data.py
+
+async def read_sensor(self, sensor_id: str) -> Dict[str, Any]:
+        if sensor_id not in self.sensors:
+            return {"error": f"Sensor {sensor_id} not found"}
+
+        try:
+            sensor = self.sensors[sensor_id]
+            reading = await self._simulate_sensor_reading(
+                sensor["type"], sensor["config"]
+            )
+            self.sensor_data[sensor_id] = {
+                "timestamp": datetime.now().isoformat(),
+                **reading
+            }
+            sensor["last_read"] = datetime.now()
+
+            alerts = self._check_alerts(sensor_id, reading["value"])
+            return {
+                "sensor_id": sensor_id,
+                "reading": self.sensor_data[sensor_id],
+                "alerts": alerts
+            }
+        except Exception as e:
+            logger.exception("Failed to read sensor %s", sensor_id)
+            return {"error": str(e)}

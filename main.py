@@ -1,187 +1,192 @@
-#!/usr/bin/env python3
 """
-M3: SENSE & ACT
-Main entry point for ODIN's autonomous loop.
-Integrates Vision, Tool Calling, and Mouse/Keyboard control.
+ODIN-COMMS — Communications Module
+ODIN's radio tower. Manages all device communication protocols:
+Bluetooth, BLE, WiFi, Zigbee, Z-Wave, IR, RF, and MQTT.
+
+Every smart device in Charles's environment goes through here.
+odin-core sends commands: "turn off the AC", "lock the door",
+"what devices are nearby" — ODIN-COMMS handles the actual talking.
+
+Startup sequence:
+  1. Security layer initializes (encryption keys)
+  2. Device registry loads known devices
+  3. Protocol managers initialize available hardware
+  4. Discovery scan runs (finds what's nearby)
+  5. Auto-connect to known devices
+  6. FastAPI comms API comes online (port 8003)
 """
 
-import asyncio
-import logging
 import os
-import json
+import asyncio
+import uvicorn
+import threading
 import time
-from typing import Dict, Any, List
-from dotenv import load_dotenv
+from pathlib import Path
+load_dotenv(r"Z:\ODIN\ODIN_PRO\.env", override=True)
 
-# Import SDK modules
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'sdk'))
+from security.encryption import EncryptionManager
+from security.auth_manager import AuthManager
+from discovery.device_registry import DeviceRegistry
+from discovery.device_scanner import DeviceScanner
+from discovery.auto_connect import AutoConnect
+from api.comms_server import app, set_comms_state
 
-try:
-    from vision_tool import capture_screen, analyze_screen
-    from tool_call import client, MODEL, get_weather
-    import mouse_control
-except ImportError as e:
-    print(f"Error importing SDK modules: {e}")
 
-# Load environment variables
-load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+# ── Global Comms State ────────────────────────────────────────────────────────
 
-class OdinAgent:
-    """Main ODIN autonomous agent orchestrator"""
-    
-    def __init__(self):
-        self.setup_logging()
-        self.running = False
-        self.vision_interval = 300  # 5 minutes
-        
-    def setup_logging(self):
-        """Setup logging configuration"""
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler('odin_agent.log'),
-                logging.StreamHandler()
-            ]
-        )
-        self.logger = logging.getLogger("ODIN-AGENT")
-        
-    async def sense(self):
-        """Capture environmental data (Vision)"""
-        self.logger.info("Sensing environment...")
+comms_state = {
+    "protocols_online":  [],
+    "known_devices":     [],
+    "nearby_devices":    [],
+    "connected_devices": [],
+    "mqtt_connected":    False,
+    "last_scan":         None,
+    "pending_commands":  [],
+}
+
+
+async def boot_comms():
+    print("📡  ODIN-COMMS booting up...")
+
+    # ── Security ─────────────────────────────────────────────────────────────
+    encryption = EncryptionManager()
+    auth       = AuthManager(encryption)
+    print("  ✓ Encryption and auth ready")
+
+    # ── Device Registry ───────────────────────────────────────────────────────
+    registry = DeviceRegistry()
+    comms_state["known_devices"] = registry.get_all()
+    print(f"  ✓ Device registry: {len(comms_state['known_devices'])} known devices")
+
+    # ── Protocol Managers ────────────────────────────────────────────────────
+    protocols_online = []
+
+    # Bluetooth
+    if os.getenv("BLUETOOTH_ENABLED", "true").lower() == "true":
         try:
-            filepath = capture_screen()
-            analysis = analyze_screen(filepath, prompt="What is happening on the screen? Identify any tasks or notifications.")
-            self.logger.info(f"Sense analysis: {analysis}")
-            return {"type": "vision", "content": analysis, "file": filepath}
+            from protocols.bluetooth.bt_manager import BTManager
+            bt = BTManager()
+            if bt.is_available():
+                protocols_online.append("bluetooth")
+                print("  ✓ Bluetooth classic ready")
         except Exception as e:
-            self.logger.error(f"Sensing failed: {e}")
-            return {"error": str(e)}
+            print(f"  ⚠ Bluetooth: {e}")
 
-    async def think_and_act(self, sense_data: Dict[str, Any]):
-        """Decide what to do based on sense data and current state"""
-        self.logger.info("Thinking...")
-        
-        prompt = f"System Status: {sense_data.get('content')}\nUser Instructions: Maintain system stability and respond to notifications."
-        
-        messages = [
-            {"role": "system", "content": "You are ODIN, an autonomous AI agent. Use your tools to help the user. Always respond in JSON format if calling a tool."},
-            {"role": "user", "content": prompt}
-        ]
-        
-        # Tools available to the agent
-        tools = [
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_weather",
-                    "description": "Get current weather",
-                    "parameters": {"type": "object", "properties": {"location": {"type": "string"}}}
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "mouse_move",
-                    "description": "Move the mouse to a specific location",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "x": {"type": "integer"},
-                            "y": {"type": "integer"}
-                        },
-                        "required": ["x", "y"]
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "mouse_click",
-                    "description": "Click the mouse at a specific location",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "x": {"type": "integer"},
-                            "y": {"type": "integer"},
-                            "button": {"type": "string", "enum": ["left", "right", "middle"]}
-                        },
-                        "required": ["x", "y"]
-                    }
-                }
-            },
-            {
-                "type": "function",
-                "function": {
-                    "name": "type_text",
-                    "description": "Type a string of text",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "text": {"type": "string"},
-                            "interval": {"type": "number"}
-                        },
-                        "required": ["text"]
-                    }
-                }
-            }
-        ]
-
+    # BLE
+    if os.getenv("BLE_ENABLED", "true").lower() == "true":
         try:
-            response = client.chat.completions.create(
-                model=MODEL,
-                messages=messages,
-                tools=tools,
-                tool_choice="auto"
-            )
-            
-            response_message = response.choices[0].message
-            tool_calls = response_message.tool_calls
-
-            if tool_calls:
-                for tool_call in tool_calls:
-                    fname = tool_call.function.name
-                    args = json.loads(tool_call.function.arguments)
-                    self.logger.info(f"Executing tool: {fname} with {args}")
-                    
-                    if fname == "get_weather":
-                        res = get_weather(**args)
-                        self.logger.info(f"Tool result: {res}")
-                    elif fname == "mouse_move":
-                        mouse_control.mouse_move(**args)
-                        self.logger.info("Mouse moved.")
-                    elif fname == "mouse_click":
-                        mouse_control.mouse_click(**args)
-                        self.logger.info(f"Clicked {args.get('button', 'left')} at {args['x']}, {args['y']}")
-                    elif fname == "type_text":
-                        mouse_control.type_text(**args)
-                        self.logger.info(f"Typed text: {args['text']}")
-            else:
-                self.logger.info(f"Agent feedback: {response_message.content}")
-
+            from protocols.bluetooth.ble_manager import BLEManager
+            ble = BLEManager()
+            protocols_online.append("ble")
+            print("  ✓ BLE ready")
         except Exception as e:
-            self.logger.error(f"Thinking failed: {e}")
+            print(f"  ⚠ BLE: {e}")
 
-    async def loop(self):
-        """Main autonomous loop"""
-        self.logger.info("ODIN Autonomous Loop starting...")
-        self.running = True
-        
-        while self.running:
-            sense_data = await self.sense()
-            await self.think_and_act(sense_data)
-            
-            self.logger.info(f"Sleeping for {self.vision_interval} seconds...")
-            await asyncio.sleep(self.vision_interval)
+    # WiFi/Network
+    try:
+        from protocols.wifi.wifi_manager import WiFiManager
+        wifi = WiFiManager()
+        protocols_online.append("wifi")
+        print(f"  ✓ WiFi ready (IP: {wifi.get_local_ip()})")
+    except Exception as e:
+        print(f"  ⚠ WiFi: {e}")
 
-    def stop(self):
-        self.running = False
-        self.logger.info("ODIN Autonomous Loop stopping...")
+    # MQTT
+    if os.getenv("MQTT_ENABLED", "true").lower() == "true":
+        try:
+            from protocols.mqtt.mqtt_client import MQTTClient
+            mqtt = MQTTClient()
+            connected = mqtt.connect()
+            if connected:
+                comms_state["mqtt_connected"] = True
+                protocols_online.append("mqtt")
+                print(f"  ✓ MQTT connected ({os.getenv('MQTT_BROKER', 'localhost')})")
+        except Exception as e:
+            print(f"  ⚠ MQTT: {e}")
+
+    # Zigbee (only if USB dongle detected)
+    if os.getenv("ZIGBEE_ENABLED", "false").lower() == "true":
+        try:
+            from protocols.zigbee.zigbee_manager import ZigbeeManager
+            zigbee = ZigbeeManager()
+            if zigbee.is_available():
+                protocols_online.append("zigbee")
+                print("  ✓ Zigbee dongle detected")
+        except Exception as e:
+            print(f"  ⚠ Zigbee: {e}")
+
+    # Z-Wave (only if USB stick detected)
+    if os.getenv("ZWAVE_ENABLED", "false").lower() == "true":
+        try:
+            from protocols.zwave.zwave_manager import ZWaveManager
+            zwave = ZWaveManager()
+            if zwave.is_available():
+                protocols_online.append("zwave")
+                print("  ✓ Z-Wave stick detected")
+        except Exception as e:
+            print(f"  ⚠ Z-Wave: {e}")
+
+    # IR
+    if os.getenv("IR_ENABLED", "false").lower() == "true":
+        try:
+            from protocols.infrared.ir_manager import IRManager
+            ir = IRManager()
+            protocols_online.append("ir")
+            print("  ✓ IR blaster ready")
+        except Exception as e:
+            print(f"  ⚠ IR: {e}")
+
+    # RF
+    if os.getenv("RF_ENABLED", "false").lower() == "true":
+        try:
+            from protocols.rf.rf_manager import RFManager
+            rf = RFManager()
+            protocols_online.append("rf")
+            print("  ✓ RF transceiver ready")
+        except Exception as e:
+            print(f"  ⚠ RF: {e}")
+
+    comms_state["protocols_online"] = protocols_online
+    print(f"  📡 Protocols online: {', '.join(protocols_online) or 'none'}")
+
+    # ── Discovery + Auto-Connect ──────────────────────────────────────────────
+    scanner      = DeviceScanner(protocols_online)
+    auto_connect = AutoConnect(registry, scanner)
+
+    # Initial scan in background (don't block startup)
+    threading.Thread(
+        target=_run_initial_scan,
+        args=(scanner, auto_connect, comms_state),
+        daemon=True
+    ).start()
+
+    set_comms_state(comms_state)
+    actual_port = int(os.getenv("COMMS_PORT", 8003))
+    print(f"📡  ODIN-COMMS online → http://localhost:{actual_port}")
+
+
+def _run_initial_scan(scanner, auto_connect, state):
+    time.sleep(2)  # Let startup finish
+    print("  🔍 Running initial device scan...")
+    devices = scanner.scan_all()
+    state["nearby_devices"] = devices
+    state["last_scan"]      = time.time()
+    print(f"  🔍 Found {len(devices)} nearby devices")
+
+    # Auto-connect to known devices
+    connected = auto_connect.connect_known(devices)
+    state["connected_devices"] = connected
+    print(f"  🔗 Connected to {len(connected)} known devices")
+
 
 if __name__ == "__main__":
-    agent = OdinAgent()
-    try:
-        asyncio.run(agent.loop())
-    except KeyboardInterrupt:
-        agent.stop()
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(boot_comms())
+
+    uvicorn.run(
+        "api.comms_server:app",
+        host="0.0.0.0",
+        port=int(os.getenv("COMMS_PORT", 8003)),
+        reload=False,
+        log_level="warning"
+    )
