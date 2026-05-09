@@ -11,16 +11,16 @@ if str(ROOT) not in sys.path:
 from settings import get_settings
 settings = get_settings()
 
-app = FastAPI(title="ODIN M3 — Engineering")
+app = FastAPI(title="ODIN M3 — Control")
 
 @app.get("/health")
 async def health():
     return {
         "status": "online",
-        "module": "M3-Engineering",
-        "port": settings.port_engineering
+        "module": "M3-Control",
+        "port": settings.port_control
     }
 
 if __name__ == "__main__":
-    print(f"[ENG] Starting ODIN Engineering on port {settings.port_engineering}...")
-    uvicorn.run(app, host="0.0.0.0", port=settings.port_engineering, log_level="warning")
+    print(f"[CTRL] Starting ODIN Control on port {settings.port_control}...")
+    uvicorn.run(app, host="0.0.0.0", port=settings.port_control, log_level="warning")

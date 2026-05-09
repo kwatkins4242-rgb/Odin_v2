@@ -1,0 +1,33 @@
+{
+    "name": "web_search",
+    "description": "Search the web for information",
+    "parameters": {
+        "properties": {
+            "classes": {
+                "description": "Search domains to focus on. Defaults to 'all' if not specified.",
+                "items": {
+                    "enum": [
+                        "all",
+                        "academic",
+                        "social",
+                        "library",
+                        "finance",
+                        "code",
+                        "ecommerce",
+                        "medical"
+                    ],
+                    "type": "string"
+                },
+                "type": "array"
+            },
+            "query": {
+                "description": "What to search for",
+                "type": "string"
+            }
+        },
+        "required": [
+            "query"
+        ],
+        "type": "object"
+    }
+}
