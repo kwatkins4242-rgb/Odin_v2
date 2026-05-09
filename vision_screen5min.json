@@ -1,0 +1,54 @@
+{
+    "name": "vision screen5min",
+    "nodes": [
+        {
+            "id": "a1b2c3d4-0001-0001-0001-000000000001",
+            "name": "Every 5 Minutes",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1,
+            "position": [
+                240,
+                180
+            ],
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "minutes",
+                            "minutesInterval": 5
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "a1b2c3d4-0002-0002-0002-000000000002",
+            "name": "Take Screenshot",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                480,
+                180
+            ],
+            "parameters": {
+                "jsCode": "const { exec } = require('child_process');\nconst { promisify } = require('util');\nconst execAsync = promisify(exec);\n\nconst now = new Date();\nconst pad = n => String(n).padStart(2, '0');\nconst timestamp = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;\nconst outputPath = `C:\\\\AI\\\\MyOdin\\\\M2\\\\screenshots_\\\\screen_${timestamp}.png`;\n\nconst command = `python \"C:\\\\AI\\\\MyOdin\\\\sdk\\\\vision_tool.py\" --output \"${outputPath}\"`;\n\ntry {\n  const { stdout, stderr } = await execAsync(command, { shell: 'powershell.exe' });\n  return [{ json: { success: true, outputPath, stdout, stderr } }];\n} catch (err) {\n  return [{ json: { success: false, error: err.message, outputPath } }];\n}"
+            }
+        }
+    ],
+    "connections": {
+        "Every 5 Minutes": {
+            "main": [
+                [
+                    {
+                        "node": "Take Screenshot",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    }
+}

@@ -1,0 +1,76 @@
+{
+  "name": "ODIN - 3. Vision",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "odin-vision",
+        "options": {}
+      },
+      "id": "v001",
+      "name": "Vision Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "command": "powershell -Command \"Add-Type -AssemblyName System.Windows.Forms; $screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; $bitmap = New-Object System.Drawing.Bitmap($screen.Width, $screen.Height); $graphics = [System.Drawing.Graphics]::FromImage($bitmap); $graphics.CopyFromScreen($screen.Location, [System.Drawing.Point]::Empty, $screen.Size); $bitmap.Save('Z:\\ODIN\\ODIN_PRO\\vision_temp.png'); Write-Output 'captured'\""
+      },
+      "id": "v002",
+      "name": "Capture Screen",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [320, 300]
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "sourceKey": "data",
+        "destinationKey": "imageData",
+        "filePath": "Z:\\ODIN\\ODIN_PRO\\vision_temp.png"
+      },
+      "id": "v003",
+      "name": "Read Screenshot",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [540, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const timestamp = new Date().toISOString();\nreturn [{ json: { timestamp, status: 'screenshot_captured', path: 'Z:\\\\ODIN\\\\ODIN_PRO\\\\vision_temp.png', message: 'Vision capture complete. Ready for analysis.' } }];"
+      },
+      "id": "v004",
+      "name": "Format Vision Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      },
+      "id": "v005",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [980, 300]
+    }
+  ],
+  "connections": {
+    "Vision Trigger": {
+      "main": [[{ "node": "Capture Screen", "type": "main", "index": 0 }]]
+    },
+    "Capture Screen": {
+      "main": [[{ "node": "Read Screenshot", "type": "main", "index": 0 }]]
+    },
+    "Read Screenshot": {
+      "main": [[{ "node": "Format Vision Response", "type": "main", "index": 0 }]]
+    },
+    "Format Vision Response": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" }
+}

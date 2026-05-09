@@ -1,11 +1,12 @@
+
 import sys
 import os
-import asyncio
+import base64
 from pathlib import Path
 from fastapi import FastAPI, BackgroundTasks
-from fastapi.responses import HTMLResponse
-from pydantic import BaseModel
+from fastapi.responses import HTMLResponse, JSONResponse
 import uvicorn
+from openai import OpenAI
 
 # --- Path Setup ---
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -15,103 +16,47 @@ if str(ROOT) not in sys.path:
 from settings import get_settings
 settings = get_settings()
 
-# Import Tom's logic
-import brain
-import tools
-import vision
-import voice
+# Import shared utils
+import utils.vision_utils as vision_utils
 
-from fastapi.middleware.cors import CORSMiddleware
+app = FastAPI(title="ODIN M2 — Vision")
 
-app = FastAPI(title="ODIN — Agent Tom Service")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-class Mission(BaseModel):
-    goal: str
-
-class AgentState:
-    def __init__(self):
-        self.active = False
-        self.current_goal = ""
-        self.last_action = "Idle"
-        self.status = "standby"
-        self.awaiting_confirmation = False
-        self.pending_action = None
-        self.trusted_mode = False
-
-state = AgentState()
-
-async def ooda_loop(goal: str):
-    state.active = True
-    state.current_goal = goal
-    state.status = "running"
-    state.trusted_mode = settings.tom_auto_trust  # Initialize from global config
-    voice.speak(f"Agent Tom initialized. Mission: {goal}")
-    
-    try:
-        while state.active:
-            # 1. OBSERVE
-            state.status = "observing"
-            screenshot_path = vision.capture_screen(resize_to=settings.tom_max_screen_width)
-            
-            # 2. DECIDE
-            state.status = "deciding"
-            action = brain.ask_llm(goal, screenshot_path)
-            state.last_action = str(action)
-            
-            # 3. INTERLOCK (Safety Confirmation)
-            act_type = action.get("type", "").upper()
-            if act_type in ["CLICK", "TYPE", "HOTKEY", "SCROLL"] and not state.trusted_mode:
-                pending_desc = action.get("description", f"perform {act_type}")
-                state.status = f"waiting: {pending_desc}"
-                state.awaiting_confirmation = True
-                state.pending_action = action
-                voice.speak(f"I am requesting permission to {act_type}. Please confirm on the dashboard.")
-                
-                # Wait indefinitely for user signal
-                while state.awaiting_confirmation and state.active and not state.trusted_mode:
-                    await asyncio.sleep(0.5)
-                
-                if not state.active:
-                    break
-            
-            # 4. ACT
-            if action.get("type") == "DONE":
-                voice.speak("Mission accomplished.")
-                state.status = "complete"
-                break
-            
-            state.status = "acting"
-            tools.execute_action(action)
-            state.pending_action = None
-            
-            # 4. WAIT
-            state.status = "waiting"
-            await asyncio.sleep(settings.tom_loop_delay)
-            
-    except Exception as e:
-        print(f"[TOM] Error: {e}")
-        state.status = f"error: {str(e)}"
-    finally:
-        state.active = False
+# Logs directory for screenshots
+LOG_DIR = Path(__file__).resolve().parent / "logs"
 
 @app.get("/", response_class=HTMLResponse)
-async def root():
-    return f"""
+async def dashboard():
+    return """
     <html>
-        <head><title>ODIN — Agent Tom Service</title></head>
-        <body style="background:#0a0b0f; color:#e8e9f0; font-family:monospace; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0;">
-            <h1 style="color:#7f77dd;">AGENT TOM — API SERVICE</h1>
-            <p>Port 8060 is for headless API operations.</p>
-            <p>To work with Tom, please use the <b>Master Hub Dashboard</b>:</p>
-            <a href="http://localhost:8080/legacy.html" style="color:#5dcaa5; text-decoration:none; border:1px solid #5dcaa5; padding:10px 20px; border-radius:4px; margin-top:20px;">OPEN WORKSTATION</a>
+        <head>
+            <title>ODIN M2 — VISION</title>
+            <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+            <style>
+                body { background:#0a0a0a; color:#4dd0e1; font-family:'Share Tech Mono',monospace; margin:0; display:flex; flex-direction:column; height:100vh; }
+                .header { padding:2rem; border-bottom:1px solid rgba(77,208,225,0.1); display:flex; justify-content:space-between; align-items:center; }
+                .logo { font-family:'Bebas Neue',sans-serif; font-size:2.5rem; letter-spacing:0.4em; }
+                .main { flex:1; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:1rem; }
+                .btn { background:transparent; border:1px solid #4dd0e1; color:#4dd0e1; padding:10px 20px; cursor:pointer; font-family:inherit; letter-spacing:0.2em; }
+                .btn:hover { background:rgba(77,208,225,0.1); }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <div class="logo">ODIN // M2 VISION</div>
+                <div style="font-size:0.7rem; color:#4caf50;">VISUAL LINK ACTIVE</div>
+            </div>
+            <div class="main">
+                <button class="btn" onclick="capture()">MANUAL CAPTURE</button>
+                <div id="status" style="margin-top:20px; color:#555;">Ready.</div>
+            </div>
+            <script>
+                async function capture() {
+                    document.getElementById('status').innerText = 'Capturing...';
+                    const r = await fetch('/capture');
+                    const d = await r.json();
+                    document.getElementById('status').innerText = 'Saved: ' + d.path;
+                }
+            </script>
         </body>
     </html>
     """
@@ -120,79 +65,41 @@ async def root():
 async def health():
     return {
         "status": "online",
-        "agent": "Tom",
-        "state": state.__dict__
+        "module": "M2-Vision",
+        "port": settings.port_vision
     }
 
-@app.post("/run")
-async def run_mission(mission: Mission, background_tasks: BackgroundTasks):
-    if state.active:
-        return {"error": "Agent is already busy with a mission."}
+@app.get("/capture")
+async def capture():
+    path = vision_utils.capture_screen(LOG_DIR, resize_to=settings.tom_max_screen_width)
+    return {"status": "success", "path": path}
+
+@app.post("/analyze")
+async def analyze(goal: str = "Describe what is on the screen"):
+    """Capture a screenshot and analyze it with GPT-4o-mini."""
+    path = vision_utils.capture_screen(LOG_DIR, resize_to=settings.tom_max_screen_width)
     
-    background_tasks.add_task(ooda_loop, mission.goal)
-    return {"message": "Mission accepted.", "goal": mission.goal}
-
-@app.post("/confirm")
-async def confirm_action():
-    if not state.awaiting_confirmation:
-        return {"error": "No action is currently pending confirmation."}
-    state.awaiting_confirmation = False
-    return {"message": "Action confirmed. Resuming loop."}
-
-@app.post("/trust")
-async def trust_agent():
-    state.trusted_mode = True
-    state.awaiting_confirmation = False
-    return {"message": "Trust mode enabled. Tom is now autonomous for this mission."}
-
-@app.post("/deny")
-async def deny_action():
-    state.active = False
-    state.awaiting_confirmation = False
-    state.status = "denied"
-    return {"message": "Action denied. Mission aborted."}
-
-@app.post("/stop")
-async def stop_mission():
-    state.active = False
-    state.awaiting_confirmation = False
-    state.status = "stopping"
-    return {"message": "Stop signal sent to Agent Tom."}
-
-@app.post("/tom/save")
-async def save_odin_now(mode: str = "manual"):
-    """Trigger an immediate iCloud-style save."""
-    import heartbeat_save
-    success = heartbeat_save.save_now(mode=mode)
-    if success:
-        return {"message": f"ODIN Save completed ({mode} mode)."}
-    else:
-        return {"error": "Save failed. Check logs."}
+    # 1. Encode
+    with open(path, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode("utf-8")
+    
+    # 2. Call OpenAI (using root settings)
+    client = OpenAI(api_key=settings.openai_api_key, base_url=settings.openai_base_url)
+    try:
+        response = client.chat.completions.create(
+            model=settings.openai_model,
+            messages=[
+                {"role": "user", "content": [
+                    {"type": "text", "text": goal},
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}}
+                ]}
+            ],
+            max_tokens=300
+        )
+        return {"status": "success", "analysis": response.choices[0].message.content, "path": path}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
-    print(f"[TOM] Starting Agent Tom Service on port {settings.port_agent_tom}...")
-    
-    import subprocess
-    
-    # Launch Workers
-    workers = [
-        ("Vacuum", Path(__file__).parent / "workers_vacume" / "workers_fs.py"),
-        ("Heartbeat Save", Path(__file__).parent / "heartbeat_save.py"),
-        ("n8n Agent Service", Path(__file__).parent.parent / "agent_n8n.py")
-    ]
-    
-    for name, script_path in workers:
-        if script_path.exists():
-            print(f"[TOM] Launching {name}: {script_path}")
-            # Use dedicated venv for n8n if it exists
-            python_exe = sys.executable
-            if name == "n8n Agent Service":
-                venv_python = Path(__file__).parent.parent / ".venv_n8n" / "Scripts" / "python.exe"
-                if venv_python.exists():
-                    python_exe = str(venv_python)
-            
-            subprocess.Popen([python_exe, str(script_path)], shell=False)
-        else:
-            print(f"[TOM] Worker {name} NOT found at {script_path}")
-
-    uvicorn.run(app, host="0.0.0.0", port=settings.port_agent_tom, log_level="warning")
+    print(f"[VISION] Starting ODIN Vision on port {settings.port_vision}...")
+    uvicorn.run(app, host="0.0.0.0", port=settings.port_vision, log_level="warning")
