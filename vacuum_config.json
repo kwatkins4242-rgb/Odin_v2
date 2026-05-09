@@ -1,0 +1,9 @@
+{
+  "odin_root": "C:\\AI\\MyOdin",
+  "reports_dir": "C:\\AI\\MyOdin\\M4\\agents\\workers_vacume\\reports",
+  "logs_dir": "C:\\AI\\MyOdin\\M4\\agents\\workers_vacume\\logs",
+  "max_file_size_mb": 100,
+  "banned_chars": ["*", "?", "\"", "<", ">", "|"],
+  "webhook": null,
+  "duty_cycle_seconds": 30
+}

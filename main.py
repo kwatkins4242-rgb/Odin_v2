@@ -1,36 +1,105 @@
 """
- — Core
-==============
-Location: C:\AI\MyOdin\M1\core\main.py
-Port: 8050
-
-Independent Core Processing Engine for ODIN.
+ODIN-SENSE | Main Entry Point
+Groq Whisper (STT) → Groq Llama (LLM) → Ollama fallback
 """
+import sys, time, signal, logging
 
-import sys
-import logging
-from pathlib import Path
-import uvicorn
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout), logging.FileHandler("odin_sense.log", encoding="utf-8")],
+)
+log = logging.getLogger("odin.sense")
 
-ROOT = Path(__file__).resolve().parent.parent.parent
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+_running = True
+def _shutdown(sig, frame):
+    global _running
+    log.info("Shutdown — stopping ODIN-SENSE...")
+    _running = False
 
-from settings import get_settings
-settings = get_settings()
+signal.signal(signal.SIGINT, _shutdown)
+signal.signal(signal.SIGTERM, _shutdown)
 
-app = FastAPI(title="Core", version=settings.odin_version)
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+def boot():
+    log.info("=" * 50)
+    log.info("  ODIN-SENSE  |  Booting...")
+    log.info("=" * 50)
 
-@app.get("/health")
-async def health():
-    return {"status": "online", "module": "core", "port": settings.port_core}
+    from audio_manager import AudioManager
+    from dectector import WakeWordDetector
+    from listener import VoiceListener
+    from transcriber import Transcriber
+    from speaker import Speaker
+    import settings
+
+    audio = AudioManager()
+    if not audio.init():
+        log.error("Audio init failed — check mic permissions")
+        sys.exit(1)
+
+    wake = WakeWordDetector(audio_manager=audio)
+    listener = VoiceListener(audio_manager=audio)
+    transcriber = Transcriber()
+    speaker = Speaker()
+
+    log.info(f"LIVE | Wake words: {wake.active_keywords}")
+    speaker.say("ODIN sense online.")
+
+    global _running
+    while _running:
+        try:
+            triggered = wake.listen_for_wake()
+            if not triggered:
+                continue
+
+            log.info(f"Wake word: '{triggered}'")
+            speaker.say("Yeah?")
+
+            audio_data = listener.capture(timeout=settings.LISTEN_TIMEOUT)
+            if audio_data is None:
+                continue
+
+            text = transcriber.transcribe(audio_data)
+            if not text or not text.strip():
+                continue
+
+            log.info(f'Heard: "{text}"')
+            _route(text, speaker, settings)
+
+        except KeyboardInterrupt:
+            break
+        except Exception as e:
+            log.error(f"Loop error: {e}", exc_info=True)
+            time.sleep(1)
+
+    audio.cleanup()
+    wake.cleanup()
+    log.info("ODIN-SENSE offline.")
+
+def _route(text, speaker, settings):
+    import requests
+    core_url = getattr(settings, "ODIN_CORE_URL", None)
+    if core_url:
+        try:
+            r = requests.post(f"{core_url}/api/chat", json={"message": text, "source": "sense"}, timeout=10)
+            if r.status_code == 200:
+                reply = r.json().get("reply", "")
+                if reply:
+                    speaker.say(reply)
+                return
+        except requests.RequestException as e:
+            log.warning(f"Core unreachable: {e} — using LLM fallback")
+
+    try:
+        from gemini_client import GeminiClient
+        reply = GeminiClient().chat(text)
+    except Exception as e:
+        log.warning(f"Gemini unavailable: {e} — falling back to Groq")
+        from groq_client import GroqClient
+        reply = GroqClient().chat(text)
+        
+    if reply:
+        speaker.say(reply)
 
 if __name__ == "__main__":
-    print("\n" + "="*52)
-    print("Core")
-    print(f"  Port : {settings.port_core}")
-    print("="*52 + "\n")
-    uvicorn.run(app, host="0.0.0.0", port=settings.port_core, log_level="warning")
+     boot()
