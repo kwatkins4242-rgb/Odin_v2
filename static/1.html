@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#050d1a" />
+    <title>ODIN // COMMAND CENTER</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-color: #58a6ff;
+            --accent-hover: #79c0ff;
+            --success-color: #238636;
+            --warning-color: #f0883e;
+            --danger-color: #da3633;
+            --ping-good: #3fb950;
+            --ping-bad: #f85149;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            height: 60px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo::before {
+            content: "⚡";
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-left: auto;
+        }
+
+        .ping-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .ping-btn:hover {
+            background: var(--border-color);
+        }
+
+        .ping-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--ping-bad);
+        }
+
+        .ping-indicator.active {
+            background: var(--ping-good);
+            box-shadow: 0 0 10px var(--ping-good);
+        }
+
+        .settings-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .settings-btn:hover {
+            background: var(--accent-color);
+            color: var(--bg-primary);
+        }
+
+        /* Settings Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 18px;
+            color: var(--accent-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 13px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .port-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .port-range {
+            flex: 1;
+        }
+
+        .save-btn {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .save-btn:hover {
+            background: #2ea043;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-tab {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .sidebar-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .sidebar-tab.active {
+            color: var(--accent-color);
+            border-bottom-color: var(--accent-color);
+            background: var(--bg-tertiary);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* File Tree */
+        .file-tree {
+            font-size: 13px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 2px;
+        }
+
+        .file-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .file-icon {
+            font-size: 14px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .action-btn {
+            flex: 1;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            background: var(--accent-color);
+            color: var(--bg-primary);
+        }
+
+        /* Notes Section */
+        .notes-area {
+            width: 100%;
+            height: 200px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 13px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        /* Chat Section */
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .chat-message.user {
+            background: var(--bg-tertiary);
+            margin-left: 20px;
+        }
+
+        .chat-message.odin {
+            background: rgba(88, 166, 255, 0.1);
+            border-left: 3px solid var(--accent-color);
+            margin-right: 20px;
+        }
+
+        /* Approval Button */
+        .approval-section {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .approval-btn {
+            background: var(--warning-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: bold;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(240, 136, 62, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        .approval-btn.active {
+            display: flex;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 4px 12px rgba(240, 136, 62, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 4px 20px rgba(240, 136, 62, 0.8);
+            }
+        }
+
+        .approval-btn:hover {
+            background: #ffa657;
+        }
+
+        /* Editor Area */
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+        }
+
+        .editor-tabs {
+            display: flex;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .editor-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            border-right: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .editor-tab.active {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-top: 2px solid var(--accent-color);
+        }
+
+        .close-tab {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .close-tab:hover {
+            color: var(--danger-color);
+        }
+
+        .editor-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-editor {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: none;
+            padding: 20px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            tab-size: 4;
+        }
+
+        /* Footer / Chat Input */
+        .footer {
+            height: 80px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 15px 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .chat-input-wrapper {
+            flex: 1;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 15px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .input-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .input-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .send-btn {
+            background: var(--accent-color);
+            color: var(--bg-primary);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Copy Button */
+        .copy-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 10px;
+        }
+
+        .copy-btn:hover {
+            background: var(--success-color);
+            color: white;
+        }
+
+        /* Downloads Dropdown */
+        .downloads-wrapper {
+            position: relative;
+        }
+
+        .downloads-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .downloads-dropdown {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 250px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .downloads-dropdown.active {
+            display: block;
+        }
+
+        .download-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .download-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .download-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Vision/Web View */
+        .web-view-container {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 250px;
+            right: 0;
+            bottom: 80px;
+            background: var(--bg-primary);
+            z-index: 50;
+            border: 1px solid var(--border-color);
+        }
+
+        .web-view-container.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .web-view-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .web-view-input {
+            flex: 1;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .web-view-frame {
+            flex: 1;
+            border: none;
+            background: white;
+        }
+
+        /* Burp Suite Integration Placeholder */
+        .burp-panel {
+            display: none;
+            position: fixed;
+            top: 60px;
+            right: 0;
+            width: 400px;
+            bottom: 80px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            z-index: 50;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .burp-panel.active {
+            display: block;
+        }
+
+        .panel-header {
+            font-size: 16px;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+    </style>
+
+    <div class="header-controls">
+        <button class="ping-btn" id="pingBtn">
+            <span class="ping-indicator" id="pingIndicator"></span>
+            Ping Localhost
+        </button>
+
+        <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
+
+        <div class="downloads-wrapper">
+            <button class="downloads-btn" id="downloadsBtn">
+                📥 Downloads
+            </button>
+            <div class="downloads-dropdown" id="downloadsDropdown">
+                <div class="download-item">📄 script.py</div>
+                <div class="download-item">📊 data.json</div>
+                <div class="download-item">📝 notes.txt</div>
+            </div>
+        </div>
+    </div>
+    </header>
+
+    <!-- Approval Button (Floating) -->
+    <div class="approval-section">
+        <button class="approval-btn" id="approvalBtn">
+            ⚠️ Odin Needs Approval
+        </button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">⚙️ Settings</h2>
+                <button class="close-modal" id="closeModal">×</button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">API Key</label>
+                <input type="password" class="form-input" id="apiKey" placeholder="Enter your API key...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Localhost Port</label>
+                <div class="port-selector">
+                    <input type="number" class="form-input port-range" id="portInput" min="3000" max="9000"
+                        value="3000">
+                    <span style="color: var(--text-secondary); font-size: 12px;">3000-9000</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Theme</label>
+                <select class="form-input" id="themeSelect">
+                    <option value="dark">Dark (Default)</option>
+                    <option value="darker">Darker</option>
+                    <option value="high-contrast">High Contrast</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Font Size</label>
+                <input type="range" class="form-input" id="fontSize" min="12" max="20" value="14">
+            </div>
+
+            <button class="save-btn" id="saveSettings">Save Settings</button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-tabs">
+                <button class="sidebar-tab active" data-tab="files">📁 Files</button>
+                <button class="sidebar-tab" data-tab="notes">📝 Notes</button>
+                <button class="sidebar-tab" data-tab="chat">💬 Chat</button>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- Files Panel -->
+                <div class="tab-panel active" id="filesPanel">
+                    <div class="section-title">Project Files</div>
+                    <div class="file-tree">
+                        <div class="file-item">
+                            <span class="file-icon">📁</span>
+                            <span>src/</span>
+                        </div>
+                        <div class="file-item" style="padding-left: 20px;">
+                            <span class="file-icon">🐍</span>
+                            <span>main.py</span>
+                        </div>
+                        <div class="file-item" style="padding-left: 20px;">
+                            <span class="file-icon">📜</span>
+                            <span>utils.js</span>
+                        </div>
+                        <div class="file-item">
+                            <span class="file-icon">📁</span>
+                            <span>assets/</span>
+                        </div>
+                        <div class="file-item">
+                            <span class="file-icon">⚙️</span>
+                            <span>config.json</span>
+                        </div>
+                    </div>
+
+                    <div class="file-actions">
+                        <button class="action-btn" id="uploadPhoto">📷 Photo</button>
+                        <button class="action-btn" id="shareFile">📤 Share</button>
+                    </div>
+
+                    <input type="file" id="fileInput" style="display: none;" multiple>
+                    <input type="file" id="photoInput" style="display: none;" accept="image/*">
+                </div>
+
+                <!-- Notes Panel -->
+                <div class="tab-panel" id="notesPanel">
+                    <div class="section-title">Quick Notes</div>
+                    <textarea class="notes-area" id="notesArea"
+                        placeholder="Type your notes here... Odin can read these too!"></textarea>
+                    <button class="action-btn" id="saveNotes" style="width: 100%;">💾 Save Notes</button>
+                </div>
+
+                <!-- Chat Panel -->
+                <div class="tab-panel" id="chatPanel">
+                    <div class="section-title">Session Chat</div>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message odin">
+                            <strong>Odin:</strong> Ready to code! Show me what you're working on. 👁️
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Editor Container -->
+        <div class="editor-container">
+            <div class="editor-tabs">
+                <div class="editor-tab active">
+                    <span>main.py</span>
+                    <span class="close-tab">×</span>
+                </div>
+                <div class="editor-tab">
+                    <span>utils.js</span>
+                    <span class="close-tab">×</span>
+                </div>
+            </div>
+
+            <div class="editor-wrapper">
+                <textarea class="code-editor" id="codeEditor" placeholder="# Welcome to Odin IDE
+
+Start coding here...
+Odin can see and edit this in real-time
+def hello_odin():
+print('Hello, I am Odin!')
+return True
+Paste code, upload photos, or let Odin write code for you
+Click the ⚠️ button when Odin needs approval"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Web View Container (for Vision Training) -->
+    <div class="web-view-container" id="webViewContainer">
+        <div class="web-view-header">
+            <input type="text" class="web-view-input" id="webViewUrl" placeholder="Enter URL..."
+                value="https://example.com">
+            <button class="action-btn" id="loadUrl">Load</button>
+            <button class="action-btn" id="closeWebView">Close</button>
+        </div>
+        <iframe class="web-view-frame" id="webViewFrame"></iframe>
+    </div>
+
+    <!-- Burp Suite Panel -->
+    <div class="burp-panel" id="burpPanel">
+        <div class="panel-header">🕸️ Burp Suite Integration</div>
+        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 20px;">
+            Proxy settings and request interception for bug hunting training.
+        </p>
+        <div class="form-group">
+            <label class="form-label">Proxy Port</label>
+            <input type="text" class="form-input" value="8080" readonly>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Intercept</label>
+            <select class="form-input">
+                <option>On</option>
+                <option>Off</option>
+            </select>
+        </div>
+        <button class="action-btn" style="width: 100%; margin-top: 10px;">Open Burp</button>
+    </div>
+
+    <!-- Footer / Chat Input -->
+    <footer class="footer">
+        <div class="chat-input-wrapper">
+            <button class="input-btn" id="attachBtn" title="Attach file">📎</button>
+            <button class="input-btn" id="imageBtn" title="Send image">🖼️</button>
+            <button class="input-btn" id="webBtn" title="Open web view">🌐</button>
+            <button class="input-btn" id="burpBtn" title="Burp Suite">🕸️</button>
+            <input type="text" class="chat-input" id="chatInput"
+                placeholder="Message Odin... (paste code, commands, or questions)">
+            <button class="input-btn" id="emojiBtn" title="Emoji">😊</button>
+        </div>
+        <button class="send-btn" id="sendBtn">Send</button>
+        <button class="copy-btn" id="copyBtn" title="Copy all code">
+            📋 Copy All
+        </button>
+    </footer>
+
+    <script>
+        // Settings Modal
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeModal = document.getElementById('closeModal');
+        const saveSettings = document.getElementById('saveSettings');
+        const apiKey = document.getElementById('apiKey');
+        const portInput = document.getElementById('portInput');
+
+        // Load saved settings
+        if (localStorage.getItem('odin_api_key')) {
+            apiKey.value = localStorage.getItem('odin_api_key');
+        }
+        if (localStorage.getItem('odin_port')) {
+            portInput.value = localStorage.getItem('odin_port');
+        }
+
+        settingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('active');
+        });
+
+        closeModal.addEventListener('click', () => {
+            settingsModal.classList.remove('active');
+        });
+
+        saveSettings.addEventListener('click', () => {
+            localStorage.setItem('odin_api_key', apiKey.value);
+            localStorage.setItem('odin_port', portInput.value);
+            settingsModal.classList.remove('active');
+            alert('Settings saved! 🔧');
+        });
+
+        // Ping functionality
+        const pingBtn = document.getElementById('pingBtn');
+        const pingIndicator = document.getElementById('pingIndicator');
+
+        pingBtn.addEventListener('click', async () => {
+            const port = portInput.value || '3000';
+            pingIndicator.classList.remove('active');
+
+            try {
+                const start = Date.now();
+                await fetch(`http://localhost:${port}`, { mode: 'no-cors' });
+                const latency = Date.now() - start;
+                pingIndicator.classList.add('active');
+                console.log(`Ping successful: ${latency}ms`);
+            } catch (e) {
+                console.log('Ping failed');
+                pingIndicator.classList.remove('active');
+            }
+        });
+
+        // Sidebar Tabs
+        const sidebarTabs = document.querySelectorAll('.sidebar-tab');
+        const tabPanels = document.querySelectorAll('.tab-panel');
+
+        sidebarTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+
+                sidebarTabs.forEach(t => t.classList.remove('active'));
+                tabPanels.forEach(p => p.classList.remove('active'));
+
+                tab.classList.add('active');
+                document.getElementById(targetTab + 'Panel').classList.add('active');
+            });
+        });
+
+        // File Upload
+        const uploadPhoto = document.getElementById('uploadPhoto');
+        const shareFile = document.getElementById('shareFile');
+        const photoInput = document.getElementById('photoInput');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadPhoto.addEventListener('click', () => photoInput.click());
+        shareFile.addEventListener('click', () => fileInput.click());
+
+        let activeFileContent = "";
+        let activeFileName = "";
+        let activeFileType = "";
+
+        photoInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    activeFileContent = evt.target.result;
+                    activeFileName = file.name;
+                    activeFileType = file.type;
+                    addChatMessage('user', `📷 Uploaded photo: ${file.name}`);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    activeFileContent = evt.target.result;
+                    activeFileName = file.name;
+                    activeFileType = file.type;
+                    addChatMessage('user', `📁 Shared file: ${file.name}`);
+                };
+                const isText = file.type.startsWith('text') || file.name.match(/\.(py|js|html|css|json|txt|md|csv)$/i);
+                if(isText) {
+                    reader.readAsText(file);
+                } else {
+                    reader.readAsDataURL(file);
+                }
+            }
+        });
+
+        // Notes
+        const notesArea = document.getElementById('notesArea');
+        const saveNotes = document.getElementById('saveNotes');
+
+        if (localStorage.getItem('odin_notes')) {
+            notesArea.value = localStorage.getItem('odin_notes');
+        }
+
+        saveNotes.addEventListener('click', () => {
+            localStorage.setItem('odin_notes', notesArea.value);
+            alert('Notes saved! 📝');
+        });
+
+        // Chat functionality
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatMessages = document.getElementById('chatMessages');
+
+        function addChatMessage(sender, text) {
+            const msg = document.createElement('div');
+            msg.className = `chat-message ${sender}`;
+            msg.innerHTML = `<strong>${sender === 'user' ? 'You' : 'Odin'}:</strong> ${text}`;
+            chatMessages.appendChild(msg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        sendBtn.addEventListener('click', async () => {
+            const text = chatInput.value.trim();
+            if (text) {
+                addChatMessage('user', text);
+                chatInput.value = '';
+
+                const typingId = 'typing-' + Date.now();
+                const typingMsg = document.createElement('div');
+                typingMsg.id = typingId;
+                typingMsg.className = 'chat-message odin';
+                typingMsg.innerHTML = '<strong>Odin:</strong> <span style="font-style: italic;">Thinking... 👁️</span>';
+                chatMessages.appendChild(typingMsg);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                const port = portInput.value || '8000';
+                try {
+                    const response = await fetch(`http://localhost:${port}/api/chat`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ 
+                            message: text, 
+                            history: [],
+                            file_content: activeFileContent,
+                            file_name: activeFileName,
+                            file_type: activeFileType
+                        })
+                    });
+                    
+                    document.getElementById(typingId).remove();
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        addChatMessage('odin', data.reply);
+                        // Reset active file attachments
+                        activeFileContent = "";
+                        activeFileName = "";
+                        activeFileType = "";
+                    } else {
+                        addChatMessage('odin', 'Error interacting with core API.');
+                    }
+                } catch (e) {
+                    document.getElementById(typingId).remove();
+                    addChatMessage('odin', 'Connection failed. Is ODIN_CORE running on port ' + port + '?');
+                }
+            }
+        });
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendBtn.click();
+        });
+
+        // Copy All button
+        const copyBtn = document.getElementById('copyBtn');
+        const codeEditor = document.getElementById('codeEditor');
+
+        copyBtn.addEventListener('click', () => {
+            codeEditor.select();
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '✅ Copied!';
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+            }, 2000);
+        });
+
+        // Downloads Dropdown
+        const downloadsBtn = document.getElementById('downloadsBtn');
+        const downloadsDropdown = document.getElementById('downloadsDropdown');
+
+        downloadsBtn.addEventListener('click', () => {
+            downloadsDropdown.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!downloadsBtn.contains(e.target) && !downloadsDropdown.contains(e.target)) {
+                downloadsDropdown.classList.remove('active');
+            }
+        });
+
+        // Web View (Vision Training)
+        const webBtn = document.getElementById('webBtn');
+        const webViewContainer = document.getElementById('webViewContainer');
+        const closeWebView = document.getElementById('closeWebView');
+        const loadUrl = document.getElementById('loadUrl');
+        const webViewUrl = document.getElementById('webViewUrl');
+        const webViewFrame = document.getElementById('webViewFrame');
+
+        webBtn.addEventListener('click', () => {
+            webViewContainer.classList.add('active');
+        });
+
+        closeWebView.addEventListener('click', () => {
+            webViewContainer.classList.remove('active');
+        });
+
+        loadUrl.addEventListener('click', () => {
+            let url = webViewUrl.value;
+            if (!url.startsWith('http')) {
+                url = 'https://' + url;
+            }
+            webViewFrame.src = url;
+            addChatMessage('user', `🌐 Opened website for Odin to view: ${url}`);
+        });
+
+        // Burp Suite Panel
+        const burpBtn = document.getElementById('burpBtn');
+        const burpPanel = document.getElementById('burpPanel');
+
+        burpBtn.addEventListener('click', () => {
+            burpPanel.classList.toggle('active');
+        });
+
+        // Approval Button
+        const approvalBtn = document.getElementById('approvalBtn');
+
+        setTimeout(() => {
+            approvalBtn.classList.add('active');
+        }, 10000);
+
+        approvalBtn.addEventListener('click', () => {
+            approvalBtn.classList.remove('active');
+            addChatMessage('odin', '✅ Action approved! Continuing...');
+        });
+
+        // Footer buttons
+        const attachBtn = document.getElementById('attachBtn');
+        const imageBtn = document.getElementById('imageBtn');
+
+        attachBtn.addEventListener('click', () => fileInput.click());
+        imageBtn.addEventListener('click', () => photoInput.click());
+
+        // Emoji button
+        const emojiBtn = document.getElementById('emojiBtn');
+        const emojis = ['😊', '👍', '🔥', '⚡', '🐛', '🎯', '💡', '🚀'];
+        let emojiIndex = 0;
+
+        emojiBtn.addEventListener('click', () => {
+            emojiIndex = (emojiIndex + 1) % emojis.length;
+            emojiBtn.textContent = emojis[emojiIndex];
+            chatInput.value += emojis[emojiIndex];
+            chatInput.focus();
+        });
+
+        // Close modal on outside click
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.classList.remove('active');
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                localStorage.setItem('odin_code', codeEditor.value);
+                alert('Code saved to local storage! 💾');
+            }
+
+            if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+                e.preventDefault();
+                settingsModal.classList.add('active');
+            }
+
+            if (e.key === 'Escape') {
+                settingsModal.classList.remove('active');
+                webViewContainer.classList.remove('active');
+                burpPanel.classList.remove('active');
+            }
+        });
+
+        // Load saved code
+        if (localStorage.getItem('odin_code')) {
+            codeEditor.value = localStorage.getItem('odin_code');
+        }
+
+        // Auto-save every 30 seconds
+        setInterval(() => {
+            localStorage.setItem('odin_code', codeEditor.value);
+        }, 30000);
+
+        console.log('🚀 Odin IDE loaded successfully!');
+        console.log('Shortcuts: Ctrl+S = Save, Ctrl+, = Settings, Esc = Close');
+    </script>
+    </body>
+
+</html>

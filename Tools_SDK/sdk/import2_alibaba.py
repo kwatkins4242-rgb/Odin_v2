@@ -1,0 +1,9 @@
+Language  models
+
+import { alibaba } from '@ai-sdk/alibaba';
+import { generateText } from 'ai';
+
+const { text } = await generateText({
+  model: alibaba('qwen-plus'),
+  prompt: 'Write a vegetarian lasagna recipe for 4 people.',
+});

@@ -1,0 +1,41 @@
+import { allSettledWithThrow } from "openai/lib/Util.mjs"
+
+
+
+
+Gemini,
+    I need your assistance, i spoke with gpt 5 and was told that what odin does is normal,
+        that i have to take away any choices he has and give strict orders, no talking for 
+    odin, he can respond is JSON, or whatever, that privladge is the problem.He thinks he 
+    doesent have any tools  ., or cant see them.So today" must have" vision 
+    working recording screenshots every 5 mins unless he needs one then he can take one  
+    he needs strict prompts, the personality /// out for now.   
+    He needs these tools and sdk tool calls installed where he knows they are there, so in the prompt, 
+    we define everything, and tell him what he is to do with every one of them  leaving him one Option
+
+
+There are files unsaved in this header above me and in sdk they are all new.  claud gave me 3 files to fix this
+memory_retrieval, mouse control  , and  a loop but i have Several  go through all of it use what will GenericHelpers. he 
+needs a huge tool list     to be shown where everything is     and told to use it      we need to verify 
+we have everything working       below these wont install for me         
+also inthe 2end static in dashboards there is a folder says 7080, can you add that  
+
+
+
+
+
+
+
+need to install
+
+pnpm add @ai-sdk / groq
+pnpm add @ai-sdk / alibaba
+
+
+
+
+
+
+
+
+

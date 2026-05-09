@@ -1,0 +1,2350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ODIN WORKSTATION</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════
+     ODIN WORKSTATION — DESIGN SYSTEM
+  ═══════════════════════════════════════════ */
+  :root {
+    --bg-deep:     #070705;
+    --bg-base:     #0d0d0a;
+    --bg-panel:    #111110;
+    --bg-raised:   #181816;
+    --bg-hover:    #1f1f1c;
+    --gold:        #C9A84C;
+    --gold-dim:    #8a6e2e;
+    --gold-bright: #e8c06a;
+    --teal:        #3DBDB5;
+    --teal-dim:    #257a75;
+    --red:         #c94c4c;
+    --text-hi:     #F0E8D8;
+    --text-mid:    #A89878;
+    --text-lo:     #554f42;
+    --border:      rgba(201,168,76,0.12);
+    --border-hi:   rgba(201,168,76,0.35);
+    --font-head:   'Bebas Neue', sans-serif;
+    --font-body:   'Cormorant Garamond', serif;
+    --font-mono:   'Share Tech Mono', monospace;
+    --sidebar-w:   58px;
+    --right-w:     280px;
+    --radius:      4px;
+    --transition:  0.18s ease;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-hi);
+    font-family: var(--font-body);
+    font-size: 15px;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+  /* ═══ LEFT NAV SIDEBAR ═══ */
+  #nav-sidebar {
+    width: var(--sidebar-w);
+    background: var(--bg-panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+    gap: 4px;
+    flex-shrink: 0;
+    z-index: 100;
+  }
+
+  .nav-logo {
+    font-family: var(--font-head);
+    font-size: 20px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    writing-mode: horizontal-tb;
+    padding: 6px 0 14px;
+    border-bottom: 1px solid var(--border);
+    width: 100%;
+    text-align: center;
+  }
+
+  .nav-sep { width: 32px; height: 1px; background: var(--border); margin: 6px 0; }
+
+  .nav-btn {
+    width: 44px; height: 44px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: var(--text-lo);
+    transition: var(--transition);
+    position: relative;
+  }
+  .nav-btn:hover { background: var(--bg-hover); color: var(--gold-dim); }
+  .nav-btn.active { background: rgba(201,168,76,0.08); color: var(--gold); }
+  .nav-btn.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 3px; height: 24px;
+    background: var(--gold);
+    border-radius: 0 2px 2px 0;
+  }
+  .nav-btn svg { width: 18px; height: 18px; }
+  .nav-btn span { font-family: var(--font-head); font-size: 8px; letter-spacing: 1px; }
+
+  .nav-bottom { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+
+  /* status dot */
+  #status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text-lo);
+    margin-bottom: 6px;
+    box-shadow: 0 0 0 0 transparent;
+    transition: all 0.5s ease;
+  }
+  #status-dot.online {
+    background: var(--teal);
+    box-shadow: 0 0 8px var(--teal);
+    animation: pulse 2s infinite;
+  }
+  #status-dot.busy {
+    background: var(--gold);
+    box-shadow: 0 0 8px var(--gold);
+    animation: pulse 0.8s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ═══ MAIN WORKSPACE ═══ */
+  #workspace {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-base);
+  }
+
+  /* top bar */
+  #topbar {
+    height: 42px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  #tab-title {
+    font-family: var(--font-head);
+    font-size: 18px;
+    letter-spacing: 3px;
+    color: var(--gold);
+  }
+  #odin-status-text {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-mid);
+  }
+  .topbar-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-mid);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .topbar-btn:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+  .topbar-btn.gold { border-color: var(--gold-dim); color: var(--gold); }
+  .topbar-btn.gold:hover { background: rgba(201,168,76,0.1); }
+
+  /* ═══ TAB PANELS ═══ */
+  .tab-panel { display: none; flex: 1; overflow: hidden; height: 100%; }
+  .tab-panel.active { display: flex; }
+
+  /* ═══ CHAT TAB ═══ */
+  #tab-chat {
+    flex-direction: row;
+  }
+
+  #chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .msg {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 85%;
+    animation: msgIn 0.2s ease;
+  }
+  @keyframes msgIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }
+
+  .msg.user { align-self: flex-end; align-items: flex-end; }
+  .msg.odin { align-self: flex-start; align-items: flex-start; }
+
+  .msg-label {
+    font-family: var(--font-head);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-lo);
+  }
+  .msg.odin .msg-label { color: var(--gold-dim); }
+
+  .msg-bubble {
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .msg.user .msg-bubble {
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.2);
+    color: var(--text-hi);
+  }
+  .msg.odin .msg-bubble {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    color: var(--text-hi);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .msg.odin .msg-bubble.code-block {
+    background: #0a0a08;
+    border-color: var(--gold-dim);
+    overflow-x: auto;
+  }
+
+  /* typing indicator */
+  #typing-indicator {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 24px;
+  }
+  #typing-indicator.show { display: flex; }
+  .typing-dot {
+    width: 6px; height: 6px;
+    background: var(--gold-dim);
+    border-radius: 50%;
+    animation: typingPulse 1.2s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typingPulse { 0%,100%{opacity:0.3;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
+
+  /* chat input area */
+  #chat-input-area {
+    border-top: 1px solid var(--border);
+    background: var(--bg-panel);
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #chat-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  #chat-input {
+    flex: 1;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-hi);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 10px 14px;
+    resize: none;
+    outline: none;
+    min-height: 44px;
+    max-height: 160px;
+    line-height: 1.5;
+    transition: border-color var(--transition);
+  }
+  #chat-input:focus { border-color: var(--gold-dim); }
+  #chat-input::placeholder { color: var(--text-lo); }
+
+  .send-btn {
+    background: var(--gold);
+    border: none;
+    border-radius: var(--radius);
+    color: var(--bg-deep);
+    font-family: var(--font-head);
+    font-size: 14px;
+    letter-spacing: 2px;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .send-btn:hover { background: var(--gold-bright); }
+  .send-btn:active { transform: scale(0.97); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  #chat-toolbar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tool-chip {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-lo);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .tool-chip:hover { border-color: var(--teal-dim); color: var(--teal); }
+  .tool-chip.active { border-color: var(--teal); color: var(--teal); background: rgba(61,189,181,0.08); }
+
+  /* voice btn */
+  #voice-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-lo);
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: var(--transition);
+    flex-shrink: 0;
+  }
+  #voice-btn:hover { border-color: var(--teal-dim); color: var(--teal); }
+  #voice-btn.recording { border-color: var(--red); color: var(--red); animation: pulse 0.8s infinite; }
+
+  /* chat right panel — prompts + quick actions */
+  #chat-right {
+    width: 240px;
+    border-left: 1px solid var(--border);
+    background: var(--bg-panel);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .panel-section {
+    border-bottom: 1px solid var(--border);
+    padding: 10px 12px;
+  }
+  .panel-section-title {
+    font-family: var(--font-head);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--gold-dim);
+    margin-bottom: 8px;
+  }
+
+  .prompt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    flex: 1;
+    padding: 10px 12px;
+  }
+  .prompt-item {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 7px 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-mid);
+    cursor: pointer;
+    transition: var(--transition);
+    line-height: 1.4;
+  }
+  .prompt-item:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+  .badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    background: rgba(61,189,181,0.15);
+    color: var(--teal);
+    border: 1px solid rgba(61,189,181,0.3);
+  }
+
+  /* ═══ CODE TAB ═══ */
+  #tab-code {
+    flex-direction: column;
+  }
+
+  #code-toolbar {
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  #code-lang-select {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-mid);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  #code-editor-area {
+    flex: 1;
+    display: flex;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  #code-input-panel, #code-output-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #code-input-panel { border-right: 1px solid var(--border); }
+
+  .code-panel-label {
+    font-family: var(--font-head);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-lo);
+    padding: 6px 14px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .code-panel-label span { color: var(--gold-dim); }
+
+  #code-input, #code-output {
+    flex: 1;
+    background: var(--bg-deep);
+    border: none;
+    color: var(--teal);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 16px;
+    resize: none;
+    outline: none;
+    line-height: 1.6;
+    overflow-y: auto;
+    tab-size: 2;
+  }
+  #code-output { color: var(--text-hi); white-space: pre-wrap; overflow-y: auto; }
+
+  /* ═══ FILES TAB ═══ */
+  #tab-files {
+    flex-direction: column;
+  }
+
+  #drop-zone {
+    margin: 20px;
+    border: 2px dashed var(--gold-dim);
+    border-radius: var(--radius);
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    background: transparent;
+    flex-shrink: 0;
+  }
+  #drop-zone:hover, #drop-zone.dragover {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.05);
+  }
+  #drop-zone p { font-family: var(--font-mono); font-size: 13px; color: var(--text-mid); }
+  #drop-zone .drop-icon { font-size: 32px; margin-bottom: 8px; }
+  #drop-zone input { display: none; }
+
+  #files-content {
+    flex: 1;
+    display: flex;
+    gap: 0;
+    overflow: hidden;
+    padding: 0 20px 20px;
+  }
+
+  #upload-queue, #download-queue {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #upload-queue { border-right: 1px solid var(--border); padding-right: 20px; }
+  #download-queue { padding-left: 20px; }
+
+  .queue-title {
+    font-family: var(--font-head);
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .queue-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .file-card {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: var(--transition);
+  }
+  .file-card:hover { border-color: var(--gold-dim); }
+
+  .file-icon { font-size: 18px; flex-shrink: 0; }
+
+  .file-info { flex: 1; overflow: hidden; }
+  .file-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-hi);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .file-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-lo);
+    margin-top: 2px;
+  }
+
+  .file-action {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-mid);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: var(--transition);
+  }
+  .file-action:hover { border-color: var(--teal-dim); color: var(--teal); }
+  .file-action.gold:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+  /* ═══ NOTES TAB ═══ */
+  #tab-notes {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  #notes-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+  }
+
+  #note-title-input {
+    flex: 1;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-hi);
+    font-family: var(--font-head);
+    font-size: 18px;
+    letter-spacing: 2px;
+    padding: 8px 14px;
+    outline: none;
+  }
+  #note-title-input:focus { border-color: var(--gold-dim); }
+  #note-title-input::placeholder { color: var(--text-lo); }
+
+  #notes-content {
+    display: flex;
+    gap: 12px;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  #notes-list {
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .note-item {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .note-item:hover, .note-item.active { border-color: var(--gold-dim); background: rgba(201,168,76,0.06); }
+  .note-item-title { font-family: var(--font-head); font-size: 13px; letter-spacing: 1px; color: var(--text-hi); }
+  .note-item-date { font-family: var(--font-mono); font-size: 10px; color: var(--text-lo); margin-top: 2px; }
+
+  #note-editor {
+    flex: 1;
+    background: var(--bg-deep);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-hi);
+    font-family: var(--font-body);
+    font-size: 15px;
+    padding: 20px;
+    resize: none;
+    outline: none;
+    line-height: 1.8;
+  }
+  #note-editor:focus { border-color: var(--gold-dim); }
+
+  /* ═══ VAULT TAB ═══ */
+  #tab-vault {
+    flex-direction: row;
+  }
+
+  #vault-list-panel {
+    width: 280px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  #vault-search-wrap {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  #vault-search {
+    width: 100%;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-hi);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 7px 12px;
+    outline: none;
+  }
+  #vault-search:focus { border-color: var(--gold-dim); }
+  #vault-search::placeholder { color: var(--text-lo); }
+
+  #vault-conv-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .vault-item {
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .vault-item:hover, .vault-item.active { border-color: var(--gold-dim); background: rgba(201,168,76,0.06); }
+  .vault-item-title { font-family: var(--font-head); font-size: 13px; letter-spacing: 1px; color: var(--text-hi); }
+  .vault-item-preview { font-family: var(--font-mono); font-size: 11px; color: var(--text-lo); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vault-item-date { font-family: var(--font-mono); font-size: 10px; color: var(--gold-dim); margin-top: 3px; }
+
+  #vault-view-panel {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* ═══ TERMINAL TAB ═══ */
+  #tab-terminal {
+    flex-direction: column;
+    padding: 0;
+    background: #060604;
+  }
+
+  #terminal-bar {
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .term-dot.red { background: #c94c4c; }
+  .term-dot.yellow { background: #c9a84c; }
+  .term-dot.green { background: #4cc97a; }
+
+  #terminal-host {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-lo);
+    margin-left: 8px;
+  }
+
+  #terminal-ws-url {
+    margin-left: auto;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-mid);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    width: 260px;
+    outline: none;
+  }
+
+  #term-connect-btn {
+    background: transparent;
+    border: 1px solid var(--teal-dim);
+    border-radius: var(--radius);
+    color: var(--teal);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  #term-connect-btn:hover { background: rgba(61,189,181,0.1); }
+
+  #terminal-output {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #a8d8a0;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .term-line { margin: 0; }
+  .term-line.err { color: #e07070; }
+  .term-line.sys { color: var(--gold-dim); }
+  .term-line.inp { color: var(--text-mid); }
+
+  #terminal-input-row {
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    background: var(--bg-panel);
+    flex-shrink: 0;
+  }
+
+  #term-prompt { font-family: var(--font-mono); font-size: 13px; color: var(--gold); padding: 10px 8px 10px 0; flex-shrink: 0; }
+
+  #term-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-hi);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    outline: none;
+    padding: 10px 0;
+    caret-color: var(--gold);
+  }
+
+  /* ═══ SETTINGS TAB ═══ */
+  #tab-settings {
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .settings-group {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .settings-group-title {
+    font-family: var(--font-head);
+    font-size: 16px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .settings-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .settings-row:last-child { margin-bottom: 0; }
+
+  .settings-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-mid);
+    width: 160px;
+    flex-shrink: 0;
+  }
+
+  .settings-input {
+    flex: 1;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-hi);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 7px 12px;
+    outline: none;
+    transition: border-color var(--transition);
+  }
+  .settings-input:focus { border-color: var(--gold-dim); }
+
+  .settings-select {
+    flex: 1;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-hi);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 7px 12px;
+    outline: none;
+  }
+
+  .toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toggle {
+    width: 40px; height: 22px;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    cursor: pointer;
+    position: relative;
+    transition: var(--transition);
+    flex-shrink: 0;
+  }
+  .toggle.on { background: rgba(61,189,181,0.2); border-color: var(--teal-dim); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 14px; height: 14px;
+    background: var(--text-lo);
+    border-radius: 50%;
+    transition: var(--transition);
+  }
+  .toggle.on::after { left: 21px; background: var(--teal); }
+
+  .save-btn {
+    background: var(--gold);
+    border: none;
+    border-radius: var(--radius);
+    color: var(--bg-deep);
+    font-family: var(--font-head);
+    font-size: 15px;
+    letter-spacing: 2px;
+    padding: 10px 28px;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 4px;
+  }
+  .save-btn:hover { background: var(--gold-bright); }
+
+  /* ═══ QUICK SEND OVERLAY ═══ */
+  #quick-send-overlay {
+    display: none;
+    position: fixed;
+    bottom: 60px; right: 16px;
+    width: 320px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    z-index: 999;
+    overflow: hidden;
+    animation: overlayIn 0.15s ease;
+  }
+  #quick-send-overlay.show { display: block; }
+  @keyframes overlayIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  #quick-send-header {
+    background: var(--bg-raised);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #quick-send-header span { font-family: var(--font-head); font-size: 12px; letter-spacing: 2px; color: var(--gold); }
+  #quick-send-close { background: none; border: none; color: var(--text-lo); cursor: pointer; font-size: 16px; }
+  #quick-send-close:hover { color: var(--text-hi); }
+
+  #quick-send-input {
+    width: 100%;
+    background: var(--bg-deep);
+    border: none;
+    color: var(--text-hi);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 12px 14px;
+    resize: none;
+    outline: none;
+    height: 90px;
+  }
+
+  #quick-send-footer {
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* ═══ FLOATING QUICK-SEND BTN ═══ */
+  #float-btn {
+    position: fixed;
+    bottom: 16px; right: 16px;
+    width: 42px; height: 42px;
+    background: var(--gold);
+    border: none;
+    border-radius: 50%;
+    color: var(--bg-deep);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(201,168,76,0.4);
+    transition: var(--transition);
+    z-index: 998;
+  }
+  #float-btn:hover { background: var(--gold-bright); transform: scale(1.08); }
+
+  /* notification badge on float btn */
+  #float-btn .notif {
+    position: absolute;
+    top: -3px; right: -3px;
+    width: 16px; height: 16px;
+    background: var(--teal);
+    border-radius: 50%;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--bg-deep);
+    display: flex; align-items: center; justify-content: center;
+    display: none;
+  }
+  #float-btn .notif.show { display: flex; }
+
+  /* ═══ TOAST ═══ */
+  #toast {
+    position: fixed;
+    bottom: 70px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg-raised);
+    border: 1px solid var(--border-hi);
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-hi);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+    z-index: 9999;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ═══ UTIL ═══ */
+  .flex-row { display: flex; align-items: center; gap: 8px; }
+  .mt-auto { margin-top: auto; }
+  .text-mono { font-family: var(--font-mono); }
+  .text-gold { color: var(--gold); }
+  .text-teal { color: var(--teal); }
+  .text-dim { color: var(--text-lo); }
+
+  #workspace-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #panels-container {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     LEFT NAV SIDEBAR
+═══════════════════════════════════ -->
+<div id="nav-sidebar">
+  <div class="nav-logo">O<br>D<br>I<br>N</div>
+
+  <button class="nav-btn active" onclick="switchTab('chat')" id="nav-chat" title="Chat">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+    <span>CHAT</span>
+  </button>
+
+  <button class="nav-btn" onclick="switchTab('code')" id="nav-code" title="Code">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+    <span>CODE</span>
+  </button>
+
+  <button class="nav-btn" onclick="switchTab('files')" id="nav-files" title="Files">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7a2 2 0 012-2h3.586a1 1 0 01.707.293L11 7h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+    <span>FILES</span>
+  </button>
+
+  <button class="nav-btn" onclick="switchTab('notes')" id="nav-notes" title="Notes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293L18 8.707a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    <span>NOTES</span>
+  </button>
+
+  <div class="nav-sep"></div>
+
+  <button class="nav-btn" onclick="switchTab('vault')" id="nav-vault" title="Vault">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    <span>VAULT</span>
+  </button>
+
+  <button class="nav-btn" onclick="switchTab('terminal')" id="nav-terminal" title="Terminal">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+    <span>TERM</span>
+  </button>
+
+  <div class="nav-bottom">
+    <button class="nav-btn" onclick="switchTab('settings')" id="nav-settings" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span>SET</span>
+    </button>
+    <div id="status-dot" title="ODIN offline"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     MAIN WORKSPACE
+═══════════════════════════════════ -->
+<div id="workspace">
+  <div id="topbar">
+    <span id="tab-title">CHAT</span>
+    <button class="topbar-btn" onclick="checkOdinStatus()">PING ODIN</button>
+    <button class="topbar-btn gold" onclick="clearCurrentTab()">CLEAR</button>
+    <span id="odin-status-text">● OFFLINE — connect in SETTINGS</span>
+  </div>
+
+  <div id="panels-container">
+
+    <!-- ─── CHAT TAB ─── -->
+    <div class="tab-panel active" id="tab-chat">
+      <div id="chat-main">
+        <div id="chat-messages">
+          <div class="msg odin">
+            <div class="msg-label">ODIN // SYSTEM</div>
+            <div class="msg-bubble">ODIN WorkStation online. Configure your bridge endpoint in Settings, then ping to connect. All modules accessible via the sidebar. Ready.</div>
+          </div>
+        </div>
+        <div id="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-lo);margin-left:6px;">ODIN is processing...</span>
+        </div>
+        <div id="chat-input-area">
+          <div id="chat-toolbar">
+            <button class="tool-chip active" id="chip-chat" onclick="toggleMode('chat')">CHAT</button>
+            <button class="tool-chip" id="chip-agent" onclick="toggleMode('agent')">AGENT</button>
+            <button class="tool-chip" id="chip-n8n" onclick="toggleMode('n8n')">n8n WEBHOOK</button>
+            <button class="tool-chip" id="chip-code" onclick="toggleMode('code')">CODE MODE</button>
+          </div>
+          <div id="chat-input-row">
+            <button id="voice-btn" onclick="toggleVoice()" title="Voice input">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            <textarea id="chat-input" placeholder="Message ODIN..." rows="1" onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+            <button class="send-btn" onclick="sendChatMessage()">SEND</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="chat-right">
+        <div class="panel-section">
+          <div class="panel-section-title">QUICK PROMPTS</div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div class="prompt-item" onclick="usePrompt(this)">Review this code for bugs and improvements</div>
+            <div class="prompt-item" onclick="usePrompt(this)">Generate n8n workflow JSON for: </div>
+            <div class="prompt-item" onclick="usePrompt(this)">Write a Python FastAPI endpoint that </div>
+            <div class="prompt-item" onclick="usePrompt(this)">Explain this error and fix it: </div>
+            <div class="prompt-item" onclick="usePrompt(this)">Optimize this function for performance</div>
+            <div class="prompt-item" onclick="usePrompt(this)">Write unit tests for: </div>
+            <div class="prompt-item" onclick="usePrompt(this)">Create a bash script to </div>
+            <div class="prompt-item" onclick="usePrompt(this)">Design a data model for: </div>
+          </div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">ACTIVE MODE</div>
+          <div id="active-mode-display" style="font-family:var(--font-mono);font-size:12px;color:var(--teal);">CHAT → BRIDGE :8099</div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-section-title">DOWNLOAD READY <span class="badge" id="dl-badge">0</span></div>
+          <div id="mini-dl-list" style="display:flex;flex-direction:column;gap:4px;max-height:120px;overflow-y:auto;"></div>
+        </div>
+        <div class="panel-section" id="agent-tom-panel">
+          <div class="panel-section-title" id="tom-panel-title" style="color:var(--text-lo);">AGENT TOM // STANDBY</div>
+          
+          <!-- Status indicator -->
+          <div id="tom-mini-status" style="font-family:var(--font-mono); font-size:10px; margin-bottom:12px; display:flex; align-items:center; gap:6px;">
+            <div id="tom-status-dot" style="width:6px; height:6px; background:var(--text-lo); border-radius:50%;"></div>
+            <span id="tom-status-label">OFFLINE</span>
+          </div>
+
+          <!-- Pending Action Area (visible only when waiting) -->
+          <div id="tom-interlock-ui" style="display:none; border:1px solid var(--gold-dim); padding:10px; border-radius:4px; background:rgba(201,168,76,0.05); margin-bottom:12px;">
+            <div style="color:var(--gold); font-family:var(--font-head); font-size:11px; margin-bottom:6px; letter-spacing:1px;">⚠️ SAFETY INTERLOCK</div>
+            <div id="tom-action-desc" style="font-size:11px; margin-bottom:10px; font-family:var(--font-mono); color:var(--text-hi);">Action: CLICK (200, 300)</div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; gap:6px;">
+                <button class="topbar-btn gold" style="flex:1;" onclick="confirmTomAction()">CONFIRM</button>
+                <button class="topbar-btn" style="flex:1;" onclick="trustTomAction()">TRUST</button>
+              </div>
+              <button class="topbar-btn" style="width:100%; border-color:var(--red); color:var(--red);" onclick="denyTomAction()">DENY / ABORT</button>
+            </div>
+          </div>
+
+          <!-- Controls when idle/online -->
+          <div id="tom-idle-ui">
+            <button class="topbar-btn" style="width:100%;" onclick="toggleMode('agent')">NEW MISSION</button>
+            <div style="font-size:9px; color:var(--text-lo); margin-top:6px; font-family:var(--font-mono); text-align:center;">
+              Switch to AGENT mode to send missions via chat.
+            </div>
+          </div>
+        </div>
+        <div class="panel-section" style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+          <div class="panel-section-title">TOOL CALLS</div>
+          <div style="display:flex;flex-direction:column;gap:4px;overflow-y:auto;flex:1;">
+            <div class="prompt-item" onclick="insertToolCall('memory_store')">memory_store( )</div>
+            <div class="prompt-item" onclick="insertToolCall('memory_query')">memory_query( )</div>
+            <div class="prompt-item" onclick="insertToolCall('file_read')">file_read( )</div>
+            <div class="prompt-item" onclick="insertToolCall('file_write')">file_write( )</div>
+            <div class="prompt-item" onclick="insertToolCall('run_code')">run_code( )</div>
+            <div class="prompt-item" onclick="insertToolCall('web_search')">web_search( )</div>
+            <div class="prompt-item" onclick="insertToolCall('n8n_trigger')">n8n_trigger( )</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CODE TAB ─── -->
+    <div class="tab-panel" id="tab-code">
+      <div id="code-toolbar">
+        <select id="code-lang-select">
+          <option>python</option><option>javascript</option><option>bash</option>
+          <option>json</option><option>yaml</option><option>sql</option><option>html</option>
+        </select>
+        <button class="topbar-btn" onclick="sendCodeToOdin()">▶ SEND TO ODIN</button>
+        <button class="topbar-btn" onclick="copyCode()">COPY</button>
+        <button class="topbar-btn" onclick="clearCode()">CLEAR</button>
+        <button class="topbar-btn gold" onclick="downloadCode()">↓ DOWNLOAD</button>
+        <div style="margin-left:auto;font-family:var(--font-mono);font-size:11px;color:var(--text-lo)" id="code-char-count">0 chars</div>
+      </div>
+      <div id="code-editor-area">
+        <div id="code-input-panel">
+          <div class="code-panel-label">INPUT <span>// paste or type code</span></div>
+          <textarea id="code-input" placeholder="// paste your code here, or ask ODIN to generate..." spellcheck="false" oninput="updateCharCount()"></textarea>
+        </div>
+        <div id="code-output-panel">
+          <div class="code-panel-label">OUTPUT <span>// ODIN response</span></div>
+          <div id="code-output">// ODIN code response will appear here...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── FILES TAB ─── -->
+    <div class="tab-panel" id="tab-files">
+      <div id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondrop="handleDrop(event)" ondragleave="this.classList.remove('dragover')">
+        <div class="drop-icon">📂</div>
+        <p>Drop files here — or click to browse</p>
+        <p style="font-size:11px;margin-top:4px;color:var(--text-lo)">Accepts all file types · Screenshots · Entire project folders</p>
+        <input type="file" id="file-input" multiple onchange="handleFileSelect(event)">
+      </div>
+      <div id="files-content">
+        <div id="upload-queue">
+          <div class="queue-title">↑ UPLOADED <span class="badge" id="up-badge">0</span></div>
+          <div class="queue-list" id="upload-list"></div>
+        </div>
+        <div id="download-queue">
+          <div class="queue-title">↓ FROM ODIN <span class="badge" id="down-badge">0</span></div>
+          <div class="queue-list" id="download-list">
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-lo);padding:10px 0;">
+              Files sent by ODIN will appear here and persist until downloaded.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── NOTES TAB ─── -->
+    <div class="tab-panel" id="tab-notes">
+      <div id="notes-toolbar">
+        <input type="text" id="note-title-input" placeholder="NOTE TITLE..." value="ODIN Session Notes">
+        <button class="topbar-btn gold" onclick="saveNote()">SAVE</button>
+        <button class="topbar-btn" onclick="newNote()">+ NEW</button>
+        <button class="topbar-btn" onclick="exportNotes()">↓ EXPORT</button>
+      </div>
+      <div id="notes-content">
+        <div id="notes-list">
+          <div class="note-item active" onclick="loadNote(this)">
+            <div class="note-item-title">ODIN Session Notes</div>
+            <div class="note-item-date">Today</div>
+          </div>
+        </div>
+        <textarea id="note-editor" placeholder="Start writing...&#10;&#10;Tip: Notes auto-save every 30s and persist in localStorage."></textarea>
+      </div>
+    </div>
+
+    <!-- ─── VAULT TAB ─── -->
+    <div class="tab-panel" id="tab-vault">
+      <div id="vault-list-panel">
+        <div id="vault-search-wrap">
+          <input type="text" id="vault-search" placeholder="Search vault..." oninput="filterVault(this.value)">
+        </div>
+        <div style="padding:8px 12px 4px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+          <span style="font-family:var(--font-head);font-size:10px;letter-spacing:2px;color:var(--gold-dim);">CONVERSATIONS</span>
+          <button class="topbar-btn" style="padding:2px 8px;" onclick="clearVault()">CLEAR</button>
+        </div>
+        <div id="vault-conv-list"></div>
+      </div>
+      <div id="vault-view-panel" id="vault-detail"></div>
+    </div>
+
+    <!-- ─── TERMINAL TAB ─── -->
+    <div class="tab-panel" id="tab-terminal">
+      <div id="terminal-bar">
+        <div class="term-dot red"></div>
+        <div class="term-dot yellow"></div>
+        <div class="term-dot green"></div>
+        <span id="terminal-host">odin@workstation</span>
+        <input type="text" id="terminal-ws-url" value="ws://localhost:8099/ws/terminal" placeholder="ws://localhost:PORT/ws/terminal">
+        <button id="term-connect-btn" onclick="connectTerminal()">CONNECT</button>
+        <button class="topbar-btn" onclick="clearTerminal()" style="margin-left:4px;">CLEAR</button>
+      </div>
+      <div id="terminal-output" id="term-out"></div>
+      <div id="terminal-input-row">
+        <span id="term-prompt">odin@ws:~$</span>
+        <input type="text" id="term-input" placeholder="enter command..." onkeydown="handleTermKey(event)" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+
+    <!-- ─── SETTINGS TAB ─── -->
+    <div class="tab-panel" id="tab-settings">
+
+      <div class="settings-group">
+        <div class="settings-group-title">ODIN BRIDGE</div>
+        <div class="settings-row">
+          <div class="settings-label">Bridge URL</div>
+          <input type="text" class="settings-input" id="s-bridge-url" value="http://localhost:8080" placeholder="http://localhost:8080">
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Bridge Key</div>
+          <input type="password" class="settings-input" id="s-bridge-key" value="odin-super-secret-2026" placeholder="bearer key">
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">n8n Webhook URL</div>
+          <input type="text" class="settings-input" id="s-n8n-url" value="http://localhost:5678/webhook/odin-brain" placeholder="http://localhost:5678/webhook/...">
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Memory Webhook</div>
+          <input type="text" class="settings-input" id="s-memory-url" value="http://localhost:5678/webhook/odin-memory" placeholder="http://localhost:5678/webhook/...">
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">AI PROVIDER</div>
+        <div class="settings-row">
+          <div class="settings-label">Provider</div>
+          <select class="settings-select" id="s-provider">
+            <option value="bridge">ODIN Bridge (default)</option>
+            <option value="moonshot">Moonshot / Kimi K2</option>
+            <option value="openai">OpenAI</option>
+            <option value="claude">Anthropic Claude</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="nvidia">NVIDIA NIM</option>
+            <option value="n8n">n8n Brain Webhook</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">API Key</div>
+          <input type="password" class="settings-input" id="s-api-key" placeholder="sk-... or leave blank for bridge">
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Model</div>
+          <input type="text" class="settings-input" id="s-model" value="kimi-k2" list="model-list" placeholder="model name">
+          <datalist id="model-list">
+            <option value="kimi-k2">
+            <option value="moonshot-v1-8k">
+            <option value="kimi-k2-thinking-turbo">
+            <option value="moonshot-v1-8k-vision-preview">
+          </datalist>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Base URL</div>
+          <input type="text" class="settings-input" id="s-base-url" value="https://api.moonshot.ai/v1" placeholder="https://api.provider.com/v1">
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Max Tokens</div>
+          <input type="number" class="settings-input" id="s-max-tokens" value="4096" style="width:100px;flex:none;">
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">FEATURES</div>
+        <div class="settings-row">
+          <div class="settings-label">Voice Input</div>
+          <div class="toggle-wrap">
+            <div class="toggle" id="toggle-voice" onclick="toggleSetting('voice')"></div>
+            <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-mid);" id="lbl-voice">disabled</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Voice Output (TTS)</div>
+          <div class="toggle-wrap">
+            <div class="toggle" id="toggle-tts" onclick="toggleSetting('tts')"></div>
+            <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-mid);" id="lbl-tts">disabled</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Auto-save Vault</div>
+          <div class="toggle-wrap">
+            <div class="toggle on" id="toggle-vault" onclick="toggleSetting('vault')"></div>
+            <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-mid);" id="lbl-vault">enabled</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Stream Responses</div>
+          <div class="toggle-wrap">
+            <div class="toggle on" id="toggle-stream" onclick="toggleSetting('stream')"></div>
+            <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-mid);" id="lbl-stream">enabled</span>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Send on Enter</div>
+          <div class="toggle-wrap">
+            <div class="toggle on" id="toggle-enter" onclick="toggleSetting('enter')"></div>
+            <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-mid);" id="lbl-enter">enabled</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">SYSTEM PROMPT</div>
+        <div class="settings-row" style="align-items:flex-start;">
+          <div class="settings-label" style="padding-top:4px;">System Prompt</div>
+          <textarea class="settings-input" id="s-system-prompt" rows="5" style="resize:vertical;">You are ODIN, a highly capable AI assistant integrated into the ODIN_PRO system. You are professional, precise, and direct. You help with code, n8n workflows, system architecture, and technical decisions. When generating code, always include clear comments. When responding, be concise but complete.</textarea>
+        </div>
+      </div>
+
+      <button class="save-btn" onclick="saveSettings()">SAVE SETTINGS</button>
+    </div>
+
+  </div><!-- end panels-container -->
+</div><!-- end workspace -->
+
+<!-- ─── FLOATING QUICK SEND ─── -->
+<button id="float-btn" onclick="toggleQuickSend()" title="Quick message to ODIN">
+  ✦
+  <span class="notif" id="float-notif">0</span>
+</button>
+
+<!-- ─── QUICK SEND OVERLAY ─── -->
+<div id="quick-send-overlay">
+  <div id="quick-send-header">
+    <span>QUICK SEND TO ODIN</span>
+    <button id="quick-send-close" onclick="toggleQuickSend()">✕</button>
+  </div>
+  <textarea id="quick-send-input" placeholder="Send ODIN a message from anywhere..."></textarea>
+  <div id="quick-send-footer">
+    <button class="send-btn" onclick="quickSend()" style="padding:6px 14px;font-size:13px;">SEND</button>
+  </div>
+</div>
+
+<!-- ─── TOAST ─── -->
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// ODIN WORKSTATION — CORE JS
+// ═══════════════════════════════════════════
+
+// ─── STATE ───
+const state = {
+  activeTab: 'chat',
+  mode: 'chat',  // chat | agent | n8n | code
+  odinOnline: false,
+  isTyping: false,
+  voiceActive: false,
+  recognition: null,
+  settings: {},
+  downloads: [],
+  uploads: [],
+  notes: {},
+  vault: [],
+  termHistory: [],
+  termHistoryIdx: -1,
+  termWs: null,
+  tomStatus: 'offline',
+  tomWaiting: false,
+  features: {
+    voice: false,
+    tts: false,
+    vault: true,
+    stream: true,
+    enter: true
+  }
+};
+
+// ─── INIT ───
+window.addEventListener('DOMContentLoaded', () => {
+  loadSettings();
+  loadNotes();
+  loadVault();
+  setupVoice();
+  noteAutoSave();
+  termPrint('ODIN WorkStation initialized.', 'sys');
+  termPrint('Type "help" for available commands.', 'sys');
+  termPrint('Connect a WebSocket terminal in the URL bar above, or use the bridge API.', 'sys');
+  setInterval(pollAgentTom, 3000);
+});
+
+// ─── TAB SWITCHING ───
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  document.getElementById('tab-title').textContent = name.toUpperCase();
+  state.activeTab = name;
+}
+
+// ─── SETTINGS ───
+function saveSettings() {
+  const s = {
+    bridgeUrl:    document.getElementById('s-bridge-url').value,
+    bridgeKey:    document.getElementById('s-bridge-key').value,
+    n8nUrl:       document.getElementById('s-n8n-url').value,
+    memoryUrl:    document.getElementById('s-memory-url').value,
+    provider:     document.getElementById('s-provider').value,
+    apiKey:       document.getElementById('s-api-key').value,
+    model:        document.getElementById('s-model').value,
+    baseUrl:      document.getElementById('s-base-url').value,
+    maxTokens:    parseInt(document.getElementById('s-max-tokens').value),
+    systemPrompt: document.getElementById('s-system-prompt').value,
+    features:     state.features
+  };
+  localStorage.setItem('odin_ws_settings', JSON.stringify(s));
+  state.settings = s;
+  showToast('Settings saved');
+}
+
+function loadSettings() {
+  const raw = localStorage.getItem('odin_ws_settings');
+  if (!raw) return;
+  try {
+    const s = JSON.parse(raw);
+    state.settings = s;
+    if (s.bridgeUrl)    document.getElementById('s-bridge-url').value = s.bridgeUrl;
+    if (s.bridgeKey)    document.getElementById('s-bridge-key').value = s.bridgeKey;
+    if (s.n8nUrl)       document.getElementById('s-n8n-url').value = s.n8nUrl;
+    if (s.memoryUrl)    document.getElementById('s-memory-url').value = s.memoryUrl;
+    if (s.provider)     document.getElementById('s-provider').value = s.provider;
+    if (s.apiKey)       document.getElementById('s-api-key').value = s.apiKey;
+    if (s.model)        document.getElementById('s-model').value = s.model;
+    if (s.baseUrl)      document.getElementById('s-base-url').value = s.baseUrl;
+    if (s.maxTokens)    document.getElementById('s-max-tokens').value = s.maxTokens;
+    if (s.systemPrompt) document.getElementById('s-system-prompt').value = s.systemPrompt;
+    if (s.features) {
+      state.features = s.features;
+      Object.entries(s.features).forEach(([k,v]) => {
+        const el = document.getElementById('toggle-' + k);
+        const lbl = document.getElementById('lbl-' + k);
+        if (el) { el.classList.toggle('on', v); }
+        if (lbl) lbl.textContent = v ? 'enabled' : 'disabled';
+      });
+    }
+  } catch(e) {}
+}
+
+function toggleSetting(key) {
+  state.features[key] = !state.features[key];
+  const el = document.getElementById('toggle-' + key);
+  const lbl = document.getElementById('lbl-' + key);
+  if (el) el.classList.toggle('on', state.features[key]);
+  if (lbl) lbl.textContent = state.features[key] ? 'enabled' : 'disabled';
+}
+
+// ─── AGENT TOM CONTROL ───
+async function pollAgentTom() {
+  try {
+    const res = await fetch('http://localhost:8080/tom/health');
+    if (!res.ok) throw new Error('Proxy offline');
+    const data = await res.json();
+    
+    state.tomStatus = data.state.status;
+    state.tomWaiting = data.state.awaiting_confirmation;
+    
+    // UI Elements
+    const title = document.getElementById('tom-panel-title');
+    const dot = document.getElementById('tom-status-dot');
+    const label = document.getElementById('tom-status-label');
+    const interlock = document.getElementById('tom-interlock-ui');
+    const desc = document.getElementById('tom-action-desc');
+    const idleUi = document.getElementById('tom-idle-ui');
+
+    // Status Styling
+    label.textContent = state.tomStatus.toUpperCase();
+    dot.className = ''; 
+    dot.style.boxShadow = 'none';
+
+    if (state.tomStatus.includes('error')) {
+      dot.style.background = 'var(--red)';
+      title.style.color = 'var(--red)';
+    } else if (state.tomWaiting) {
+      dot.style.background = 'var(--gold)';
+      dot.style.boxShadow = '0 0 8px var(--gold)';
+      title.style.color = 'var(--gold)';
+      title.textContent = 'AGENT TOM // WAITING';
+    } else {
+      dot.style.background = 'var(--teal)';
+      title.style.color = 'var(--gold-dim)';
+      title.textContent = 'AGENT TOM // ONLINE';
+    }
+
+    // Panels visibility
+    if (state.tomWaiting) {
+      interlock.style.display = 'block';
+      idleUi.style.display = 'none';
+      const action = data.state.pending_action || { type: 'UNKNOWN' };
+      desc.textContent = `Action: ${action.type}${action.text ? ' "' + action.text + '"' : ''}`;
+    } else {
+      interlock.style.display = 'none';
+      idleUi.style.display = 'block';
+    }
+
+  } catch(e) {
+    state.tomStatus = 'offline';
+    document.getElementById('tom-status-label').textContent = 'OFFLINE';
+    document.getElementById('tom-status-dot').style.background = 'var(--text-lo)';
+    document.getElementById('tom-status-dot').style.boxShadow = 'none';
+    document.getElementById('tom-panel-title').style.color = 'var(--text-lo)';
+    document.getElementById('tom-panel-title').textContent = 'AGENT TOM // DISCONNECTED';
+    document.getElementById('tom-interlock-ui').style.display = 'none';
+    document.getElementById('tom-idle-ui').style.display = 'block';
+  }
+}
+
+async function confirmTomAction() {
+  try {
+    const res = await fetch('http://localhost:8080/confirm', { method: 'POST' });
+    if (res.ok) showToast('Action approved');
+  } catch(e) { showToast('Approval failed: ' + e.message); }
+}
+
+async function trustTomAction() {
+  try {
+    const res = await fetch('http://localhost:8080/trust', { method: 'POST' });
+    if (res.ok) showToast('Autonomy granted');
+  } catch(e) { showToast('Trust failed: ' + e.message); }
+}
+
+async function denyTomAction() {
+  try {
+    const res = await fetch('http://localhost:8080/deny', { method: 'POST' });
+    if (res.ok) showToast('Mission cancelled');
+  } catch(e) { showToast('Deny failed: ' + e.message); }
+}
+
+// ─── ODIN STATUS ───
+async function checkOdinStatus() {
+  const url = (state.settings.bridgeUrl || document.getElementById('s-bridge-url').value || 'http://localhost:8099');
+  const key = (state.settings.bridgeKey || document.getElementById('s-bridge-key').value || '');
+  try {
+    const res = await fetch(url + '/health', {
+      headers: key ? { 'Authorization': 'Bearer ' + key } : {}
+    });
+    if (res.ok) {
+      setOdinStatus('online', 'ODIN ONLINE — ' + url);
+    } else {
+      setOdinStatus('offline', 'ODIN UNREACHABLE — HTTP ' + res.status);
+    }
+  } catch(e) {
+    setOdinStatus('offline', 'ODIN OFFLINE — ' + e.message);
+  }
+}
+
+function setOdinStatus(status, text) {
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('odin-status-text');
+  dot.className = '';
+  if (status === 'online') { dot.classList.add('online'); state.odinOnline = true; }
+  else if (status === 'busy') { dot.classList.add('busy'); }
+  else { state.odinOnline = false; }
+  txt.textContent = '● ' + text;
+  dot.title = text;
+}
+
+// ─── CHAT ───
+function handleChatKey(e) {
+  if (state.features.enter && e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatMessage();
+  }
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMessage('user', text);
+  input.value = '';
+  autoResize(input);
+  showTyping(true);
+  setOdinStatus('busy', 'ODIN PROCESSING...');
+
+  const s = state.settings;
+  const provider = s.provider || 'bridge';
+
+  try {
+    let reply = '';
+
+    if (provider === 'bridge' || provider === 'n8n' || state.mode === 'agent') {
+      let url;
+      if (state.mode === 'agent') {
+        url = 'http://localhost:8080/run'; // Agent Tom Mission via Hub
+      } else if (provider === 'n8n') {
+        url = (s.n8nUrl || 'http://localhost:5678/webhook/odin-brain');
+      } else {
+        url = (s.bridgeUrl || 'http://localhost:8099') + '/chat';
+      }
+
+      const key = s.bridgeKey || '';
+      const body = state.mode === 'agent' 
+        ? { goal: text } 
+        : { message: text, task: 'chat', payload: { message: text, mode: state.mode } };
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(key && state.mode !== 'agent' ? { 'Authorization': 'Bearer ' + key } : {})
+        },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      reply = data.message || data.reply || data.response || data.output || JSON.stringify(data);
+
+    } else {
+      // Direct AI provider call
+      const apiKey = s.apiKey;
+      const model = s.model || 'gpt-4o-mini';
+      const baseUrl = s.baseUrl || 'https://api.openai.com/v1';
+      if (!apiKey) { reply = '⚠ No API key set. Configure in Settings.'; }
+      else {
+        const res = await fetch(baseUrl + '/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + apiKey
+          },
+          body: JSON.stringify({
+            model: model,
+            max_tokens: s.maxTokens || 4096,
+            messages: [
+              { role: 'system', content: s.systemPrompt || 'You are ODIN, a helpful AI.' },
+              { role: 'user', content: text }
+            ]
+          })
+        });
+        const data = await res.json();
+        reply = data.choices?.[0]?.message?.content || JSON.stringify(data);
+      }
+    }
+
+    showTyping(false);
+    addMessage('odin', reply);
+    setOdinStatus('online', 'ODIN ONLINE');
+
+    if (state.features.vault) {
+      saveToVault({ role: 'user', content: text }, { role: 'odin', content: reply });
+    }
+    if (state.features.tts) speakText(reply);
+
+  } catch(e) {
+    showTyping(false);
+    addMessage('odin', '⚠ Error reaching ODIN: ' + e.message);
+    setOdinStatus('offline', 'ERROR — ' + e.message);
+  }
+}
+
+function addMessage(role, text) {
+  const container = document.getElementById('chat-messages');
+  const msg = document.createElement('div');
+  msg.className = 'msg ' + role;
+  const isCode = text.includes('\n') && (text.includes('def ') || text.includes('function ') || text.includes('import ') || text.startsWith('#') || text.startsWith('//') || text.startsWith('{'));
+  msg.innerHTML = `
+    <div class="msg-label">${role === 'user' ? 'YOU' : 'ODIN'}</div>
+    <div class="msg-bubble${isCode ? ' code-block' : ''}">${escHtml(text)}</div>
+  `;
+  container.appendChild(msg);
+  container.scrollTop = container.scrollHeight;
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showTyping(show) {
+  document.getElementById('typing-indicator').classList.toggle('show', show);
+  document.getElementById('chat-messages').scrollTop = 99999;
+}
+
+function toggleMode(mode) {
+  state.mode = mode;
+  document.querySelectorAll('.tool-chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('chip-' + mode).classList.add('active');
+  const s = state.settings;
+  const modeMap = {
+    chat: 'CHAT → BRIDGE :8099',
+    agent: 'AGENT TOM → SERVICE :8060',
+    n8n: 'n8n → ' + (s.n8nUrl || ':5678/webhook/odin-brain'),
+    code: 'CODE → BRIDGE :8099'
+  };
+  document.getElementById('active-mode-display').textContent = modeMap[mode] || mode;
+}
+
+function usePrompt(el) {
+  document.getElementById('chat-input').value = el.textContent;
+  document.getElementById('chat-input').focus();
+  switchTab('chat');
+}
+
+function insertToolCall(name) {
+  const input = document.getElementById('chat-input');
+  input.value += (input.value ? '\n' : '') + 'Use tool: ' + name + '({ })';
+  input.focus();
+  switchTab('chat');
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+
+// ─── CODE TAB ───
+function updateCharCount() {
+  const v = document.getElementById('code-input').value;
+  document.getElementById('code-char-count').textContent = v.length.toLocaleString() + ' chars, ' + v.split('\n').length + ' lines';
+}
+
+async function sendCodeToOdin() {
+  const code = document.getElementById('code-input').value.trim();
+  const lang = document.getElementById('code-lang-select').value;
+  if (!code) { showToast('Nothing to send'); return; }
+
+  document.getElementById('code-output').textContent = '// Processing...';
+  setOdinStatus('busy', 'ODIN PROCESSING CODE...');
+
+  const s = state.settings;
+  const prompt = `Language: ${lang}\n\nCode:\n${code}\n\nReview, fix bugs, and improve this code. Return the improved version with comments.`;
+
+  try {
+    let reply = '';
+    if (s.provider === 'bridge' || !s.provider) {
+      const res = await fetch((s.bridgeUrl || 'http://localhost:8099') + '/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (s.bridgeKey||'') },
+        body: JSON.stringify({ message: prompt, task: 'code', payload: { code, lang } })
+      });
+      const data = await res.json();
+      reply = data.reply || data.response || data.output || JSON.stringify(data);
+    } else {
+      // direct API
+      const res = await fetch((s.baseUrl||'https://api.openai.com/v1') + '/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + s.apiKey },
+        body: JSON.stringify({ model: s.model||'gpt-4o', max_tokens: s.maxTokens||4096,
+          messages: [ { role: 'system', content: s.systemPrompt||'You are ODIN.' }, { role: 'user', content: prompt } ] })
+      });
+      const data = await res.json();
+      reply = data.choices?.[0]?.message?.content || JSON.stringify(data);
+    }
+    document.getElementById('code-output').textContent = reply;
+    setOdinStatus('online', 'ODIN ONLINE');
+    addOdinDownload('code_response.' + lang, new Blob([reply], {type:'text/plain'}));
+  } catch(e) {
+    document.getElementById('code-output').textContent = '// Error: ' + e.message;
+    setOdinStatus('offline', 'ERROR');
+  }
+}
+
+function copyCode() {
+  const v = document.getElementById('code-input').value;
+  navigator.clipboard.writeText(v).then(() => showToast('Copied'));
+}
+
+function clearCode() {
+  document.getElementById('code-input').value = '';
+  document.getElementById('code-output').textContent = '// cleared';
+  updateCharCount();
+}
+
+function downloadCode() {
+  const lang = document.getElementById('code-lang-select').value;
+  const ext = { python:'py', javascript:'js', bash:'sh', json:'json', yaml:'yml', sql:'sql', html:'html' }[lang] || 'txt';
+  const content = document.getElementById('code-output').textContent;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type:'text/plain'}));
+  a.download = 'odin_code.' + ext;
+  a.click();
+}
+
+// ─── FILES ───
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.add('dragover');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('dragover');
+  processFiles(e.dataTransfer.files);
+}
+
+function handleFileSelect(e) {
+  processFiles(e.target.files);
+}
+
+function processFiles(files) {
+  Array.from(files).forEach(file => {
+    const id = Date.now() + Math.random().toString(36).slice(2);
+    state.uploads.push({ id, file, name: file.name, size: file.size, time: Date.now() });
+    renderUploadCard({ id, name: file.name, size: file.size, file });
+  });
+  document.getElementById('up-badge').textContent = state.uploads.length;
+}
+
+function renderUploadCard({ id, name, size, file }) {
+  const list = document.getElementById('upload-list');
+  const card = document.createElement('div');
+  card.className = 'file-card';
+  card.id = 'up-' + id;
+  const icon = getFileIcon(name);
+  const sz = formatBytes(size);
+  card.innerHTML = `
+    <span class="file-icon">${icon}</span>
+    <div class="file-info">
+      <div class="file-name">${escHtml(name)}</div>
+      <div class="file-meta">${sz}</div>
+    </div>
+    <button class="file-action" onclick="sendFileToOdin('${id}')">SEND</button>
+    <button class="file-action gold" onclick="downloadFileLocal('${id}')">↓</button>
+    <button class="file-action" onclick="removeUpload('${id}')">✕</button>
+  `;
+  list.prepend(card);
+}
+
+function sendFileToOdin(id) {
+  showToast('File queued for ODIN (bridge must support /upload)');
+  // Implementation: POST FormData to bridge /upload endpoint
+}
+
+function downloadFileLocal(id) {
+  const f = state.uploads.find(u => u.id === id);
+  if (!f) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(f.file);
+  a.download = f.name;
+  a.click();
+}
+
+function removeUpload(id) {
+  state.uploads = state.uploads.filter(u => u.id !== id);
+  const el = document.getElementById('up-' + id);
+  if (el) el.remove();
+  document.getElementById('up-badge').textContent = state.uploads.length;
+}
+
+// Called by ODIN when it sends a file back
+function addOdinDownload(name, blob) {
+  const id = Date.now() + Math.random().toString(36).slice(2);
+  state.downloads.push({ id, name, blob, time: Date.now() });
+  renderDownloadCard({ id, name, blob });
+  const cnt = state.downloads.length;
+  document.getElementById('down-badge').textContent = cnt;
+  document.getElementById('dl-badge').textContent = cnt;
+  document.querySelector('#float-btn .notif').textContent = cnt;
+  document.querySelector('#float-btn .notif').classList.add('show');
+  updateMiniDlList();
+  showToast('ODIN sent: ' + name);
+}
+
+function renderDownloadCard({ id, name, blob }) {
+  const list = document.getElementById('download-list');
+  const card = document.createElement('div');
+  card.className = 'file-card';
+  card.id = 'dl-' + id;
+  const icon = getFileIcon(name);
+  const sz = formatBytes(blob.size || 0);
+  card.innerHTML = `
+    <span class="file-icon">${icon}</span>
+    <div class="file-info">
+      <div class="file-name">${escHtml(name)}</div>
+      <div class="file-meta">${sz} · waiting</div>
+    </div>
+    <button class="file-action gold" onclick="downloadOdinFile('${id}')">↓ GET</button>
+    <button class="file-action" onclick="removeDownload('${id}')">✕</button>
+  `;
+  list.prepend(card);
+}
+
+function downloadOdinFile(id) {
+  const f = state.downloads.find(d => d.id === id);
+  if (!f) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(f.blob);
+  a.download = f.name;
+  a.click();
+  showToast('Downloaded: ' + f.name);
+}
+
+function removeDownload(id) {
+  state.downloads = state.downloads.filter(d => d.id !== id);
+  const el = document.getElementById('dl-' + id);
+  if (el) el.remove();
+  const cnt = state.downloads.length;
+  document.getElementById('down-badge').textContent = cnt;
+  document.getElementById('dl-badge').textContent = cnt;
+  document.querySelector('#float-btn .notif').textContent = cnt;
+  if (cnt === 0) document.querySelector('#float-btn .notif').classList.remove('show');
+  updateMiniDlList();
+}
+
+function updateMiniDlList() {
+  const list = document.getElementById('mini-dl-list');
+  list.innerHTML = '';
+  state.downloads.slice(0, 5).forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'prompt-item';
+    div.innerHTML = `<span style="color:var(--teal)">${getFileIcon(f.name)}</span> ${escHtml(f.name)}`;
+    div.onclick = () => downloadOdinFile(f.id);
+    list.appendChild(div);
+  });
+}
+
+function getFileIcon(name) {
+  const ext = name.split('.').pop().toLowerCase();
+  const map = { py:'🐍', js:'📜', json:'📋', html:'🌐', css:'🎨', sh:'⚡', sql:'🗄️', md:'📝', txt:'📄', png:'🖼️', jpg:'🖼️', jpeg:'🖼️', gif:'🖼️', pdf:'📕', zip:'📦', tar:'📦', gz:'📦', mp3:'🎵', mp4:'🎬', csv:'📊', xlsx:'📊', docx:'📃' };
+  return map[ext] || '📄';
+}
+
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(2) + ' MB';
+}
+
+// ─── NOTES ───
+let currentNoteId = 'default';
+
+function saveNote() {
+  const id = currentNoteId;
+  const title = document.getElementById('note-title-input').value || 'Untitled';
+  const content = document.getElementById('note-editor').value;
+  state.notes[id] = { id, title, content, updated: Date.now() };
+  localStorage.setItem('odin_ws_notes', JSON.stringify(state.notes));
+  renderNotesList();
+  showToast('Note saved');
+}
+
+function newNote() {
+  const id = 'note_' + Date.now();
+  currentNoteId = id;
+  document.getElementById('note-title-input').value = 'New Note';
+  document.getElementById('note-editor').value = '';
+  state.notes[id] = { id, title: 'New Note', content: '', updated: Date.now() };
+  renderNotesList();
+}
+
+function loadNote(el) {
+  const id = el.dataset.id;
+  if (!id || !state.notes[id]) return;
+  currentNoteId = id;
+  document.getElementById('note-title-input').value = state.notes[id].title;
+  document.getElementById('note-editor').value = state.notes[id].content;
+  document.querySelectorAll('.note-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function renderNotesList() {
+  const list = document.getElementById('notes-list');
+  list.innerHTML = '';
+  Object.values(state.notes).sort((a,b) => b.updated - a.updated).forEach(n => {
+    const div = document.createElement('div');
+    div.className = 'note-item' + (n.id === currentNoteId ? ' active' : '');
+    div.dataset.id = n.id;
+    div.innerHTML = `<div class="note-item-title">${escHtml(n.title)}</div><div class="note-item-date">${new Date(n.updated).toLocaleDateString()}</div>`;
+    div.onclick = () => loadNote(div);
+    list.appendChild(div);
+  });
+}
+
+function loadNotes() {
+  const raw = localStorage.getItem('odin_ws_notes');
+  if (raw) try { state.notes = JSON.parse(raw); } catch(e){}
+  if (!state.notes.default) state.notes.default = { id:'default', title:'ODIN Session Notes', content:'', updated: Date.now() };
+  renderNotesList();
+}
+
+function exportNotes() {
+  const all = Object.values(state.notes).map(n => `# ${n.title}\n${n.content}`).join('\n\n---\n\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([all], {type:'text/markdown'}));
+  a.download = 'odin_notes.md';
+  a.click();
+}
+
+function noteAutoSave() {
+  setInterval(() => {
+    if (state.activeTab === 'notes') saveNote();
+  }, 30000);
+}
+
+// ─── VAULT ───
+function saveToVault(userMsg, odinMsg) {
+  const entry = {
+    id: Date.now(),
+    timestamp: Date.now(),
+    preview: userMsg.content.substring(0, 60) + (userMsg.content.length > 60 ? '...' : ''),
+    messages: [userMsg, odinMsg]
+  };
+  state.vault.unshift(entry);
+  if (state.vault.length > 500) state.vault.pop();
+  localStorage.setItem('odin_ws_vault', JSON.stringify(state.vault));
+  renderVaultList();
+}
+
+function loadVault() {
+  const raw = localStorage.getItem('odin_ws_vault');
+  if (raw) try { state.vault = JSON.parse(raw); } catch(e){}
+  renderVaultList();
+}
+
+function renderVaultList(filter) {
+  const list = document.getElementById('vault-conv-list');
+  list.innerHTML = '';
+  let items = state.vault;
+  if (filter) items = items.filter(v => v.preview.toLowerCase().includes(filter.toLowerCase()));
+  items.forEach(v => {
+    const div = document.createElement('div');
+    div.className = 'vault-item';
+    div.innerHTML = `
+      <div class="vault-item-title">${new Date(v.timestamp).toLocaleTimeString()}</div>
+      <div class="vault-item-preview">${escHtml(v.preview)}</div>
+      <div class="vault-item-date">${new Date(v.timestamp).toLocaleDateString()}</div>
+    `;
+    div.onclick = () => loadVaultEntry(v);
+    list.appendChild(div);
+  });
+}
+
+function loadVaultEntry(v) {
+  const panel = document.getElementById('vault-view-panel');
+  panel.innerHTML = '';
+  v.messages.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'msg ' + (m.role === 'user' ? 'user' : 'odin');
+    div.innerHTML = `<div class="msg-label">${m.role === 'user' ? 'YOU' : 'ODIN'}</div><div class="msg-bubble">${escHtml(m.content)}</div>`;
+    panel.appendChild(div);
+  });
+}
+
+function filterVault(val) {
+  renderVaultList(val);
+}
+
+function clearVault() {
+  if (!confirm('Clear all vault entries?')) return;
+  state.vault = [];
+  localStorage.removeItem('odin_ws_vault');
+  renderVaultList();
+  showToast('Vault cleared');
+}
+
+// ─── TERMINAL ───
+let termWs = null;
+
+function termPrint(text, cls) {
+  const out = document.getElementById('terminal-output');
+  const line = document.createElement('div');
+  line.className = 'term-line' + (cls ? ' ' + cls : '');
+  line.textContent = text;
+  out.appendChild(line);
+  out.scrollTop = out.scrollHeight;
+}
+
+function connectTerminal() {
+  const url = document.getElementById('terminal-ws-url').value;
+  if (termWs) { termWs.close(); termWs = null; }
+  try {
+    termWs = new WebSocket(url);
+    termWs.onopen = () => { termPrint('✓ Connected to ' + url, 'sys'); document.getElementById('term-connect-btn').textContent = 'DISCONNECT'; };
+    termWs.onmessage = (e) => termPrint(e.data);
+    termWs.onerror = () => termPrint('WebSocket error', 'err');
+    termWs.onclose = () => { termPrint('Connection closed', 'sys'); document.getElementById('term-connect-btn').textContent = 'CONNECT'; termWs = null; };
+  } catch(e) {
+    termPrint('Connection failed: ' + e.message, 'err');
+  }
+}
+
+function handleTermKey(e) {
+  const input = document.getElementById('term-input');
+  if (e.key === 'Enter') {
+    const cmd = input.value.trim();
+    if (!cmd) return;
+    termPrint('odin@ws:~$ ' + cmd, 'inp');
+    state.termHistory.unshift(cmd);
+    state.termHistoryIdx = -1;
+    if (termWs && termWs.readyState === 1) {
+      termWs.send(cmd + '\n');
+    } else {
+      handleLocalCmd(cmd);
+    }
+    input.value = '';
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (state.termHistoryIdx < state.termHistory.length - 1) {
+      state.termHistoryIdx++;
+      input.value = state.termHistory[state.termHistoryIdx];
+    }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (state.termHistoryIdx > 0) {
+      state.termHistoryIdx--;
+      input.value = state.termHistory[state.termHistoryIdx];
+    } else {
+      state.termHistoryIdx = -1;
+      input.value = '';
+    }
+  }
+}
+
+function handleLocalCmd(cmd) {
+  const c = cmd.toLowerCase().trim();
+  if (c === 'help') {
+    termPrint('Available commands (when connected to ODIN bridge):', 'sys');
+    termPrint('  status     — check ODIN status', 'sys');
+    termPrint('  ping       — ping bridge', 'sys');
+    termPrint('  clear      — clear terminal', 'sys');
+    termPrint('  modules    — list ODIN modules', 'sys');
+    termPrint('  connect <url> — connect WebSocket', 'sys');
+    termPrint('→ For real shell: connect ws://localhost:PORT/ws/terminal', 'sys');
+  } else if (c === 'clear') {
+    clearTerminal();
+  } else if (c === 'status') {
+    checkOdinStatus().then(() => termPrint(document.getElementById('odin-status-text').textContent));
+  } else if (c.startsWith('connect ')) {
+    document.getElementById('terminal-ws-url').value = c.slice(8).trim();
+    connectTerminal();
+  } else if (c === 'modules') {
+    ['Core:8000','Face:8001','Vision:8002','Memory:8003','Comms:8005','Engineering:8006','Hunter:8008','Bridge:8099','n8n:5678'].forEach(m => termPrint('  ' + m));
+  } else {
+    termPrint('Not connected to terminal. Use CONNECT to attach a WebSocket terminal session.', 'err');
+    termPrint('Or route through ODIN bridge with: POST /execute', 'sys');
+  }
+}
+
+function clearTerminal() {
+  document.getElementById('terminal-output').innerHTML = '';
+  termPrint('Terminal cleared.', 'sys');
+}
+
+// ─── VOICE ───
+function setupVoice() {
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    state.recognition = new SR();
+    state.recognition.continuous = false;
+    state.recognition.lang = 'en-US';
+    state.recognition.onresult = (e) => {
+      const transcript = e.results[0][0].transcript;
+      document.getElementById('chat-input').value = transcript;
+      autoResize(document.getElementById('chat-input'));
+    };
+    state.recognition.onend = () => {
+      state.voiceActive = false;
+      document.getElementById('voice-btn').classList.remove('recording');
+    };
+  }
+}
+
+function toggleVoice() {
+  if (!state.features.voice) {
+    showToast('Enable Voice Input in Settings first');
+    return;
+  }
+  if (!state.recognition) { showToast('Speech recognition not supported in this browser'); return; }
+  if (state.voiceActive) {
+    state.recognition.stop();
+  } else {
+    state.recognition.start();
+    state.voiceActive = true;
+    document.getElementById('voice-btn').classList.add('recording');
+  }
+}
+
+function speakText(text) {
+  if (!state.features.tts || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text.substring(0, 500));
+  utt.rate = 1;
+  utt.pitch = 0.9;
+  window.speechSynthesis.speak(utt);
+}
+
+// ─── QUICK SEND ───
+function toggleQuickSend() {
+  document.getElementById('quick-send-overlay').classList.toggle('show');
+  if (document.getElementById('quick-send-overlay').classList.contains('show')) {
+    document.getElementById('quick-send-input').focus();
+  }
+}
+
+function quickSend() {
+  const input = document.getElementById('quick-send-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  toggleQuickSend();
+  document.getElementById('chat-input').value = text;
+  sendChatMessage();
+  switchTab('chat');
+}
+
+document.getElementById('quick-send-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); quickSend(); }
+});
+
+// ─── CLEAR ───
+function clearCurrentTab() {
+  if (state.activeTab === 'chat') {
+    document.getElementById('chat-messages').innerHTML = '';
+    addMessage('odin', 'Chat cleared. Ready.');
+  } else if (state.activeTab === 'code') clearCode();
+  else if (state.activeTab === 'terminal') clearTerminal();
+  else if (state.activeTab === 'notes') document.getElementById('note-editor').value = '';
+}
+
+// ─── TOAST ───
+function showToast(msg, duration) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration || 2500);
+}
+
+// Poll ODIN status every 30s if settings exist
+setInterval(() => {
+  if (state.settings.bridgeUrl) checkOdinStatus();
+}, 30000);
+
+// Keyboard shortcut: Ctrl+Enter from anywhere = quick send toggle
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'Enter') toggleQuickSend();
+  if (e.key === 'Escape') {
+    if (document.getElementById('quick-send-overlay').classList.contains('show')) toggleQuickSend();
+  }
+});
+</script>
+</body>
+</html>

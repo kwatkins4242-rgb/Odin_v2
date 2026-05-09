@@ -1,0 +1,16 @@
+{
+    "name": "code_runner",
+    "description": "Safely executes Python code and returns the result, with print output, last-line evaluation, error handling, and timeout protection.",
+    "parameters": {
+        "properties": {
+            "code": {
+                "description": "The Python code to execute.\n\n**Features:**\n- All print() output is captured and returned.\n- The last expression is automatically evaluated and returned.\n- Syntax and runtime errors return detailed error information.\n- Execution is terminated if it exceeds the time limit.\n- Variables persist across calls (session management).\n- ctx.read_object(uri): Read resource file content as bytes. Example: ctx.read_object('file.csv').\n- Matplotlib support: Plots are saved as PNG files.\n\n**Usage Examples:**\n\nBasic calculation:\n```python\nx = 10\ny = 20\nprint(f'x + y = {x + y}')\nx * y  # The last line will be evaluated\n```\n\nFile reading:\n```python\ncontent = ctx.read_object('file.csv')\nprint(f'File size: {len(content)} bytes')\n```\n\nData processing:\n```python\nimport json\ndata = json.loads(content.decode('utf-8'))\nprint(f'Number of rows: {len(data)}')\n```\n\nPandas data processing:\n```python\nimport pandas as pd\nimport io\ncontent = ctx.read_object('data.csv')\ndf = pd.read_csv(io.BytesIO(content))\nprint(f'Data shape: {df.shape}')\ndf.head()\n```\n\nMatplotlib plot:\n```python\nimport matplotlib.pyplot as plt\nplt.plot([1, 2, 3, 4], [1, 4, 2, 3])\nplt.title('Sample Plot')\nplt.show()\n```",
+                "type": "string"
+            }
+        },
+        "required": [
+            "code"
+        ],
+        "type": "object"
+    }
+}

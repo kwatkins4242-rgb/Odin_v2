@@ -1,0 +1,21 @@
+{
+    "name": "base64_encode",
+    "description": "Encode text to base64 format",
+    "parameters": {
+        "properties": {
+            "data": {
+                "description": "Text data to encode to base64",
+                "type": "string"
+            },
+            "encoding": {
+                "default": "utf-8",
+                "description": "Character encoding to use (default: utf-8)",
+                "type": "string"
+            }
+        },
+        "required": [
+            "data"
+        ],
+        "type": "object"
+    }
+}

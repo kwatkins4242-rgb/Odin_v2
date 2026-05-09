@@ -1,0 +1,26 @@
+
+
+
+
+
+Streaming
+
+import { groq } from '@ai-sdk/groq';
+import { streamText } from 'ai';
+
+const result = streamText({
+    model: groq('openai/gpt-oss-120b'),
+    prompt: 'Search for the latest tech news and summarize it.',
+    tools: {
+        browser_search: groq.tools.browserSearch({}),
+    },
+    toolChoice: 'required',
+});
+
+for await (const delta of result.fullStream) {
+    if (delta.type === 'text-delta') {
+        process.stdout.write(delta.text);
+    }
+}
+
+

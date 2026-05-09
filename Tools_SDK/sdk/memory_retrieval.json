@@ -1,0 +1,41 @@
+{
+  "name": "memory",
+  "description": "Memory storage and retrieval system, supporting persistence of conversation history, user preferences, and other data.",
+  "parameters": {
+    "properties": {
+      "action": {
+        "description": "Operation type: store, retrieve, delete, list.",
+        "enum": [
+          "store",
+          "retrieve",
+          "delete",
+          "list"
+        ],
+        "type": "string"
+      },
+      "data": {
+        "description": "Data content to be stored.",
+        "type": "object"
+      },
+      "key": {
+        "description": "Storage key name, used to identify the memory entry.",
+        "type": "string"
+      },
+      "prefix": {
+        "description": "Key prefix used for the list operation.",
+        "type": "string"
+      },
+      "ttl": {
+        "default": 86400,
+        "description": "Data expiration time (seconds), default is 86400 (24 hours).",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "action"
+    ],
+    "type": "object"
+  }
+}
+
+

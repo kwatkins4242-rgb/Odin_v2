@@ -1,0 +1,3461 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#050d1a" />
+  <title>ODIN // COMMAND CENTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Lato:wght@300;400&family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --odin-bg: #050d1a;
+      --odin-navy: #10366a;
+      --odin-sky: #9ce1fa;
+      --odin-gold: #f3cc92;
+      --odin-dim: rgba(156, 225, 250, 0.35);
+      --odin-panel: rgba(11, 37, 73, 0.55);
+      --odin-border: rgba(156, 225, 250, 0.12);
+      --text-main: rgba(255, 255, 255, 0.88);
+      --text-dim: rgba(156, 225, 250, 0.45);
+      --hub-green: #4ade80;
+      --hub-amber: #fbbf24;
+      --hub-red: #f87171;
+      --hub-purple: #c084fc;
+      --hunt-orange: #ff6a00;
+      --radius: 14px;
+      --n8n-color: #ff6d3b;
+      --n8n-dim: rgba(255, 109, 59, 0.18);
+      --n8n-border: rgba(255, 109, 59, 0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      background: var(--odin-bg);
+      color: var(--text-main);
+      font-family: 'Lato', sans-serif;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(16, 54, 106, 0.5) 0%, transparent 60%), radial-gradient(ellipse 40% 40% at 90% 80%, rgba(9, 20, 50, 0.6) 0%, transparent 60%);
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image: linear-gradient(rgba(156, 225, 250, 0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(156, 225, 250, 0.018) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    #app {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 12px;
+    }
+
+    /* HEADER */
+    #odin-header {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0 6px;
+      border-bottom: 1px solid var(--odin-border);
+      flex-wrap: nowrap;
+      position: relative;
+    }
+
+    #odin-header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, var(--odin-sky), transparent 55%);
+      opacity: 0.4;
+    }
+
+    #logo-ring {
+      width: 38px;
+      height: 38px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      border: 1.5px solid rgba(156, 225, 250, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, rgba(16, 54, 106, 0.6) 0%, transparent 70%);
+      animation: ringPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes ringPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(156, 225, 250, 0.2);
+        border-color: rgba(156, 225, 250, 0.4)
+      }
+
+      50% {
+        box-shadow: 0 0 20px 4px rgba(156, 225, 250, 0.15);
+        border-color: rgba(156, 225, 250, 0.7)
+      }
+    }
+
+    #logo-ring svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    #odin-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 8px;
+      color: var(--odin-sky);
+      text-shadow: 0 0 20px rgba(156, 225, 250, 0.5);
+      line-height: 1;
+    }
+
+    #odin-subtitle {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    #module-strip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 8px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .mod-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border: 1px solid var(--odin-border);
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      transition: all 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+      text-decoration: none;
+    }
+
+    .mod-pill:hover {
+      border-color: rgba(156, 225, 250, 0.35);
+      color: var(--odin-sky);
+    }
+
+    .mod-pill.online {
+      border-color: rgba(74, 222, 128, 0.25);
+    }
+
+    .mod-pill.online .mpd {
+      background: var(--hub-green);
+      box-shadow: 0 0 5px var(--hub-green);
+    }
+
+    .mod-pill.warn .mpd {
+      background: var(--hub-amber);
+      box-shadow: 0 0 5px var(--hub-amber);
+    }
+
+    .mod-pill.offline .mpd {
+      background: rgba(156, 225, 250, 0.2);
+    }
+
+    .mpd {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    #port-selector {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--odin-border);
+      border-radius: 10px;
+      padding: 3px 8px;
+      flex-shrink: 0;
+    }
+
+    #port-selector label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+
+    #port-select {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--odin-gold);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      appearance: none;
+      padding: 0 14px 0 0;
+    }
+
+    #port-select option {
+      background: #0b2549;
+      color: var(--text-main);
+    }
+
+    #port-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--hub-amber);
+      box-shadow: 0 0 6px var(--hub-amber);
+      flex-shrink: 0;
+    }
+
+    #port-indicator.connected {
+      background: var(--hub-green);
+      box-shadow: 0 0 6px var(--hub-green);
+    }
+
+    #port-test-btn {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      background: none;
+      border: none;
+      color: rgba(156, 225, 250, 0.4);
+      cursor: pointer;
+      padding: 0;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    #port-test-btn:hover {
+      color: var(--odin-sky);
+    }
+
+    #prov-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .prov-toggle-btn {
+      background: transparent;
+      border: 1px solid var(--odin-border);
+      color: var(--text-dim);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      padding: 3px 8px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+      border-radius: 2px;
+    }
+
+    .prov-toggle-btn.active {
+      background: rgba(156, 225, 250, 0.15);
+      border-color: var(--odin-sky);
+      color: var(--odin-sky);
+    }
+
+    #model-select-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .model-sel {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--odin-border);
+      color: var(--text-main);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      padding: 3px 6px;
+      outline: none;
+      border-radius: 4px;
+    }
+
+    .model-sel option {
+      background: #0b2549;
+    }
+
+    #provider-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      padding: 3px 10px;
+      border: 1px solid rgba(74, 222, 128, 0.35);
+      border-radius: 8px;
+      color: var(--hub-green);
+      letter-spacing: 1px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    #header-clock {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      color: var(--odin-sky);
+      letter-spacing: 2px;
+      flex-shrink: 0;
+    }
+
+    #settings-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--odin-border);
+      color: var(--text-dim);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+      font-size: 13px;
+    }
+
+    #settings-btn:hover {
+      color: var(--odin-gold);
+      border-color: rgba(243, 204, 146, 0.3);
+    }
+
+    #status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--hub-green);
+      box-shadow: 0 0 8px var(--hub-green);
+      animation: statusPulse 2.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes statusPulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.4
+      }
+    }
+
+    /* TABS */
+    #tab-nav {
+      display: flex;
+      align-items: stretch;
+      height: 38px;
+      background: rgba(5, 13, 26, 0.8);
+      border-bottom: 1px solid var(--odin-border);
+      padding: 0 4px;
+      gap: 1px;
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 16px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-dim);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+    }
+
+    .tab-btn.active {
+      color: var(--odin-sky);
+      border-bottom-color: var(--odin-sky);
+    }
+
+    .tab-badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 8px;
+      padding: 1px 5px;
+      background: rgba(255, 106, 0, 0.15);
+      border: 1px solid rgba(255, 106, 0, 0.4);
+      border-radius: 6px;
+      color: var(--hunt-orange);
+    }
+
+    /* VIEWS */
+    .view {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .view.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(5px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    /* ── CHAT ── */
+    #chat-view {
+      padding-top: 8px;
+    }
+
+    #chat-log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(156, 225, 250, 0.15) transparent;
+    }
+
+    .message {
+      max-width: 82%;
+      padding: 11px 15px;
+      border-radius: var(--radius);
+      font-size: 13.5px;
+      line-height: 1.6;
+      animation: msgIn 0.2s ease;
+    }
+
+    @keyframes msgIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: rgba(16, 54, 106, 0.55);
+      border: 1px solid rgba(156, 225, 250, 0.2);
+    }
+
+    .message.odin {
+      align-self: flex-start;
+      background: rgba(5, 13, 26, 0.7);
+      border: 1px solid var(--odin-border);
+      color: rgba(220, 235, 255, 0.9);
+    }
+
+    .message.odin .msg-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: var(--odin-sky);
+      opacity: 0.7;
+      margin-bottom: 5px;
+    }
+
+    .message.error {
+      align-self: flex-start;
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: rgba(248, 113, 113, 0.9);
+      font-size: 12px;
+    }
+
+    #typing-indicator {
+      display: none;
+      align-self: flex-start;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 15px;
+      background: rgba(5, 13, 26, 0.7);
+      border: 1px solid var(--odin-border);
+      border-radius: var(--radius);
+    }
+
+    #typing-indicator.visible {
+      display: flex;
+    }
+
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .typing-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--odin-sky);
+      opacity: 0.4;
+      animation: typingBounce 1.2s ease-in-out infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s
+    }
+
+    @keyframes typingBounce {
+
+      0%,
+      60%,
+      100% {
+        transform: translateY(0);
+        opacity: 0.3
+      }
+
+      30% {
+        transform: translateY(-6px);
+        opacity: 1
+      }
+    }
+
+    #input-area {
+      flex-shrink: 0;
+      padding: 4px 0 14px;
+    }
+
+    #input-wrapper {
+      display: flex;
+      align-items: flex-end;
+      gap: 7px;
+      background: rgba(11, 37, 73, 0.42);
+      border-radius: var(--radius) var(--radius) 0 0;
+      padding: 9px 10px 9px 14px;
+      backdrop-filter: blur(12px);
+    }
+
+    #user-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: rgba(255, 255, 255, 0.9);
+      font-family: 'Lato', sans-serif;
+      font-size: 13px;
+      font-weight: 300;
+      line-height: 1.55;
+      resize: none;
+      padding: 3px 0;
+      min-height: 24px;
+      max-height: 140px;
+      caret-color: var(--odin-sky);
+    }
+
+    #user-input::placeholder {
+      color: rgba(156, 225, 250, 0.3);
+    }
+
+    #send-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--odin-navy), #1a4a8a);
+      border: 1px solid rgba(156, 225, 250, 0.3);
+      color: var(--odin-sky);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    #send-btn:hover {
+      transform: scale(1.05)
+    }
+
+    #send-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    #controls {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(11, 37, 73, 0.48);
+      backdrop-filter: blur(14px);
+      border-radius: 0 0 var(--radius) var(--radius);
+      padding: 7px 10px;
+      border-top: 1px solid rgba(156, 225, 250, 0.07);
+      flex-wrap: wrap;
+    }
+
+    .ctrl-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: 'Lato', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      background: transparent;
+      color: rgba(156, 225, 250, 0.6);
+      transition: all 0.18s;
+      padding: 0 10px;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(156, 225, 250, 0.1);
+      border-color: rgba(156, 225, 250, 0.2);
+      color: var(--odin-sky);
+      transform: translateY(-1px);
+    }
+
+    .ctrl-btn.danger:hover {
+      color: var(--hub-amber) !important;
+      border-color: rgba(243, 204, 146, 0.4) !important;
+      background: rgba(243, 204, 146, 0.06) !important;
+    }
+
+    .controls-spacer {
+      flex: 1;
+    }
+
+    .code-wrapper {
+      position: relative;
+      margin: 8px 0;
+    }
+
+    .code-wrapper pre {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(156, 225, 250, 0.1);
+      border-radius: 8px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      font-size: 12px;
+      font-family: 'Share Tech Mono', monospace;
+      color: rgba(220, 235, 255, 0.85);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      background: rgba(16, 54, 106, 0.7);
+      color: var(--odin-sky);
+      border: 1px solid rgba(156, 225, 250, 0.3);
+      border-radius: 4px;
+      padding: 3px 10px;
+      font-size: 10px;
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: rgba(156, 225, 250, 0.15);
+    }
+
+    #file-input-hidden,
+    #img-input-hidden {
+      display: none;
+    }
+
+    #files-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 0 0 5px;
+    }
+
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(78, 98, 118, 0.4);
+      border: 1px solid rgba(156, 225, 250, 0.2);
+      border-radius: 20px;
+      padding: 3px 9px;
+      font-size: 10px;
+      color: var(--odin-sky);
+    }
+
+    .file-chip button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(156, 225, 250, 0.5);
+      font-size: 13px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    /* ── CODE HUB ── */
+    #hub-view {
+      padding-top: 10px;
+      gap: 10px;
+    }
+
+    #hub-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    #hub-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--hub-green);
+      text-shadow: 0 0 14px rgba(74, 222, 128, 0.4);
+    }
+
+    #hub-status-bar {
+      display: flex;
+      gap: 6px;
+      margin-left: auto;
+      flex-wrap: wrap;
+    }
+
+    .hub-badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 10px;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .hub-badge.green {
+      color: var(--hub-green);
+      border-color: rgba(74, 222, 128, 0.3);
+      background: rgba(74, 222, 128, 0.08);
+    }
+
+    .hub-badge.amber {
+      color: var(--hub-amber);
+      border-color: rgba(251, 191, 36, 0.3);
+      background: rgba(251, 191, 36, 0.08);
+    }
+
+    .hub-badge.purple {
+      color: var(--hub-purple);
+      border-color: rgba(192, 132, 252, 0.3);
+      background: rgba(192, 132, 252, 0.08);
+    }
+
+    .hub-badge.sky {
+      color: var(--odin-sky);
+      border-color: rgba(156, 225, 250, 0.3);
+      background: rgba(156, 225, 250, 0.08);
+    }
+
+    #hub-workspace {
+      flex: 1;
+      display: flex;
+      gap: 10px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    #hub-sidebar {
+      width: 200px;
+      flex-shrink: 0;
+      background: rgba(5, 13, 26, 0.7);
+      border: 1px solid var(--odin-border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: width 0.3s;
+    }
+
+    #hub-sidebar.collapsed {
+      width: 0;
+      border-width: 0;
+    }
+
+    #sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--odin-border);
+      flex-shrink: 0;
+    }
+
+    #sidebar-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--odin-sky);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #sidebar-close {
+      background: none;
+      border: none;
+      color: rgba(156, 225, 250, 0.3);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    #sidebar-close:hover {
+      color: var(--hub-red);
+    }
+
+    #folder-load-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin: 8px 10px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px dashed rgba(74, 222, 128, 0.3);
+      background: rgba(74, 222, 128, 0.04);
+      color: rgba(74, 222, 128, 0.6);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      justify-content: center;
+    }
+
+    #folder-load-btn:hover {
+      background: rgba(74, 222, 128, 0.1);
+      border-color: rgba(74, 222, 128, 0.5);
+      color: var(--hub-green);
+    }
+
+    #folder-input {
+      display: none;
+    }
+
+    #file-tree {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 8px;
+      scrollbar-width: thin;
+    }
+
+    .tree-folder-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--odin-sky);
+      user-select: none;
+    }
+
+    .tree-folder-label:hover {
+      background: rgba(156, 225, 250, 0.06);
+    }
+
+    .fold-icon {
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+
+    .tree-folder-label.open .fold-icon {
+      transform: rotate(90deg);
+    }
+
+    .tree-children {
+      padding-left: 12px;
+      display: none;
+    }
+
+    .tree-children.open {
+      display: block;
+    }
+
+    .tree-file {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      transition: all 0.15s;
+      overflow: hidden;
+    }
+
+    .tree-file:hover {
+      background: rgba(156, 225, 250, 0.06);
+      color: var(--odin-sky);
+    }
+
+    .tree-file.active {
+      background: rgba(74, 222, 128, 0.1);
+      color: var(--hub-green);
+      border-left: 2px solid var(--hub-green);
+      padding-left: 3px;
+    }
+
+    .tree-file-ext {
+      font-size: 8px;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: rgba(156, 225, 250, 0.07);
+      color: rgba(156, 225, 250, 0.35);
+      flex-shrink: 0;
+    }
+
+    #sidebar-stats {
+      padding: 6px 10px;
+      border-top: 1px solid var(--odin-border);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    #hub-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .hub-panel {
+      background: rgba(5, 13, 26, 0.7);
+      border: 1px solid var(--odin-border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .hub-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--odin-border);
+      flex-shrink: 0;
+    }
+
+    .hub-panel-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--odin-sky);
+    }
+
+    #hub-open-folder-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: auto;
+      padding: 3px 10px;
+      border-radius: 7px;
+      border: 1px solid rgba(74, 222, 128, 0.25);
+      background: rgba(74, 222, 128, 0.06);
+      color: rgba(74, 222, 128, 0.7);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    #hub-open-folder-btn:hover {
+      background: rgba(74, 222, 128, 0.14);
+      border-color: rgba(74, 222, 128, 0.45);
+      color: var(--hub-green);
+    }
+
+    #hub-mode-row {
+      display: flex;
+      gap: 6px;
+      padding: 6px 14px;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--odin-border);
+      flex-wrap: wrap;
+    }
+
+    .hub-mode-btn {
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--odin-border);
+      background: transparent;
+      color: var(--text-dim);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .hub-mode-btn.active {
+      background: rgba(74, 222, 128, 0.12);
+      border-color: rgba(74, 222, 128, 0.4);
+      color: var(--hub-green);
+    }
+
+    .hub-mode-btn:hover:not(.active) {
+      color: var(--odin-sky);
+      border-color: rgba(156, 225, 250, 0.3);
+    }
+
+    #hub-filename-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 14px;
+      flex-shrink: 0;
+    }
+
+    #hub-filename {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--odin-border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      color: var(--odin-gold);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      outline: none;
+      min-width: 0;
+    }
+
+    #hub-filename::placeholder {
+      color: rgba(243, 204, 146, 0.3);
+    }
+
+    #hub-filename:focus {
+      border-color: rgba(243, 204, 146, 0.4);
+    }
+
+    #hub-instruction {
+      flex: 2;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--odin-border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      color: var(--text-main);
+      font-family: 'Lato', sans-serif;
+      font-size: 12px;
+      outline: none;
+      min-width: 0;
+    }
+
+    #hub-instruction::placeholder {
+      color: rgba(255, 255, 255, 0.2);
+    }
+
+    #hub-instruction:focus {
+      border-color: rgba(156, 225, 250, 0.3);
+    }
+
+    #hub-upload-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 14px 6px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    #hub-file-chip {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--hub-green);
+      background: rgba(74, 222, 128, 0.08);
+      border: 1px solid rgba(74, 222, 128, 0.25);
+      border-radius: 10px;
+      padding: 2px 10px;
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #hub-file-chip button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(74, 222, 128, 0.5);
+      font-size: 13px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    #hub-file-input,
+    #hub-img-input {
+      display: none;
+    }
+
+    label.hub-upload-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(74, 222, 128, 0.25);
+      background: rgba(74, 222, 128, 0.06);
+      color: rgba(74, 222, 128, 0.7);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    label.hub-upload-btn:hover {
+      background: rgba(74, 222, 128, 0.14);
+      border-color: rgba(74, 222, 128, 0.45);
+      color: var(--hub-green);
+    }
+
+    label.hub-img-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(156, 225, 250, 0.2);
+      background: rgba(156, 225, 250, 0.04);
+      color: rgba(156, 225, 250, 0.6);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    label.hub-img-btn:hover {
+      background: rgba(156, 225, 250, 0.1);
+      border-color: rgba(156, 225, 250, 0.4);
+      color: var(--odin-sky);
+    }
+
+    #workspace-badge {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 10px;
+      border-radius: 10px;
+      background: rgba(74, 222, 128, 0.08);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      color: rgba(74, 222, 128, 0.7);
+    }
+
+    #workspace-badge.active {
+      display: inline-flex;
+    }
+
+    #workspace-badge button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: rgba(74, 222, 128, 0.4);
+      font-size: 11px;
+      padding: 0 0 0 4px;
+      line-height: 1;
+    }
+
+    #context-indicator {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      color: rgba(74, 222, 128, 0.4);
+      display: none;
+    }
+
+    #context-indicator.active {
+      display: block;
+    }
+
+    #hub-code-input {
+      flex: 1;
+      margin: 0 14px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--odin-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: rgba(220, 235, 255, 0.9);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      resize: none;
+      outline: none;
+      min-height: 80px;
+    }
+
+    #hub-code-input:focus {
+      border-color: rgba(156, 225, 250, 0.3);
+    }
+
+    #hub-code-input::placeholder {
+      color: rgba(156, 225, 250, 0.2);
+    }
+
+    #hub-action-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 14px;
+      flex-shrink: 0;
+      border-top: 1px solid var(--odin-border);
+      flex-wrap: wrap;
+    }
+
+    #hub-submit-btn {
+      padding: 8px 22px;
+      background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(74, 222, 128, 0.1));
+      border: 1px solid rgba(74, 222, 128, 0.4);
+      border-radius: 8px;
+      color: var(--hub-green);
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    #hub-submit-btn:hover {
+      background: rgba(74, 222, 128, 0.2);
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.2);
+      transform: translateY(-1px);
+    }
+
+    #hub-submit-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #hub-char-count {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-left: auto;
+    }
+
+    #hub-output-panel {
+      flex: 1;
+      min-height: 120px;
+    }
+
+    #hub-output {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: rgba(220, 235, 255, 0.88);
+      scrollbar-width: thin;
+    }
+
+    .hub-placeholder {
+      color: var(--text-dim);
+      font-style: italic;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #hub-output pre {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(74, 222, 128, 0.15);
+      border-radius: 8px;
+      padding: 14px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: rgba(220, 235, 255, 0.9);
+      margin: 8px 0;
+      position: relative;
+    }
+
+    .hub-result-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--hub-green);
+      flex-wrap: wrap;
+    }
+
+    .hub-copy-btn {
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      color: var(--hub-green);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    .hub-copy-btn:hover {
+      background: rgba(74, 222, 128, 0.2);
+    }
+
+    .hub-dl-btn {
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: rgba(156, 225, 250, 0.08);
+      border: 1px solid rgba(156, 225, 250, 0.3);
+      color: var(--odin-sky);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    .hub-dl-btn:hover {
+      background: rgba(156, 225, 250, 0.15);
+    }
+
+    .hub-loading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--hub-green);
+      font-size: 11px;
+    }
+
+    .hub-spinner {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid rgba(74, 222, 128, 0.2);
+      border-top-color: var(--hub-green);
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .model-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 8px;
+      letter-spacing: 1px;
+      padding: 1px 6px;
+      border-radius: 6px;
+      background: rgba(192, 132, 252, 0.1);
+      border: 1px solid rgba(192, 132, 252, 0.25);
+      color: var(--hub-purple);
+      margin-left: 4px;
+    }
+
+    /* ── N8N WORKFLOW TAB ── */
+    #n8n-view {
+      padding-top: 10px;
+      gap: 10px;
+    }
+
+    #n8n-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      padding: 0 2px 8px;
+      border-bottom: 1px solid var(--n8n-border);
+    }
+
+    .n8n-logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: var(--n8n-color);
+      text-shadow: 0 0 16px rgba(255, 109, 59, 0.4);
+    }
+
+    .n8n-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+    }
+
+    #n8n-conn-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: auto;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+    }
+
+    .n8n-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--hub-amber);
+      box-shadow: 0 0 6px var(--hub-amber);
+    }
+
+    .n8n-dot.live {
+      background: var(--hub-green);
+      box-shadow: 0 0 6px var(--hub-green);
+    }
+
+    .n8n-dot.error {
+      background: var(--hub-red);
+      box-shadow: 0 0 6px var(--hub-red);
+    }
+
+    #n8n-url-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #n8n-url-input {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--n8n-border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      color: var(--n8n-color);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      outline: none;
+    }
+
+    #n8n-url-input:focus {
+      border-color: var(--n8n-color);
+    }
+
+    .n8n-btn {
+      padding: 6px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--n8n-border);
+      background: var(--n8n-dim);
+      color: var(--n8n-color);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .n8n-btn:hover {
+      background: rgba(255, 109, 59, 0.28);
+      border-color: var(--n8n-color);
+    }
+
+    .n8n-btn.sky {
+      border-color: rgba(156, 225, 250, 0.3);
+      background: rgba(156, 225, 250, 0.06);
+      color: var(--odin-sky);
+    }
+
+    .n8n-btn.sky:hover {
+      background: rgba(156, 225, 250, 0.15);
+    }
+
+    .n8n-btn.green {
+      border-color: rgba(74, 222, 128, 0.35);
+      background: rgba(74, 222, 128, 0.08);
+      color: var(--hub-green);
+    }
+
+    .n8n-btn.green:hover {
+      background: rgba(74, 222, 128, 0.18);
+    }
+
+    #n8n-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 12px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* LEFT PANEL - WORKFLOWS */
+    #n8n-left {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .n8n-panel {
+      background: rgba(5, 13, 26, 0.7);
+      border: 1px solid var(--n8n-border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .n8n-panel-hdr {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--n8n-border);
+      flex-shrink: 0;
+    }
+
+    .n8n-panel-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--n8n-color);
+    }
+
+    .wf-list {
+      overflow-y: auto;
+      flex: 1;
+      scrollbar-width: thin;
+    }
+
+    .wf-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(255, 109, 59, 0.08);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .wf-item:hover {
+      background: rgba(255, 109, 59, 0.06);
+    }
+
+    .wf-item.active {
+      background: rgba(255, 109, 59, 0.1);
+      border-left: 2px solid var(--n8n-color);
+    }
+
+    .wf-name {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--text-main);
+      flex: 1;
+    }
+
+    .wf-status {
+      font-size: 8px;
+      font-family: 'Share Tech Mono', monospace;
+      padding: 2px 7px;
+      border-radius: 8px;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .wf-status.active {
+      color: var(--hub-green);
+      border-color: rgba(74, 222, 128, 0.3);
+      background: rgba(74, 222, 128, 0.08);
+    }
+
+    .wf-status.idle {
+      color: var(--text-dim);
+      border-color: var(--odin-border);
+    }
+
+    .wf-status.error {
+      color: var(--hub-red);
+      border-color: rgba(248, 113, 113, 0.3);
+      background: rgba(248, 113, 113, 0.06);
+    }
+
+    .wf-trigger {
+      font-size: 8px;
+      color: var(--text-dim);
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    /* WEBHOOK TESTER */
+    #n8n-webhook-section {
+      flex-shrink: 0;
+    }
+
+    .wh-row {
+      display: flex;
+      gap: 6px;
+      padding: 8px 14px;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 109, 59, 0.06);
+    }
+
+    .wh-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 8px;
+      color: var(--text-dim);
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .wh-input {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--odin-border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      color: var(--odin-gold);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      outline: none;
+    }
+
+    .wh-input:focus {
+      border-color: rgba(243, 204, 146, 0.4);
+    }
+
+    #wh-body-input {
+      flex: 1;
+      margin: 4px 14px 0;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--odin-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: rgba(220, 235, 255, 0.9);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      resize: none;
+      outline: none;
+      min-height: 52px;
+      max-height: 100px;
+    }
+
+    #wh-body-input:focus {
+      border-color: var(--n8n-border);
+    }
+
+    #wh-fire-btn {
+      margin: 8px 14px;
+      padding: 8px;
+      background: rgba(255, 109, 59, 0.12);
+      border: 1px solid var(--n8n-border);
+      border-radius: 8px;
+      color: var(--n8n-color);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: calc(100% - 28px);
+    }
+
+    #wh-fire-btn:hover {
+      background: rgba(255, 109, 59, 0.22);
+      box-shadow: 0 0 14px rgba(255, 109, 59, 0.25);
+    }
+
+    #wh-fire-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    #wh-response {
+      margin: 0 14px 10px;
+      padding: 8px 10px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--odin-border);
+      border-radius: 8px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      color: var(--text-dim);
+      min-height: 32px;
+      max-height: 60px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+
+    #wh-response.ok {
+      border-color: rgba(74, 222, 128, 0.3);
+      color: var(--hub-green);
+    }
+
+    #wh-response.err {
+      border-color: rgba(248, 113, 113, 0.3);
+      color: var(--hub-red);
+    }
+
+    /* RIGHT PANEL - CANVAS */
+    #n8n-right {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    #n8n-frame-panel {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    #n8n-frame-wrap {
+      flex: 1;
+      overflow: hidden;
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+
+    #n8n-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #1a1a2e;
+      display: none;
+    }
+
+    #n8n-placeholder {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 2rem;
+    }
+
+    .n8n-hero {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 48px;
+      font-weight: 900;
+      color: var(--n8n-color);
+      opacity: 0.15;
+      letter-spacing: 4px;
+    }
+
+    .n8n-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-width: 460px;
+      width: 100%;
+      background: rgba(5, 13, 26, 0.8);
+      border: 1px solid var(--n8n-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .n8n-step {
+      display: flex;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 109, 59, 0.1);
+      align-items: flex-start;
+    }
+
+    .n8n-step:last-child {
+      border-bottom: none;
+    }
+
+    .ns-num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--n8n-color);
+      flex-shrink: 0;
+      width: 20px;
+    }
+
+    .ns-text {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+      line-height: 1.7;
+    }
+
+    .ns-text code {
+      color: var(--hub-green);
+      background: rgba(74, 222, 128, 0.08);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* EXECUTION LOG */
+    #n8n-exec-panel {
+      flex-shrink: 0;
+      max-height: 160px;
+    }
+
+    #exec-log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      line-height: 1.8;
+      scrollbar-width: thin;
+    }
+
+    .exec-line {
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid rgba(156, 225, 250, 0.04);
+      padding: 2px 0;
+    }
+
+    .exec-t {
+      color: var(--text-dim);
+      flex-shrink: 0;
+      min-width: 58px;
+    }
+
+    .exec-wf {
+      color: var(--n8n-color);
+      flex-shrink: 0;
+      min-width: 130px;
+    }
+
+    .exec-m {
+      color: var(--text-main);
+    }
+
+    .exec-m.ok {
+      color: var(--hub-green);
+    }
+
+    .exec-m.fail {
+      color: var(--hub-red);
+    }
+
+    .exec-m.warn {
+      color: var(--hub-amber);
+    }
+
+    /* ── VAULT (FIXED) ── */
+    #vault-view {
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #vault-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 4px;
+      border-bottom: 1px solid var(--odin-border);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    #vault-search {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--odin-border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      padding: 6px 12px;
+      width: 180px;
+      outline: none;
+    }
+
+    .vault-filter {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      padding: 4px 10px;
+      background: transparent;
+      border: 1px solid var(--odin-border);
+      border-radius: 8px;
+      color: var(--text-dim);
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.15s;
+    }
+
+    .vault-filter.active {
+      border-color: rgba(192, 132, 252, 0.5);
+      color: var(--hub-purple);
+      background: rgba(192, 132, 252, 0.08);
+    }
+
+    .vault-filter:hover {
+      border-color: rgba(192, 132, 252, 0.4);
+      color: var(--hub-purple);
+    }
+
+    #vault-upload-area {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vault-upload-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(156, 225, 250, 0.3);
+      background: rgba(156, 225, 250, 0.06);
+      color: var(--odin-sky);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .vault-upload-btn:hover {
+      background: rgba(156, 225, 250, 0.12);
+    }
+
+    #vault-file-input,
+    #vault-screen-input {
+      display: none;
+    }
+
+    #vault-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(192, 132, 252, 0.1) transparent;
+    }
+
+    .vault-section-lbl {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      color: var(--text-dim);
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .photo-cell {
+      aspect-ratio: 1;
+      background: rgba(5, 13, 26, 0.7);
+      border: 1px solid var(--odin-border);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: border-color 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 26px;
+    }
+
+    .photo-cell:hover {
+      border-color: rgba(192, 132, 252, 0.5);
+    }
+
+    .photo-cell img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+    }
+
+    .photo-meta {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 3px 6px;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 8px;
+      color: var(--text-dim);
+      z-index: 1;
+    }
+
+    .photo-cell .del-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: rgba(248, 113, 113, 0.8);
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      z-index: 2;
+    }
+
+    .photo-cell:hover .del-btn {
+      display: flex;
+    }
+
+    /* Vault screenshot section */
+    #vault-screen-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .screen-thumb {
+      position: relative;
+      width: 120px;
+      height: 80px;
+      background: rgba(5, 13, 26, 0.7);
+      border: 1px solid rgba(156, 225, 250, 0.15);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .screen-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .screen-thumb .del-btn {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      background: rgba(248, 113, 113, 0.8);
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      font-size: 9px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .screen-thumb:hover .del-btn {
+      display: flex;
+    }
+
+    .screen-count-badge {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      padding: 2px 8px;
+      border-radius: 8px;
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: var(--hub-red);
+    }
+
+    #vault-statusbar {
+      padding: 8px 4px;
+      border-top: 1px solid var(--odin-border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      flex-shrink: 0;
+    }
+
+    #vault-count {
+      color: var(--text-dim);
+    }
+
+    .vault-clear-btn {
+      background: none;
+      border: 1px solid rgba(248, 113, 113, 0.2);
+      border-radius: 6px;
+      color: rgba(248, 113, 113, 0.5);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      padding: 2px 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-left: auto;
+    }
+
+    .vault-clear-btn:hover {
+      border-color: rgba(248, 113, 113, 0.5);
+      color: var(--hub-red);
+    }
+
+    /* ── HUNT ── */
+    #hud2-view {
+      flex-direction: row;
+      overflow: hidden;
+    }
+
+    #hunt-sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--odin-border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 14px;
+      gap: 12px;
+    }
+
+    #hunt-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .hunt-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stat-box {
+      background: rgba(5, 13, 26, 0.7);
+      border: 1px solid var(--odin-border);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--odin-sky);
+      line-height: 1;
+    }
+
+    .stat-val.orange {
+      color: var(--hunt-orange)
+    }
+
+    .stat-val.green {
+      color: var(--hub-green)
+    }
+
+    .stat-val.red {
+      color: var(--hub-red)
+    }
+
+    .stat-lbl {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 8px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      margin-top: 4px;
+    }
+
+    .hunt-sec {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      color: var(--text-dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .hunt-input-field {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--odin-border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      padding: 7px 10px;
+      width: 100%;
+      outline: none;
+    }
+
+    .hunt-input-field:focus {
+      border-color: rgba(255, 106, 0, 0.5);
+    }
+
+    .hunt-btn-main {
+      width: 100%;
+      padding: 9px;
+      background: rgba(255, 106, 0, 0.1);
+      border: 1px solid rgba(255, 106, 0, 0.4);
+      border-radius: 8px;
+      color: var(--hunt-orange);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .hunt-btn-main:hover {
+      background: rgba(255, 106, 0, 0.2);
+      box-shadow: 0 0 14px rgba(255, 106, 0, 0.25);
+    }
+
+    .hunt-btn-stop {
+      background: rgba(248, 113, 113, 0.08) !important;
+      border-color: rgba(248, 113, 113, 0.3) !important;
+      color: var(--hub-red) !important;
+    }
+
+    #hunt-log-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--odin-border);
+      flex-shrink: 0;
+    }
+
+    .hunt-status-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      padding: 2px 8px;
+      border: 1px solid var(--odin-border);
+      border-radius: 6px;
+      color: var(--text-dim);
+    }
+
+    #hunt-log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 16px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      line-height: 1.9;
+    }
+
+    .log-line {
+      display: flex;
+      gap: 10px;
+    }
+
+    .log-t {
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .log-m {
+      color: var(--text-main);
+    }
+
+    .log-m.info {
+      color: var(--odin-sky)
+    }
+
+    .log-m.warn {
+      color: var(--hub-amber)
+    }
+
+    .log-m.success {
+      color: var(--hub-green)
+    }
+
+    .log-m.error {
+      color: var(--hub-red)
+    }
+
+    /* SETTINGS MODAL */
+    #settings-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    #settings-modal.open {
+      display: flex;
+    }
+
+    #settings-box {
+      background: #0a1e3d;
+      border: 1px solid rgba(156, 225, 250, 0.2);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      width: 540px;
+      max-width: 94vw;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    #settings-box h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--odin-sky);
+      border-bottom: 1px solid var(--odin-border);
+      padding-bottom: 10px;
+    }
+
+    .settings-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .settings-row label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+    }
+
+    .settings-input {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--odin-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--odin-gold);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 12px;
+      outline: none;
+      width: 100%;
+    }
+
+    .settings-input:focus {
+      border-color: rgba(243, 204, 146, 0.4);
+    }
+
+    .settings-input option {
+      background: #0b2549;
+    }
+
+    .settings-hint {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      color: rgba(156, 225, 250, 0.3);
+      line-height: 1.6;
+    }
+
+    #settings-save-btn {
+      padding: 8px 20px;
+      background: linear-gradient(135deg, rgba(156, 225, 250, 0.15), rgba(16, 54, 106, 0.3));
+      border: 1px solid rgba(156, 225, 250, 0.35);
+      border-radius: 8px;
+      color: var(--odin-sky);
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+      align-self: flex-end;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal">
+      <div id="settings-box">
+        <h2>⚙ ODIN CONFIG</h2>
+        <div class="settings-row"><label>GEMINI API KEY</label><input class="settings-input" id="cfg-gemini"
+            type="password" placeholder="AIza..." /></div>
+        <div class="settings-row"><label>NVIDIA NIM API KEY</label><input class="settings-input" id="cfg-nvidia"
+            type="password" placeholder="nvapi-..." /></div>
+        <div class="settings-row"><label>OPENROUTER API KEY</label><input class="settings-input" id="cfg-openrouter"
+            type="password" placeholder="sk-or-..." /></div>
+        <div class="settings-row"><label>OPENAI API KEY</label><input class="settings-input" id="cfg-openai"
+            type="password" placeholder="sk-..." /></div>
+        <div class="settings-row"><label>MOONSHOT API KEY</label><input class="settings-input" id="cfg-moonshot"
+            type="password" placeholder="sk-ant-..." /></div>
+        <div class="settings-row">
+          <label>PRIMARY PROVIDER</label>
+          <select class="settings-input" id="cfg-provider">
+            <option value="nvidia">NVIDIA NIM (Free Dev Tier)</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="openrouter">OpenRouter (200+ Models)</option>
+            <option value="openai">OpenAI</option>
+            <option value="moonshot">Moonshot (Kimi-K2-Thinking-Turbo)</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <label>LOCALHOST PORT (ODIN_CORE)</label>
+          <select class="settings-input" id="cfg-port-sel">
+            <option value="8000">:8000 — ODIN_CORE</option>
+            <option value="8001">:8001 — ODIN_FACE</option>
+            <option value="8003">:8003 — ODIN_MEMORY</option>
+            <option value="8005">:8005 — ODIN_COMMS</option>
+            <option value="8006">:8006 — ODIN_ENG</option>
+            <option value="8008">:8008 — ODIN_HUNTER</option>
+            <option value="8099">:8099 — ODIN_BRIDGE</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <label>N8N URL</label>
+          <input class="settings-input" id="cfg-n8n-url" value="http://localhost:5678"
+            placeholder="http://localhost:5678" />
+        </div>
+        <div class="settings-row">
+          <label>CODE HUB SOURCE</label>
+          <select class="settings-input" id="cfg-source">
+            <option value="direct">⚡ Direct API (browser → provider)</option>
+            <option value="odin">🔗 Route via ODIN_CORE</option>
+          </select>
+        </div>
+        <div class="settings-hint">NVIDIA NIM developer key = unlimited free tier. All keys saved to sessionStorage only
+          (cleared on browser close).</div>
+        <button id="settings-save-btn" onclick="saveSettings()">✓ SAVE SETTINGS</button>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <div id="odin-header">
+      <div id="logo-ring">
+        <svg viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="35" stroke="#9ce1fa" stroke-width="3" stroke-dasharray="8 4" opacity="0.6" />
+          <polygon points="50,20 65,45 80,40 65,60 70,80 50,65 30,80 35,60 20,40 35,45" fill="none" stroke="#9ce1fa"
+            stroke-width="2.5" stroke-linejoin="round" />
+          <circle cx="50" cy="50" r="8" fill="#9ce1fa" opacity="0.5" />
+          <circle cx="50" cy="50" r="4" fill="#9ce1fa" />
+        </svg>
+      </div>
+      <div id="title-block">
+        <div id="odin-title">ODIN</div>
+        <div id="odin-subtitle">INDUSTRIES · COMMAND CENTER v3</div>
+      </div>
+      <div id="module-strip"></div>
+      <div id="port-selector">
+        <label>PORT</label>
+        <select id="port-select" onchange="onPortChange()">
+          <option value="8000">8000 — CORE</option>
+          <option value="8001">8001 — FACE</option>
+          <option value="8003">8003 — MEMORY</option>
+          <option value="8005">8005 — COMMS</option>
+          <option value="8006">8006 — ENG</option>
+          <option value="8008">8008 — HUNTER</option>
+          <option value="8099">8099 — BRIDGE</option>
+        </select>
+        <div id="port-indicator"></div>
+        <button id="port-test-btn" onclick="testPort()">PING</button>
+      </div>
+      <div id="prov-row">
+        <button class="prov-toggle-btn active" id="pvb_nvidia" onclick="setProvider('nvidia')">NVIDIA</button>
+        <button class="prov-toggle-btn" id="pvb_gemini" onclick="setProvider('gemini')">GEMINI</button>
+        <button class="prov-toggle-btn" id="pvb_openrouter" onclick="setProvider('openrouter')">OR</button>
+        <button class="prov-toggle-btn" id="pvb_openai" onclick="setProvider('openai')">OAI</button>
+        <button class="prov-toggle-btn" id="pvb_moonshot" onclick="setProvider('moonshot')">Kimi-K2</button>
+      </div>
+      <div id="model-select-wrap">
+        <select class="model-sel" id="modelSel">
+          <optgroup label="── GEMINI ──">
+            <option value="gemini-2.5-pro-preview-06-05">Gemini 2.5 Pro</option>
+            <option value="gemini-2.5-flash-preview-05-20">Gemini 2.5 Flash</option>
+            <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+          </optgroup>
+          <optgroup label="── NVIDIA ──">
+            <option value="meta/llama-3.3-70b-instruct">Llama 3.3 70B</option>
+            <option value="nvidia/llama-3.1-nemotron-70b-instruct">Nemotron 70B</option>
+            <option value="microsoft/phi-4-reasoning-plus">Phi-4 Reasoning+</option>
+            <option value="qwen/qwen3-235b-a22b">Qwen3 235B</option>
+            <option value="moonshotai/kimi-k2-instruct">Kimi K2</option>
+          </optgroup>
+          <optgroup label="── OPENROUTER ──">
+            <option value="openai/gpt-4.1">GPT-4.1</option>
+            <option value="moonshot/kimi-k2-thinking-turbo">Kimi-K2-Thinking-Turbo</option>
+            <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
+            <option value="deepseek/deepseek-r1">DeepSeek R1</option>
+            <option value="moonshotai/kimi-k2">Kimi K2</option>
+          </optgroup>
+          <optgroup label="── OPENAI ──">
+            <option value="gpt-4.1">GPT-4.1</option>
+            <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
+            <option value="o3">o3</option>
+            <option value="o4-mini">o4-mini</option>
+          </optgroup>
+          <optgroup label="── MOONSHOT ──">
+            <option value="kimi-k2-thinking-turbo">Kimi-K2-Thinking-Turbo</option>
+            <option value="kimi-k2-thinking-turbo">Kimi-K2-Thinking-Turbo</option>
+            <option value="kimi-k2-thinking-turbo">Kimi-K2-Thinking-Turbo</option>
+          </optgroup>
+        </select>
+      </div>
+      <div id="provider-tag">⬡ NVIDIA · ONLINE</div>
+      <div id="header-clock">00:00:00</div>
+      <button id="settings-btn" onclick="openSettings()">⚙</button>
+      <div id="status-dot"></div>
+    </div>
+
+    <!-- TAB NAV -->
+    <div id="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('chat-view',this)"><span>💬</span> CHAT</button>
+      <button class="tab-btn" onclick="switchTab('hub-view',this)"><span>⚙</span> CODE HUB</button>
+      <button class="tab-btn" onclick="switchTab('n8n-view',this)"><span>⬡</span> N8N WORKFLOWS</button>
+      <button class="tab-btn" onclick="switchTab('vault-view',this)"><span>◈</span> VAULT</button>
+      <button class="tab-btn" onclick="switchTab('hud2-view',this)"><span>◎</span> HUNTER <span class="tab-badge"
+          id="hunt-badge">0</span></button>
+    </div>
+
+    <!-- ── CHAT VIEW ── -->
+    <div id="chat-view" class="view active">
+      <div id="chat-log">
+        <div class="message odin">
+          <div class="msg-label">ODIN</div>Online, Charles. Configure API keys via ⚙ Settings. What do you need?
+        </div>
+        <div id="typing-indicator">
+          <div class="typing-dots">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+        </div>
+      </div>
+      <div id="input-area">
+        <div id="files-row"></div>
+        <div id="input-wrapper">
+          <textarea id="user-input" rows="1" placeholder="Talk to ODIN..."></textarea>
+          <button id="send-btn" onclick="sendMessage()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+          </button>
+        </div>
+        <div id="controls">
+          <label class="ctrl-btn" for="file-input-hidden">📎 FILE</label>
+          <input type="file" id="file-input-hidden" multiple onchange="handleFiles(this)" />
+          <label class="ctrl-btn" for="img-input-hidden">🖼 IMAGE</label>
+          <input type="file" id="img-input-hidden" accept="image/*" multiple onchange="handleImages(this)" />
+          <button class="ctrl-btn" id="speak-toggle" onclick="toggleSpeak(this)">🔊 SPEAK</button>
+          <button class="ctrl-btn" id="voice-btn" onclick="toggleVoice(this)">🎤 VOICE</button>
+          <div class="controls-spacer"></div>
+          <button class="ctrl-btn danger" onclick="clearChat()">✕ CLEAR</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CODE HUB VIEW ── -->
+    <div id="hub-view" class="view">
+      <div id="hub-header">
+        <span id="hub-title">⚙ CODE HUB</span>
+        <div id="hub-status-bar">
+          <span class="hub-badge purple" id="hub-model-badge">NVIDIA</span>
+          <span class="hub-badge amber" id="hub-mode-badge">FIX MODE</span>
+          <span class="hub-badge sky" id="hub-port-badge">:8000</span>
+          <span class="hub-badge green">ODIN v3</span>
+        </div>
+      </div>
+      <div id="hub-workspace">
+        <div id="hub-sidebar" class="collapsed">
+          <div id="sidebar-header">
+            <span id="sidebar-title">WORKSPACE</span>
+            <button id="sidebar-close" onclick="closeWorkspace()">×</button>
+          </div>
+          <label id="folder-load-btn" for="folder-input">📂 LOAD FOLDER</label>
+          <input type="file" id="folder-input" webkitdirectory directory multiple />
+          <div id="file-tree"></div>
+          <div id="sidebar-stats"></div>
+        </div>
+        <div id="hub-main">
+          <div class="hub-panel">
+            <div class="hub-panel-header">
+              <span>📁</span><span class="hub-panel-title">INPUT</span>
+              <button id="hub-open-folder-btn" onclick="openWorkspace()">📂 WORKSPACE</button>
+            </div>
+            <div id="hub-mode-row">
+              <button class="hub-mode-btn active" onclick="setHubMode('fix',this)">FIX FILE</button>
+              <button class="hub-mode-btn" onclick="setHubMode('generate',this)">GENERATE</button>
+              <button class="hub-mode-btn" onclick="setHubMode('explain',this)">EXPLAIN</button>
+              <button class="hub-mode-btn" onclick="setHubMode('convert',this)">CONVERT</button>
+            </div>
+            <div id="hub-filename-row">
+              <input id="hub-filename" type="text" placeholder="filename.py" />
+              <input id="hub-instruction" type="text" placeholder="Optional instruction (leave blank for full fix)" />
+            </div>
+            <div id="hub-upload-row">
+              <label class="hub-upload-btn" for="hub-file-input">📄 LOAD FILE</label>
+              <input type="file" id="hub-file-input"
+                accept=".js,.ts,.py,.html,.css,.json,.txt,.md,.jsx,.tsx,.sh,.env,.vue,.rs,.go,.cpp,.c,.h,.java,.rb,.php,.yaml,.yml" />
+              <label class="hub-img-btn" for="hub-img-input">🖼 LOAD IMAGE</label>
+              <input type="file" id="hub-img-input" accept="image/*" />
+              <div id="hub-file-chip"><span id="hub-file-name"></span><button onclick="clearHubFile()">×</button></div>
+              <div id="workspace-badge"><span id="workspace-name">—</span><button onclick="closeWorkspace()">×</button>
+              </div>
+              <span id="context-indicator"></span>
+            </div>
+            <textarea id="hub-code-input"
+              placeholder="Paste your code here... or load a file / folder above."></textarea>
+            <div id="hub-action-row">
+              <button id="hub-submit-btn" onclick="submitHub()">▶ RUN ODIN</button>
+              <span id="hub-char-count">0 chars</span>
+            </div>
+          </div>
+          <div class="hub-panel" id="hub-output-panel">
+            <div class="hub-panel-header"><span>⚡</span><span class="hub-panel-title">OUTPUT</span></div>
+            <div id="hub-output">
+              <div class="hub-placeholder">◈ &nbsp;Paste code above and hit RUN ODIN.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── N8N WORKFLOW VIEW ── -->
+    <div id="n8n-view" class="view">
+      <div id="n8n-header">
+        <div>
+          <div class="n8n-logo">n8n</div>
+          <div class="n8n-sub">WORKFLOW AUTOMATION · PORT 5678</div>
+        </div>
+        <div id="n8n-url-bar">
+          <input id="n8n-url-input" type="text" value="http://localhost:5678" placeholder="http://localhost:5678" />
+          <button class="n8n-btn" onclick="openN8nFrame()">OPEN EDITOR</button>
+          <button class="n8n-btn sky" onclick="window.open(document.getElementById('n8n-url-input').value,'_blank')">↗
+            POP OUT</button>
+          <button class="n8n-btn green" onclick="pingN8n()">PING</button>
+        </div>
+        <div id="n8n-conn-status">
+          <div class="n8n-dot" id="n8n-dot"></div>
+          <span id="n8n-status-txt">NOT CONNECTED</span>
+        </div>
+      </div>
+      <div id="n8n-body">
+        <div id="n8n-left">
+          <!-- WORKFLOW LIST -->
+          <div class="n8n-panel" style="flex:1;min-height:0;">
+            <div class="n8n-panel-hdr">
+              <span class="n8n-panel-title">WORKFLOWS</span>
+              <button class="n8n-btn" style="font-size:9px;padding:3px 8px;margin-left:auto;"
+                onclick="refreshWorkflows()">↺ REFRESH</button>
+            </div>
+            <div class="wf-list" id="wf-list">
+              <!-- populated by JS -->
+            </div>
+          </div>
+          <!-- WEBHOOK TESTER -->
+          <div class="n8n-panel" id="n8n-webhook-section">
+            <div class="n8n-panel-hdr">
+              <span class="n8n-panel-title">WEBHOOK TESTER</span>
+            </div>
+            <div class="wh-row">
+              <span class="wh-label">METHOD</span>
+              <select class="wh-input" id="wh-method" style="flex:0 0 80px;">
+                <option value="POST">POST</option>
+                <option value="GET">GET</option>
+              </select>
+              <span class="wh-label" style="margin-left:4px;">URL</span>
+              <input class="wh-input" id="wh-url" placeholder="webhook URL or path..." value="/webhook/brain-trigger" />
+            </div>
+            <textarea id="wh-body-input" placeholder='{"task":"test","payload":"hello from ODIN dashboard"}'></textarea>
+            <button id="wh-fire-btn" onclick="fireWebhook()">▶ FIRE WEBHOOK</button>
+            <div id="wh-response">// Response will appear here</div>
+          </div>
+        </div>
+
+        <div id="n8n-right">
+          <!-- MAIN FRAME / PLACEHOLDER -->
+          <div class="n8n-panel" id="n8n-frame-panel" style="flex:1;min-height:0;">
+            <div class="n8n-panel-hdr">
+              <span class="n8n-panel-title">WORKFLOW EDITOR</span>
+              <span
+                style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);margin-left:auto;"
+                id="n8n-frame-hint">Click OPEN EDITOR to embed, or POP OUT for full screen</span>
+            </div>
+            <div id="n8n-placeholder">
+              <div class="n8n-hero">n8n</div>
+              <p
+                style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);text-align:center;line-height:1.9;max-width:400px;">
+                Your automation engine. Runs on port 5678.<br />Build workflows visually — ODIN Brain Trigger is already
+                loaded.</p>
+              <div class="n8n-steps">
+                <div class="n8n-step"><span class="ns-num">01</span>
+                  <div class="ns-text">Make sure n8n is running — it starts with your <code>START_ODIN_PRO.bat</code> as
+                    module 10</div>
+                </div>
+                <div class="n8n-step"><span class="ns-num">02</span>
+                  <div class="ns-text">Click <strong style="color:var(--n8n-color)">OPEN EDITOR</strong> above to embed
+                    n8n in this panel</div>
+                </div>
+                <div class="n8n-step"><span class="ns-num">03</span>
+                  <div class="ns-text">Use the <strong style="color:var(--n8n-color)">WEBHOOK TESTER</strong> on the
+                    left to POST to your Brain Trigger node</div>
+                </div>
+                <div class="n8n-step"><span class="ns-num">04</span>
+                  <div class="ns-text">Default webhook path: <code>/webhook/brain-trigger</code> on port 5678</div>
+                </div>
+                <div class="n8n-step"><span class="ns-num">05</span>
+                  <div class="ns-text">Execution results stream into the log below in real time</div>
+                </div>
+              </div>
+            </div>
+            <iframe id="n8n-frame" src="about:blank"></iframe>
+          </div>
+
+          <!-- EXECUTION LOG -->
+          <div class="n8n-panel" id="n8n-exec-panel">
+            <div class="n8n-panel-hdr">
+              <span class="n8n-panel-title">EXECUTION LOG</span>
+              <button class="n8n-btn" style="font-size:9px;padding:3px 8px;margin-left:auto;"
+                onclick="clearExecLog()">CLEAR</button>
+              <button class="n8n-btn sky" style="font-size:9px;padding:3px 8px;" onclick="exportExecLog()">⬇
+                EXPORT</button>
+            </div>
+            <div id="exec-log">
+              <div class="exec-line"><span class="exec-t">--:--:--</span><span class="exec-wf">SYSTEM</span><span
+                  class="exec-m">n8n execution log ready. Workflow triggers will be logged here.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VAULT VIEW (FIXED) ── -->
+    <div id="vault-view" class="view">
+      <div id="vault-toolbar">
+        <span
+          style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:2px;">//
+          ODIN VAULT</span>
+        <input id="vault-search" placeholder="Search..." oninput="vaultSearch(this.value)" />
+        <button class="vault-filter active" onclick="vaultFilter(this,'all')">ALL</button>
+        <button class="vault-filter" onclick="vaultFilter(this,'photos')">📷 PHOTOS</button>
+        <button class="vault-filter" onclick="vaultFilter(this,'screenshots')">🖥 SCREENS</button>
+        <button class="vault-filter" onclick="vaultFilter(this,'docs')">📄 DOCS</button>
+        <div id="vault-upload-area">
+          <label class="vault-upload-btn" for="vault-file-input">⬆ ADD FILES</label>
+          <input type="file" id="vault-file-input" multiple
+            accept="image/*,video/*,.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg" onchange="handleVaultUpload(event)" />
+          <label class="vault-upload-btn" for="vault-screen-input"
+            style="border-color:rgba(74,222,128,0.3);color:var(--hub-green);background:rgba(74,222,128,0.06);">🖥 ADD
+            SCREENSHOTS</label>
+          <input type="file" id="vault-screen-input" multiple accept="image/*" onchange="handleScreenshots(event)" />
+        </div>
+      </div>
+      <div id="vault-body">
+        <!-- SCREENSHOTS -->
+        <div id="vault-screen-wrap">
+          <div class="vault-section-lbl" style="display:flex;align-items:center;gap:8px;">
+            Screenshots <span class="screen-count-badge" id="screen-count">0 files</span>
+            <button class="vault-clear-btn" onclick="clearScreenshots()" style="margin-left:0;">CLEAR ALL</button>
+          </div>
+          <div id="vault-screen-strip">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);padding:8px 0;">
+              Drop screenshot files here or use the ADD SCREENSHOTS button above.</div>
+          </div>
+        </div>
+        <!-- MEDIA -->
+        <div id="vault-media-wrap">
+          <div class="vault-section-lbl">Media & Documents</div>
+          <div class="photo-grid" id="photo-grid"></div>
+        </div>
+      </div>
+      <div id="vault-statusbar">
+        <span id="vault-count">0 items</span>
+        <span style="color:var(--text-dim);flex:1;">// Drag &amp; drop supported — files stay in browser session
+          only</span>
+        <button class="vault-clear-btn" onclick="clearVault()">CLEAR ALL</button>
+      </div>
+    </div>
+
+    <!-- ── HUNT VIEW ── -->
+    <div id="hud2-view" class="view">
+      <div id="hunt-sidebar">
+        <div class="hunt-sec">// STATUS</div>
+        <div class="hunt-stats">
+          <div class="stat-box">
+            <div class="stat-val orange" id="s-findings">0</div>
+            <div class="stat-lbl">FINDINGS</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="s-scanned">0</div>
+            <div class="stat-lbl">SCANNED</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val green" id="s-submitted">0</div>
+            <div class="stat-lbl">SUBMITTED</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val red" id="s-blocked">0</div>
+            <div class="stat-lbl">BLOCKED</div>
+          </div>
+        </div>
+        <div class="hunt-sec">// TARGET</div>
+        <input class="hunt-input-field" id="hunt-target" placeholder="target.com" />
+        <div class="hunt-sec">// SCOPE (one per line)</div>
+        <textarea class="hunt-input-field" id="hunt-scope" rows="3" placeholder="*.target.com&#10;api.target.com"
+          style="resize:none;height:72px;font-size:10px;"></textarea>
+        <button class="hunt-btn-main" onclick="startHunt()">▶ START HUNT</button>
+        <button class="hunt-btn-main hunt-btn-stop" onclick="stopHunt()">■ STOP HUNT</button>
+        <div class="hunt-sec">// ODIN AI RECON</div>
+        <textarea class="hunt-input-field" id="hunt-ai-input" rows="2" placeholder="Ask ODIN Hunter AI..."
+          style="resize:none;height:56px;font-size:10px;"></textarea>
+        <button class="hunt-btn-main"
+          style="background:rgba(156,225,250,0.08);border-color:rgba(156,225,250,0.3);color:var(--odin-sky);"
+          onclick="huntAIQuery()">⬡ ASK ODIN</button>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);line-height:1.9;">
+          Scope check: <span style="color:var(--hub-green)">ENFORCED</span><br />
+          AUTO_SUBMIT: <span style="color:var(--hub-red)">OFF</span><br />
+          ODIN_HUNTER: :8008
+        </div>
+      </div>
+      <div id="hunt-main">
+        <div id="hunt-log-header">
+          <span
+            style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:2px;">//
+            LIVE LOG</span>
+          <span class="hunt-status-tag" id="hunt-status-tag">IDLE</span>
+          <button class="ide-action-btn"
+            style="margin-left:auto;font-size:9px;padding:3px 10px;background:none;border:1px solid var(--odin-border);color:var(--text-dim);border-radius:6px;cursor:pointer;"
+            onclick="clearHuntLog()">CLEAR</button>
+          <button class="ide-action-btn"
+            style="font-size:9px;padding:3px 10px;background:none;border:1px solid var(--odin-border);color:var(--text-dim);border-radius:6px;cursor:pointer;"
+            onclick="exportHuntLog()">⬇ EXPORT</button>
+        </div>
+        <div id="hunt-log">
+          <div class="log-line"><span class="log-t">--:--:--</span><span class="log-m info">ODIN_HUNTER ready. Enter
+              target and press START HUNT.</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /app -->
+
+  <script>
+    /* ══════════════════════════════════════════
+       CONFIG & PROVIDERS
+    ══════════════════════════════════════════ */
+    const PROVIDER_URLS = {
+      gemini: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+      nvidia: 'https://integrate.api.nvidia.com/v1/chat/completions',
+      openrouter: 'https://openrouter.ai/api/v1/chat/completions',
+      openai: 'https://api.openai.com/v1/chat/completions',
+      moonshot: 'https://api.moonshot.ai/v1',
+    };
+    const PROVIDER_DEF_MODELS = {
+      gemini: 'gemini-2.5-flash-preview-05-20', nvidia: 'meta/llama-3.3-70b-instruct',
+      openrouter: 'openai/gpt-4.1', openai: 'gpt-4.1', moonshot: 'kimi-k2-thinking-turbo',
+    };
+    let CFG = {
+      provider: sessionStorage.getItem('odin_provider') || 'nvidia',
+      apiKey: sessionStorage.getItem('odin_apikey') || '',
+      source: sessionStorage.getItem('odin_source') || 'direct',
+      port: sessionStorage.getItem('odin_port') || '8000',
+      n8nUrl: sessionStorage.getItem('odin_n8n_url') || 'http://localhost:5678',
+    };
+    const SAVED_KEYS = {};
+    function getBaseUrl() { return `http://localhost:${CFG.port}`; }
+    function getModel() { return document.getElementById('modelSel').value || PROVIDER_DEF_MODELS[CFG.provider]; }
+    function getKey() { return SAVED_KEYS[CFG.provider] || CFG.apiKey; }
+
+    /* SETTINGS */
+    function openSettings() {
+      ['gemini', 'nvidia', 'openrouter', 'openai', 'anthropic'].forEach(p => { const el = document.getElementById('cfg-' + p); if (el) el.value = SAVED_KEYS[p] || ''; });
+      document.getElementById('cfg-provider').value = CFG.provider;
+      document.getElementById('cfg-source').value = CFG.source;
+      document.getElementById('cfg-n8n-url').value = CFG.n8nUrl;
+      document.getElementById('settings-modal').classList.add('open');
+    }
+    function saveSettings() {
+      ['gemini', 'nvidia', 'openrouter', 'openai', 'anthropic'].forEach(p => {
+        const el = document.getElementById('cfg-' + p);
+        if (el && el.value.trim()) { SAVED_KEYS[p] = el.value.trim(); sessionStorage.setItem('odin_key_' + p, el.value.trim()); }
+      });
+      CFG.provider = document.getElementById('cfg-provider').value;
+      CFG.source = document.getElementById('cfg-source').value;
+      const ps = document.getElementById('cfg-port-sel'); if (ps) CFG.port = ps.value;
+      const nu = document.getElementById('cfg-n8n-url'); if (nu) CFG.n8nUrl = nu.value.trim();
+      sessionStorage.setItem('odin_provider', CFG.provider);
+      sessionStorage.setItem('odin_source', CFG.source);
+      sessionStorage.setItem('odin_port', CFG.port);
+      sessionStorage.setItem('odin_n8n_url', CFG.n8nUrl);
+      if (document.getElementById('n8n-url-input')) document.getElementById('n8n-url-input').value = CFG.n8nUrl;
+      setProvider(CFG.provider);
+      document.getElementById('hub-port-badge').textContent = ':' + CFG.port;
+      document.getElementById('settings-modal').classList.remove('open');
+    }
+    document.getElementById('settings-modal').addEventListener('click', e => { if (e.target === document.getElementById('settings-modal')) document.getElementById('settings-modal').classList.remove('open'); });
+
+    /* PROVIDER */
+    function setProvider(p) {
+      CFG.provider = p; sessionStorage.setItem('odin_provider', p);
+      document.querySelectorAll('.prov-toggle-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('pvb_' + p)?.classList.add('active');
+      const tag = { gemini: 'GEMINI', nvidia: 'NVIDIA NIM', openrouter: 'OPENROUTER', openai: 'OPENAI', anthropic: 'CLAUDE' };
+      document.getElementById('provider-tag').textContent = '⬡ ' + (tag[p] || p.toUpperCase()) + ' · ONLINE';
+      document.getElementById('hub-model-badge').textContent = (tag[p] || p.toUpperCase());
+      CFG.apiKey = SAVED_KEYS[p] || sessionStorage.getItem('odin_key_' + p) || '';
+    }
+
+    /* PORT */
+    function onPortChange() { CFG.port = document.getElementById('port-select').value; sessionStorage.setItem('odin_port', CFG.port); document.getElementById('hub-port-badge').textContent = ':' + CFG.port; document.getElementById('port-indicator').classList.remove('connected'); }
+    async function testPort() {
+      const btn = document.getElementById('port-test-btn'); btn.textContent = '...';
+      const ind = document.getElementById('port-indicator');
+      try { const res = await fetch(`${getBaseUrl()}/api/status`, { signal: AbortSignal.timeout(2500) }); if (res.ok) { ind.classList.add('connected'); btn.textContent = '✓ OK'; } else { ind.classList.remove('connected'); btn.textContent = res.status; } }
+      catch { ind.classList.remove('connected'); btn.textContent = 'FAIL'; }
+      setTimeout(() => btn.textContent = 'PING', 3000);
+    }
+
+    /* MODULES */
+    const MODULES = [
+      { name: 'CORE', port: 8000 }, { name: 'FACE', port: 8001 }, { name: 'MEM', port: 8003 },
+      { name: 'COMMS', port: 8005, warn: true }, { name: 'ENG', port: 8006 }, { name: 'HUNTER', port: 8008 }, { name: 'BRIDGE', port: 8099 },
+    ];
+    function renderModuleStrip() {
+      document.getElementById('module-strip').innerHTML = MODULES.map(m =>
+        `<a class="mod-pill ${m.warn ? 'warn' : m.status || 'offline'}" href="http://localhost:${m.port}" target="_blank" title="localhost:${m.port}"><div class="mpd"></div>${m.name}</a>`
+      ).join('');
+    }
+    async function pollModules() {
+      for (const m of MODULES) {
+        try { const r = await fetch(`http://localhost:${m.port}/api/status`, { signal: AbortSignal.timeout(1500) }); m.status = r.ok ? 'online' : 'offline'; }
+        catch { m.status = 'offline'; }
+      }
+      renderModuleStrip();
+    }
+    setInterval(pollModules, 12000);
+
+    /* TABS */
+    function switchTab(id, btn) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (btn) btn.classList.add('active');
+    }
+
+    /* CLOCK */
+    setInterval(() => { document.getElementById('header-clock').textContent = new Date().toLocaleTimeString('en-US', { hour12: false }); }, 1000);
+
+    /* ══════════════════════════════════════════
+       CHAT
+    ══════════════════════════════════════════ */
+    const chatLog = document.getElementById('chat-log');
+    const userInput = document.getElementById('user-input');
+    const typingIndi = document.getElementById('typing-indicator');
+    let speakEnabled = false; let attachedFiles = []; let recognition = null;
+
+    userInput.addEventListener('input', () => { userInput.style.height = 'auto'; userInput.style.height = Math.min(userInput.scrollHeight, 140) + 'px'; });
+    userInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+
+    function addMessage(role, content, imgSrc) {
+      const div = document.createElement('div'); div.className = `message ${role}`;
+      if (role === 'odin') { div.innerHTML = `<div class="msg-label">ODIN</div>${formatContent(content)}`; }
+      else { let h = content ? `<div>${escH(content).replace(/\n/g, '<br>')}</div>` : ''; if (imgSrc) h = `<img src="${imgSrc}" style="max-width:200px;max-height:160px;border-radius:8px;border:1px solid var(--odin-border);margin:4px 0;display:block;">` + h; div.innerHTML = h; }
+      chatLog.insertBefore(div, typingIndi); chatLog.scrollTop = chatLog.scrollHeight;
+    }
+    function formatContent(text) {
+      return text.replace(/```([\w]*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+        const id = 'cb' + Math.random().toString(36).slice(2); const esc = escH(code.trim());
+        return `<div class="code-wrapper"><button class="copy-btn" onclick="copyCodeBlock(this)">COPY</button><pre id="${id}">${esc}</pre></div>`;
+      }).replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.4);color:#7dd3f0;padding:1px 5px;border-radius:3px;font-size:11px;font-family:Share Tech Mono,monospace;">$1</code>').replace(/\*\*(.*?)\*\*/g, '<strong style="color:var(--odin-sky)">$1</strong>').replace(/\n/g, '<br/>');
+    }
+    function copyCodeBlock(btn) { navigator.clipboard.writeText(btn.nextElementSibling.textContent).then(() => { btn.textContent = '✓'; setTimeout(() => btn.textContent = 'COPY', 2000); }); }
+    function escH(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    async function readFile(file) {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        if (file.type.startsWith('image/')) { reader.onload = e => resolve({ name: file.name, content: e.target.result, type: 'image', dataUrl: e.target.result }); reader.readAsDataURL(file); }
+        else { reader.onload = e => resolve({ name: file.name, content: e.target.result, type: 'text' }); reader.readAsText(file); }
+      });
+    }
+    async function handleFiles(input) { for (const f of Array.from(input.files)) { const p = await readFile(f); attachedFiles.push(p); renderFileChips(); } input.value = ''; }
+    async function handleImages(input) { for (const f of Array.from(input.files)) { const p = await readFile(f); attachedFiles.push(p); renderFileChips(); } input.value = ''; }
+    function renderFileChips() { document.getElementById('files-row').innerHTML = attachedFiles.map((a, i) => `<div class="file-chip">${a.type === 'image' ? `<img src="${a.dataUrl}" style="width:24px;height:24px;object-fit:cover;border-radius:4px;">` : '📎'}<span>${a.name}</span><button onclick="removeFile(${i})">×</button></div>`).join(''); }
+    function removeFile(i) { attachedFiles.splice(i, 1); renderFileChips(); }
+
+    async function sendMessage() {
+      const text = userInput.value.trim(); const attaches = [...attachedFiles];
+      if (!text && !attaches.length) return;
+      const imgSrc = attaches.find(a => a.type === 'image')?.dataUrl;
+      addMessage('user', text, imgSrc); userInput.value = ''; userInput.style.height = 'auto';
+      attachedFiles = []; renderFileChips();
+      typingIndi.classList.add('visible'); chatLog.scrollTop = chatLog.scrollHeight;
+      try {
+        const res = await fetch(`${getBaseUrl()}/api/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, fileContent: attaches[0]?.content, fileType: attaches[0]?.type, fileName: attaches[0]?.name }) });
+        const data = await res.json(); typingIndi.classList.remove('visible');
+        if (!res.ok || data.error) { addMessage('error', `⚠ ${data.error || 'Server error'}`); return; }
+        addMessage('odin', data.reply || 'No response.');
+        if (speakEnabled && data.reply) speakText(data.reply);
+      } catch { typingIndi.classList.remove('visible'); addMessage('error', `⚠ ODIN not running on port ${CFG.port}.`); }
+    }
+    function toggleSpeak(btn) { speakEnabled = !speakEnabled; btn.style.color = speakEnabled ? 'var(--hub-green)' : ''; }
+    function speakText(text) { window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text.replace(/```[\s\S]*?```/g, 'code block').slice(0, 600)); u.rate = 1.05; window.speechSynthesis.speak(u); }
+    function toggleVoice(btn) {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { addMessage('error', '⚠ Voice not supported.'); return; }
+      if (recognition) { recognition.stop(); recognition = null; btn.style.color = ''; return; }
+      recognition = new SR(); recognition.continuous = false; recognition.interimResults = false; recognition.lang = 'en-US';
+      recognition.onresult = e => { userInput.value = e.results[0][0].transcript; sendMessage(); };
+      recognition.onend = () => { btn.style.color = ''; recognition = null; };
+      recognition.start(); btn.style.color = 'var(--hub-green)';
+    }
+    function clearChat() { chatLog.querySelectorAll('.message:not(:first-child)').forEach(m => m.remove()); }
+
+    /* ══════════════════════════════════════════
+       CODE HUB
+    ══════════════════════════════════════════ */
+    let workspaceFiles = {}, workspaceName = '', activeTreeFile = null, hubMode = 'fix';
+    function openWorkspace() { document.getElementById('folder-input').click(); }
+    function closeWorkspace() { workspaceFiles = {}; workspaceName = ''; activeTreeFile = null; document.getElementById('hub-sidebar').classList.add('collapsed'); document.getElementById('workspace-badge').classList.remove('active'); document.getElementById('context-indicator').classList.remove('active'); document.getElementById('file-tree').innerHTML = ''; document.getElementById('sidebar-stats').textContent = ''; }
+    document.getElementById('folder-input').addEventListener('change', function () {
+      const files = Array.from(this.files); if (!files.length) return;
+      workspaceFiles = {}; workspaceName = files[0].webkitRelativePath.split('/')[0] || 'workspace';
+      const ALLOWED = new Set(['js', 'ts', 'jsx', 'tsx', 'py', 'html', 'css', 'json', 'md', 'txt', 'sh', 'env', 'vue', 'rs', 'go', 'cpp', 'c', 'h', 'java', 'rb', 'php', 'yaml', 'yml', 'toml', 'sql']);
+      files.forEach(f => { const ext = f.name.split('.').pop().toLowerCase(); if (ALLOWED.has(ext) && f.size < 500000) workspaceFiles[f.webkitRelativePath] = f; });
+      buildFileTree(workspaceFiles, workspaceName);
+      document.getElementById('hub-sidebar').classList.remove('collapsed');
+      document.getElementById('sidebar-title').textContent = workspaceName.toUpperCase();
+      document.getElementById('workspace-name').textContent = '📂 ' + workspaceName;
+      document.getElementById('workspace-badge').classList.add('active');
+      const count = Object.keys(workspaceFiles).length;
+      document.getElementById('sidebar-stats').textContent = `${count} files loaded`;
+      document.getElementById('context-indicator').textContent = `${count} files in ctx`;
+      document.getElementById('context-indicator').classList.add('active');
+      this.value = '';
+    });
+    function buildFileTree(files, rootName) { const tree = document.getElementById('file-tree'); tree.innerHTML = ''; const root = {}; Object.keys(files).forEach(path => { const parts = path.split('/'); let node = root; parts.forEach((p, i) => { if (i === parts.length - 1) { node['__files__'] = node['__files__'] || []; node['__files__'].push(path); } else { node[p] = node[p] || {}; node = node[p]; } }); }); renderTreeNode(tree, root[rootName] || root, 0); }
+    function renderTreeNode(container, node, depth) { Object.keys(node).filter(k => k !== '__files__').sort().forEach(folder => { const fd = document.createElement('div'); fd.className = 'tree-folder'; const lbl = document.createElement('div'); lbl.className = 'tree-folder-label'; lbl.innerHTML = `<span class="fold-icon">▶</span> 📁 ${folder}`; const ch = document.createElement('div'); ch.className = 'tree-children'; lbl.onclick = () => { lbl.classList.toggle('open'); ch.classList.toggle('open'); }; fd.appendChild(lbl); fd.appendChild(ch); renderTreeNode(ch, node[folder], depth + 1); container.appendChild(fd); }); (node['__files__'] || []).sort().forEach(fp => { const fn = fp.split('/').pop(); const ext = fn.split('.').pop(); const el = document.createElement('div'); el.className = 'tree-file'; el.innerHTML = `<span>${fn}</span><span class="tree-file-ext">.${ext}</span>`; el.title = fp; el.onclick = () => loadFileFromTree(fp, el); container.appendChild(el); }); }
+    async function loadFileFromTree(filePath, el) { const file = workspaceFiles[filePath]; if (!file) return; document.querySelectorAll('.tree-file').forEach(f => f.classList.remove('active')); el.classList.add('active'); activeTreeFile = filePath; const reader = new FileReader(); reader.onload = e => { document.getElementById('hub-filename').value = file.name; document.getElementById('hub-code-input').value = e.target.result; document.getElementById('hub-char-count').textContent = e.target.result.length.toLocaleString() + ' chars'; document.getElementById('hub-file-chip').style.display = 'none'; }; reader.readAsText(file); }
+    async function buildWorkspaceContext() { if (!Object.keys(workspaceFiles).length) return ''; const MAX = 40000; let ctx = `\n\n--- WORKSPACE: ${workspaceName} ---\n`; let total = 0; const paths = Object.keys(workspaceFiles).sort(); const sorted = activeTreeFile ? [activeTreeFile, ...paths.filter(p => p !== activeTreeFile)] : paths; for (const path of sorted) { if (total > MAX) { ctx += `\n[...truncated]`; break; } try { const text = await new Promise((res, rej) => { const r = new FileReader(); r.onload = e => res(e.target.result); r.onerror = rej; r.readAsText(workspaceFiles[path]); }); const snippet = text.length > 8000 ? text.slice(0, 8000) + '\n[truncated]' : text; ctx += `\n### ${path}\n\`\`\`\n${snippet}\n\`\`\`\n`; total += snippet.length; } catch { } } return ctx + '--- END WORKSPACE ---'; }
+    function setHubMode(mode, btn) { hubMode = mode; document.querySelectorAll('.hub-mode-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.getElementById('hub-mode-badge').textContent = mode.toUpperCase() + ' MODE'; }
+    document.getElementById('hub-code-input').addEventListener('input', () => { document.getElementById('hub-char-count').textContent = document.getElementById('hub-code-input').value.length.toLocaleString() + ' chars'; });
+    document.getElementById('hub-file-input').addEventListener('change', function () { const file = this.files[0]; if (!file) return; document.getElementById('hub-filename').value = file.name; const r = new FileReader(); r.onload = e => { document.getElementById('hub-code-input').value = e.target.result; document.getElementById('hub-char-count').textContent = e.target.result.length.toLocaleString() + ' chars'; document.getElementById('hub-file-name').textContent = file.name; document.getElementById('hub-file-chip').style.display = 'inline-flex'; }; r.readAsText(file); this.value = ''; });
+    document.getElementById('hub-img-input').addEventListener('change', function () { const file = this.files[0]; if (!file) return; document.getElementById('hub-filename').value = file.name; const r = new FileReader(); r.onload = e => { document.getElementById('hub-code-input').value = '[IMAGE: ' + file.name + ']\n' + e.target.result.slice(0, 200) + '...'; document.getElementById('hub-file-name').textContent = file.name; document.getElementById('hub-file-chip').style.display = 'inline-flex'; }; r.readAsDataURL(file); this.value = ''; });
+    function clearHubFile() { document.getElementById('hub-code-input').value = ''; document.getElementById('hub-char-count').textContent = '0 chars'; document.getElementById('hub-file-chip').style.display = 'none'; }
+    async function submitHub() {
+      const code = document.getElementById('hub-code-input').value.trim();
+      const filename = document.getElementById('hub-filename').value.trim() || 'file.py';
+      const instruction = document.getElementById('hub-instruction').value.trim();
+      const output = document.getElementById('hub-output'); const btn = document.getElementById('hub-submit-btn');
+      if (!code && hubMode !== 'generate') { output.innerHTML = '<div class="hub-placeholder">⚠ Paste some code first.</div>'; return; }
+      if (hubMode === 'generate' && !instruction) { output.innerHTML = '<div class="hub-placeholder">⚠ Describe what to build in the instruction field.</div>'; return; }
+      btn.disabled = true; btn.textContent = '◌ RUNNING...';
+      output.innerHTML = '<div class="hub-loading"><div class="hub-spinner"></div> ODIN is working...</div>';
+      if (CFG.source === 'direct') await submitDirect(code, filename, instruction, output);
+      else await submitViaOdin(code, filename, instruction, output);
+      btn.disabled = false; btn.textContent = '▶ RUN ODIN';
+    }
+    async function submitDirect(code, filename, instruction, output) {
+      const key = getKey(); if (!key) { output.innerHTML = '<div class="hub-placeholder" style="color:var(--hub-amber)">⚠ No API key. Open ⚙ Settings.</div>'; return; }
+      const wsCtx = await buildWorkspaceContext();
+      const prompts = {
+        fix: `You are ODIN, elite code fixer. Fix ALL bugs in "${filename}". Return ONLY the complete fixed file.\n\n${instruction ? 'Extra: ' + instruction + '\n\n' : ''}${wsCtx}\n\nFile:\n\`\`\`\n${code}\n\`\`\``,
+        generate: `You are ODIN. Build: ${instruction}. Target: ${filename}. Return ONLY the complete working file.${wsCtx}`,
+        explain: `You are ODIN. Explain this code from "${filename}" clearly.\n\n${wsCtx}\n\nCode:\n\`\`\`\n${code}\n\`\`\``,
+        convert: `You are ODIN. Convert "${filename}" as instructed: ${instruction}. Return ONLY converted code.\n\n${wsCtx}\n\nOriginal:\n\`\`\`\n${code}\n\`\`\``,
+      };
+      try {
+        const apiUrl = PROVIDER_URLS[CFG.provider]; if (!apiUrl) { output.innerHTML = '<div class="hub-placeholder" style="color:var(--hub-red)">⚠ Provider not supported for direct calls.</div>'; return; }
+        const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}`, ...(CFG.provider === 'openrouter' ? { 'HTTP-Referer': 'https://odin.local', 'X-Title': 'ODIN' } : {}) };
+        const model = getModel();
+        const res = await fetch(apiUrl, { method: 'POST', headers, body: JSON.stringify({ model, messages: [{ role: 'user', content: prompts[hubMode] || prompts.fix }], max_tokens: 8192, temperature: 0.2 }) });
+        if (!res.ok) { const err = await res.json().catch(() => ({})); output.innerHTML = `<div class="hub-placeholder" style="color:var(--hub-red)">⚠ API error ${res.status}: ${err?.error?.message || 'Unknown'}</div>`; return; }
+        const data = await res.json(); const result = data.choices?.[0]?.message?.content || '';
+        output.innerHTML = `<div class="hub-result-meta">✓ ODIN COMPLETE — ${escH(filename)}<span class="model-tag">${data.model || model}</span><button class="hub-copy-btn" onclick="hubCopy(this)">COPY ALL</button><button class="hub-dl-btn" onclick="hubDownload('${escH(filename)}')">⬇ DOWNLOAD</button></div><pre id="hub-result-text">${escH(result)}</pre>`;
+      } catch (err) { output.innerHTML = `<div class="hub-placeholder" style="color:var(--hub-red)">⚠ ${err.message}</div>`; }
+    }
+    async function submitViaOdin(code, filename, instruction, output) {
+      try {
+        const endpoint = hubMode === 'generate' ? '/api/code-hub/generate' : '/api/code-hub/fix';
+        const body = hubMode === 'generate' ? { description: instruction, targetFile: filename } : { code, filename, message: instruction };
+        const res = await fetch(`${getBaseUrl()}${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!res.ok || data.error) { output.innerHTML = `<div class="hub-placeholder" style="color:var(--hub-red)">⚠ ${data.error || 'Error'}</div>`; return; }
+        output.innerHTML = `<div class="hub-result-meta">✓ ODIN COMPLETE — ${escH(filename)}<span class="model-tag">via :${CFG.port}</span><button class="hub-copy-btn" onclick="hubCopy(this)">COPY ALL</button><button class="hub-dl-btn" onclick="hubDownload('${escH(filename)}')">⬇ DOWNLOAD</button></div><pre id="hub-result-text">${escH(data.result || '')}</pre>`;
+      } catch { output.innerHTML = `<div class="hub-placeholder" style="color:var(--hub-red)">⚠ ODIN_CORE unreachable on port ${CFG.port}.</div>`; }
+    }
+    function hubCopy(btn) { navigator.clipboard.writeText(document.getElementById('hub-result-text')?.textContent || '').then(() => { btn.textContent = '✓ COPIED'; setTimeout(() => btn.textContent = 'COPY ALL', 2000); }); }
+    function hubDownload(filename) { const t = document.getElementById('hub-result-text')?.textContent || ''; if (!t) return; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([t], { type: 'text/plain' })); a.download = filename || 'odin_output.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+
+    /* ══════════════════════════════════════════
+       N8N WORKFLOW TAB
+    ══════════════════════════════════════════ */
+    let n8nConnected = false;
+    let execHistory = [];
+
+    // KNOWN WORKFLOWS — these are seeded, user can add more
+    const KNOWN_WORKFLOWS = [
+      { id: 'wf_brain', name: 'ODIN Brain Trigger', trigger: 'webhook', status: 'active', path: '/webhook/brain-trigger' },
+      { id: 'wf_morning', name: 'Morning Briefing', trigger: 'schedule', status: 'idle', path: null },
+      { id: 'wf_email', name: 'Gmail Draft Agent', trigger: 'webhook', status: 'idle', path: '/webhook/draft-email' },
+      { id: 'wf_bounty', name: 'Hunter Auto-Recon', trigger: 'webhook', status: 'idle', path: '/webhook/start-hunt' },
+      { id: 'wf_memory', name: 'Memory Refresh', trigger: 'webhook', status: 'idle', path: '/webhook/memory-refresh' },
+    ];
+
+    function renderWorkflows() {
+      const list = document.getElementById('wf-list');
+      list.innerHTML = KNOWN_WORKFLOWS.map(wf => `
+    <div class="wf-item" onclick="selectWorkflow('${wf.id}')">
+      <div>
+        <div class="wf-name">${wf.name}</div>
+        <div class="wf-trigger">${wf.trigger}${wf.path ? ` · ${wf.path}` : ''}</div>
+      </div>
+      <span class="wf-status ${wf.status}">${wf.status.toUpperCase()}</span>
+    </div>
+  `).join('');
+    }
+
+    function selectWorkflow(id) {
+      document.querySelectorAll('.wf-item').forEach(el => el.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      const wf = KNOWN_WORKFLOWS.find(w => w.id === id);
+      if (wf && wf.path) {
+        const base = document.getElementById('n8n-url-input').value || CFG.n8nUrl;
+        document.getElementById('wh-url').value = base + wf.path;
+      }
+    }
+
+    async function pingN8n() {
+      const url = document.getElementById('n8n-url-input').value || CFG.n8nUrl;
+      const dot = document.getElementById('n8n-dot');
+      const txt = document.getElementById('n8n-status-txt');
+      txt.textContent = 'PINGING...';
+      try {
+        const res = await fetch(url + '/healthz', { signal: AbortSignal.timeout(3000) });
+        if (res.ok || res.status === 200 || res.status === 404) {
+          dot.className = 'n8n-dot live'; txt.textContent = 'CONNECTED'; n8nConnected = true;
+          logExec('SYSTEM', 'n8n ping OK — connected at ' + url, 'ok');
+        } else { dot.className = 'n8n-dot error'; txt.textContent = 'HTTP ' + res.status; logExec('SYSTEM', 'n8n returned HTTP ' + res.status, 'warn'); }
+      } catch (e) {
+        dot.className = 'n8n-dot error'; txt.textContent = 'NOT RUNNING'; n8nConnected = false;
+        logExec('SYSTEM', 'n8n unreachable: ' + e.message, 'fail');
+      }
+    }
+
+    function openN8nFrame() {
+      const url = document.getElementById('n8n-url-input').value || CFG.n8nUrl;
+      document.getElementById('n8n-placeholder').style.display = 'none';
+      const frame = document.getElementById('n8n-frame');
+      frame.style.display = 'block';
+      frame.src = url;
+      document.getElementById('n8n-frame-hint').textContent = 'Embedded: ' + url;
+      logExec('SYSTEM', 'Opened n8n editor: ' + url, 'ok');
+    }
+
+    async function fireWebhook() {
+      const method = document.getElementById('wh-method').value;
+      let url = document.getElementById('wh-url').value.trim();
+      const bodyText = document.getElementById('wh-body-input').value.trim();
+      const resp = document.getElementById('wh-response');
+      const btn = document.getElementById('wh-fire-btn');
+
+      // if relative path, prepend n8n url
+      if (url.startsWith('/')) {
+        const base = (document.getElementById('n8n-url-input').value || CFG.n8nUrl).replace(/\/$/, '');
+        url = base + url;
+      }
+
+      btn.disabled = true; btn.textContent = '⏳ FIRING...';
+      resp.className = ''; resp.textContent = 'Sending ' + method + ' to ' + url + '...';
+
+      let body = null;
+      if (method === 'POST' && bodyText) {
+        try { body = JSON.parse(bodyText); }
+        catch { body = { raw: bodyText }; }
+      }
+
+      logExec('WEBHOOK', url, '');
+
+      try {
+        const opts = { method, headers: { 'Content-Type': 'application/json' }, signal: AbortSignal.timeout(8000) };
+        if (body) opts.body = JSON.stringify(body);
+        const res = await fetch(url, opts);
+        const text = await res.text();
+        let pretty = text;
+        try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch { }
+        resp.className = res.ok ? 'ok' : 'err';
+        resp.textContent = `HTTP ${res.status}\n${pretty.slice(0, 400)}`;
+        logExec('WEBHOOK', 'HTTP ' + res.status + ' — ' + url, res.ok ? 'ok' : 'fail');
+      } catch (e) {
+        resp.className = 'err'; resp.textContent = 'Error: ' + e.message;
+        logExec('WEBHOOK', 'FAILED: ' + e.message, 'fail');
+      }
+      btn.disabled = false; btn.textContent = '▶ FIRE WEBHOOK';
+    }
+
+    function logExec(workflow, message, type) {
+      const log = document.getElementById('exec-log');
+      const t = new Date().toLocaleTimeString('en-US', { hour12: false });
+      const line = document.createElement('div'); line.className = 'exec-line';
+      line.innerHTML = `<span class="exec-t">${t}</span><span class="exec-wf">${escH(workflow)}</span><span class="exec-m ${type || ''}">${escH(message)}</span>`;
+      log.appendChild(line); log.scrollTop = log.scrollHeight;
+      execHistory.push({ t, workflow, message, type });
+    }
+
+    async function refreshWorkflows() {
+      logExec('SYSTEM', 'Refreshing workflow list...', '');
+      // try to pull from n8n API if connected
+      const url = document.getElementById('n8n-url-input').value || CFG.n8nUrl;
+      try {
+        const res = await fetch(url + '/api/v1/workflows', { signal: AbortSignal.timeout(3000), headers: { 'Accept': 'application/json' } });
+        if (res.ok) {
+          const data = await res.json();
+          const wfs = (data.data || data) || [];
+          if (Array.isArray(wfs) && wfs.length) {
+            wfs.forEach(w => {
+              if (!KNOWN_WORKFLOWS.find(k => k.name === w.name)) {
+                KNOWN_WORKFLOWS.push({ id: 'wf_' + Math.random().toString(36).slice(2), name: w.name, trigger: 'n8n', status: w.active ? 'active' : 'idle', path: null });
+              }
+            });
+            renderWorkflows();
+            logExec('N8N API', 'Loaded ' + wfs.length + ' workflows', 'ok');
+          }
+        }
+      } catch { logExec('N8N API', 'API not reachable — using local list', 'warn'); }
+      renderWorkflows();
+    }
+
+    function clearExecLog() { document.getElementById('exec-log').innerHTML = ''; execHistory = []; }
+    function exportExecLog() {
+      const lines = execHistory.map(e => `[${e.t}] ${e.workflow}\t${e.message}`).join('\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([lines], { type: 'text/plain' })); a.download = 'odin_n8n_log_' + Date.now() + '.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    /* ══════════════════════════════════════════
+       VAULT (FIXED & REAL)
+    ══════════════════════════════════════════ */
+    let vaultItems = []; let screenshots = [];
+
+    async function handleVaultUpload(e) {
+      for (const file of Array.from(e.target.files)) {
+        const url = await readAsDataUrl(file);
+        vaultItems.push({ name: file.name, type: file.type, url, size: file.size });
+      }
+      renderVault();
+      e.target.value = '';
+    }
+
+    async function handleScreenshots(e) {
+      for (const file of Array.from(e.target.files)) {
+        const url = await readAsDataUrl(file);
+        screenshots.push({ name: file.name, url, ts: Date.now() });
+      }
+      renderScreenshots();
+      e.target.value = '';
+    }
+
+    function readAsDataUrl(file) {
+      return new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(file); });
+    }
+
+    function renderScreenshots() {
+      const strip = document.getElementById('vault-screen-strip');
+      document.getElementById('screen-count').textContent = screenshots.length + ' files';
+      if (!screenshots.length) { strip.innerHTML = '<div style="font-family:\'Share Tech Mono\',monospace;font-size:10px;color:var(--text-dim);padding:8px 0;">No screenshots loaded. Use ADD SCREENSHOTS button above.</div>'; return; }
+      strip.innerHTML = screenshots.map((s, i) => `
+    <div class="screen-thumb">
+      <img src="${s.url}" alt="${s.name}"/>
+      <button class="del-btn" onclick="deleteScreen(${i})">×</button>
+    </div>
+  `).join('');
+    }
+
+    function deleteScreen(i) { screenshots.splice(i, 1); renderScreenshots(); }
+    function clearScreenshots() { screenshots = []; renderScreenshots(); }
+
+    function renderVault() {
+      const grid = document.getElementById('photo-grid');
+      document.getElementById('vault-count').textContent = vaultItems.length + ' items';
+      if (!vaultItems.length) { grid.innerHTML = '<div style="grid-column:1/-1;font-family:\'Share Tech Mono\',monospace;font-size:10px;color:var(--text-dim);padding:8px 0;">No files. Click ADD FILES above.</div>'; return; }
+      grid.innerHTML = vaultItems.map((item, i) => {
+        if (item.type.startsWith('image/')) {
+          return `<div class="photo-cell"><img src="${item.url}" alt="${item.name}"/><div class="photo-meta">${item.name}</div><button class="del-btn" onclick="deleteVaultItem(${i})">×</button></div>`;
+        } else {
+          const icon = item.type.includes('pdf') ? '📄' : item.type.includes('video') ? '🎬' : '📎';
+          return `<div class="photo-cell">${icon}<div class="photo-meta">${item.name}</div><button class="del-btn" onclick="deleteVaultItem(${i})">×</button></div>`;
+        }
+      }).join('');
+    }
+
+    function deleteVaultItem(i) { vaultItems.splice(i, 1); renderVault(); }
+    function clearVault() { vaultItems = []; renderVault(); }
+
+    function vaultFilter(btn, type) {
+      document.querySelectorAll('.vault-filter').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+      const grid = document.getElementById('photo-grid');
+      const mediaWrap = document.getElementById('vault-media-wrap');
+      const screenWrap = document.getElementById('vault-screen-wrap');
+      if (type === 'screenshots') { mediaWrap.style.display = 'none'; screenWrap.style.display = 'block'; }
+      else if (type === 'all') { mediaWrap.style.display = 'block'; screenWrap.style.display = 'block'; }
+      else { mediaWrap.style.display = 'block'; screenWrap.style.display = 'none'; }
+    }
+
+    function vaultSearch(q) {
+      document.querySelectorAll('#photo-grid .photo-cell').forEach(el => {
+        const name = el.querySelector('.photo-meta')?.textContent || '';
+        el.style.display = name.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+      });
+    }
+
+    /* ══════════════════════════════════════════
+       HUNT
+    ══════════════════════════════════════════ */
+    let huntRunning = false, huntFindings = 0, huntScanned = 0;
+    function logHunt(msg, type = '') {
+      const log = document.getElementById('hunt-log');
+      const t = new Date().toLocaleTimeString('en-US', { hour12: false });
+      const line = document.createElement('div'); line.className = 'log-line';
+      line.innerHTML = `<span class="log-t">${t}</span><span class="log-m ${type}">${escH(msg)}</span>`;
+      log.appendChild(line); log.scrollTop = log.scrollHeight;
+    }
+    async function startHunt() {
+      const target = document.getElementById('hunt-target').value.trim();
+      if (!target) { logHunt('No target specified.', 'warn'); return; }
+      huntRunning = true;
+      const tag = document.getElementById('hunt-status-tag'); tag.textContent = 'RUNNING'; tag.style.color = 'var(--hunt-orange)'; tag.style.borderColor = 'rgba(255,106,0,0.5)';
+      logHunt(`Initiating hunt: ${target}`, 'info');
+      try {
+        const res = await fetch('http://localhost:8008/api/hunt/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target }), signal: AbortSignal.timeout(3000) });
+        if (res.ok) { const data = await res.json(); logHunt('ODIN_HUNTER accepted: ' + JSON.stringify(data), 'success'); }
+        else { logHunt(`ODIN_HUNTER HTTP ${res.status} — simulating...`, 'warn'); simulateHunt(target); }
+      } catch { logHunt('ODIN_HUNTER offline — simulating for preview...', 'warn'); simulateHunt(target); }
+    }
+    function simulateHunt(target) {
+      const steps = [['Resolving DNS for ' + target, ''], ['Passive recon in progress...', 'info'], ['Subdomain enum started', ''], ['Found: api.' + target, 'success'], ['Found: admin.' + target, 'success'], ['Port scan: 80,443,8080 open', 'info'], ['Vuln checks running...', ''], ['Potential XSS on /search', 'warn'], ['CVSS estimated: 6.1 MEDIUM', 'warn'], ['Scope check: PASS', 'success'], ['Finding logged', 'success']];
+      let i = 0; const iv = setInterval(() => {
+        if (!huntRunning || i >= steps.length) { clearInterval(iv); return; }
+        logHunt(steps[i][0], steps[i][1]);
+        if (steps[i][1] === 'success' && steps[i][0].includes('logged')) { huntFindings++; document.getElementById('s-findings').textContent = huntFindings; document.getElementById('hunt-badge').textContent = huntFindings; }
+        huntScanned++; document.getElementById('s-scanned').textContent = huntScanned; i++;
+      }, 700);
+    }
+    function stopHunt() { huntRunning = false; const tag = document.getElementById('hunt-status-tag'); tag.textContent = 'STOPPED'; tag.style.color = 'var(--hub-red)'; tag.style.borderColor = 'rgba(248,113,113,0.4)'; logHunt('Hunt stopped.', 'warn'); }
+    function clearHuntLog() { document.getElementById('hunt-log').innerHTML = ''; }
+    function exportHuntLog() { const lines = Array.from(document.getElementById('hunt-log').querySelectorAll('.log-line')).map(l => l.textContent).join('\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([lines], { type: 'text/plain' })); a.download = 'odin_hunt_log_' + Date.now() + '.txt'; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+    async function huntAIQuery() {
+      const q = document.getElementById('hunt-ai-input').value.trim(); if (!q) return;
+      logHunt('ODIN AI: ' + q, 'info'); document.getElementById('hunt-ai-input').value = '';
+      const key = getKey(); if (!key) { logHunt('No API key configured.', 'warn'); return; }
+      try {
+        const apiUrl = PROVIDER_URLS[CFG.provider]; const model = getModel();
+        const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` };
+        const res = await fetch(apiUrl, { method: 'POST', headers, body: JSON.stringify({ model, messages: [{ role: 'system', content: 'You are ODIN Hunter AI. Help with ethical bug bounty recon. Be specific and tactical. Short answers.' }, { role: 'user', content: q }], max_tokens: 600, temperature: 0.4 }) });
+        const data = await res.json(); const reply = data.choices?.[0]?.message?.content || 'No response.';
+        reply.split('\n').forEach(line => { if (line.trim()) logHunt(line, ''); });
+      } catch (err) { logHunt('AI query failed: ' + err.message, 'error'); }
+    }
+
+    /* ══════════════════════════════════════════
+       INIT
+    ══════════════════════════════════════════ */
+    (function init() {
+      ['gemini', 'nvidia', 'openrouter', 'openai', 'anthropic'].forEach(p => { const k = sessionStorage.getItem('odin_key_' + p); if (k) SAVED_KEYS[p] = k; });
+      document.getElementById('port-select').value = CFG.port;
+      document.getElementById('hub-port-badge').textContent = ':' + CFG.port;
+      if (CFG.n8nUrl) document.getElementById('n8n-url-input').value = CFG.n8nUrl;
+      setProvider(CFG.provider);
+      setInterval(() => document.getElementById('header-clock').textContent = new Date().toLocaleTimeString('en-US', { hour12: false }), 1000);
+      renderModuleStrip();
+      renderWorkflows();
+      renderScreenshots();
+      renderVault();
+      pollModules();
+      // auto-ping n8n after 2s
+      setTimeout(pingN8n, 2000);
+    })();
+  </script>
+</body>
+
+</html>

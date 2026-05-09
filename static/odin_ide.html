@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ODIN — IDE</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Fira+Code:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#c9a84c;--gold2:rgba(201,168,76,0.12);--gold3:rgba(201,168,76,0.06);
+  --gold4:rgba(201,168,76,0.03);--gold5:rgba(201,168,76,0.22);
+  --bg:#060606;--bg2:#0c0c0c;--text:#c9a84c;
+  --green:#4caf50;--red:#f44336;--yellow:#ffb300;--blue:#64b4ff;--cyan:#4dd0e1;
+  --mono:'Fira Code',monospace;--display:'Bebas Neue',sans-serif;--term:'Share Tech Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--term);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+body::before{content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0}
+
+/* ─── TOP BAR ─── */
+.topbar{position:relative;z-index:10;display:flex;align-items:center;gap:0;
+  background:var(--bg2);border-bottom:1px solid var(--gold5);padding:0 1rem;height:42px;flex-shrink:0}
+.brand{font-family:var(--display);font-size:1.1rem;letter-spacing:0.5em;color:var(--gold);margin-right:1.5rem}
+.tb-sep{width:1px;height:20px;background:rgba(201,168,76,0.15);margin:0 0.8rem}
+.tb-btn{background:transparent;border:1px solid transparent;color:#555;padding:0.2rem 0.7rem;
+  font-family:var(--term);font-size:0.58rem;letter-spacing:0.2em;cursor:pointer;transition:all 0.15s;height:28px}
+.tb-btn:hover{border-color:var(--gold5);color:var(--gold)}
+.tb-btn.active{border-color:var(--gold5);color:var(--gold);background:var(--gold3)}
+.tb-spacer{flex:1}
+.tb-path{font-size:0.55rem;letter-spacing:0.15em;color:#444;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-status{font-size:0.5rem;letter-spacing:0.2em;margin-left:1rem}
+.tb-status.ok{color:var(--green)}
+.tb-status.err{color:var(--red)}
+#bridgeKeyWrap{display:flex;align-items:center;gap:0.4rem;margin-left:0.8rem}
+#bridgeKeyWrap label{font-size:0.5rem;letter-spacing:0.15em;color:#444}
+#bridgeKey{background:transparent;border:1px solid rgba(201,168,76,0.15);color:#666;
+  padding:0.15rem 0.5rem;font-family:var(--term);font-size:0.5rem;width:120px;outline:none}
+#bridgeKey:focus{border-color:var(--gold5)}
+
+/* ─── MAIN LAYOUT ─── */
+.ide-body{position:relative;z-index:1;display:flex;flex:1;overflow:hidden}
+
+/* ─── FILE TREE ─── */
+.file-tree{width:220px;min-width:220px;border-right:1px solid rgba(201,168,76,0.12);
+  background:rgba(0,0,0,0.3);display:flex;flex-direction:column;overflow:hidden}
+.tree-header{padding:0.5rem 0.8rem;border-bottom:1px solid rgba(201,168,76,0.1);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.tree-title{font-family:var(--display);font-size:0.7rem;letter-spacing:0.3em;color:#555}
+.tree-actions{display:flex;gap:0.3rem}
+.tree-btn{background:transparent;border:none;color:#444;cursor:pointer;font-size:0.65rem;padding:0.1rem 0.3rem;transition:color 0.15s}
+.tree-btn:hover{color:var(--gold)}
+.path-input-row{padding:0.4rem 0.6rem;border-bottom:1px solid rgba(201,168,76,0.08);flex-shrink:0}
+#pathInput{width:100%;background:transparent;border:1px solid rgba(201,168,76,0.15);color:#888;
+  padding:0.3rem 0.5rem;font-family:var(--term);font-size:0.55rem;outline:none}
+#pathInput::placeholder{color:#2a2a2a}
+#pathInput:focus{border-color:var(--gold5);color:var(--gold)}
+.tree-scroll{flex:1;overflow-y:auto;padding:0.3rem 0}
+.tree-item{display:flex;align-items:center;gap:0.4rem;padding:0.25rem 0.8rem;
+  font-size:0.6rem;letter-spacing:0.08em;cursor:pointer;color:#555;transition:all 0.12s;white-space:nowrap;overflow:hidden}
+.tree-item:hover{background:var(--gold3);color:var(--gold)}
+.tree-item.selected{background:var(--gold2);color:var(--gold)}
+.tree-item.dir{color:#666}
+.tree-item.dir::before{content:'📁';font-size:0.5rem;margin-right:0.1rem}
+.tree-item.file::before{content:'📄';font-size:0.5rem;margin-right:0.1rem}
+.tree-item.file.py::before{content:'🐍';font-size:0.5rem;margin-right:0.1rem}
+.tree-item.file.js::before{content:'🟨';font-size:0.5rem;margin-right:0.1rem}
+.tree-item.file.html::before{content:'🌐';font-size:0.5rem;margin-right:0.1rem}
+.tree-item.file.json::before{content:'{}';font-size:0.42rem;font-family:var(--mono);color:#888;margin-right:0.1rem}
+.tree-empty{padding:1rem 0.8rem;font-size:0.55rem;color:#2a2a2a;letter-spacing:0.1em}
+
+/* ─── EDITOR ─── */
+.editor-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.editor-tabs{display:flex;align-items:stretch;border-bottom:1px solid rgba(201,168,76,0.12);
+  background:rgba(0,0,0,0.2);flex-shrink:0;overflow-x:auto;height:34px}
+.editor-tab{display:flex;align-items:center;gap:0.5rem;padding:0 1rem;font-size:0.55rem;
+  letter-spacing:0.1em;border-right:1px solid rgba(201,168,76,0.08);cursor:pointer;
+  color:#444;white-space:nowrap;transition:all 0.12s;min-width:80px}
+.editor-tab.active{color:var(--gold);background:var(--gold3)}
+.editor-tab:hover{color:var(--gold)}
+.editor-tab .close-tab{color:#333;margin-left:0.2rem;font-size:0.7rem}
+.editor-tab .close-tab:hover{color:var(--red)}
+.no-tabs{display:flex;align-items:center;padding:0 1rem;font-size:0.55rem;color:#2a2a2a;letter-spacing:0.2em}
+.code-area{flex:1;display:flex;overflow:hidden}
+.line-nums{background:rgba(0,0,0,0.3);border-right:1px solid rgba(201,168,76,0.08);
+  padding:0.8rem 0.5rem;font-family:var(--mono);font-size:0.72rem;line-height:1.6;
+  color:#333;text-align:right;user-select:none;min-width:42px;overflow:hidden;flex-shrink:0}
+#codeEditor{flex:1;background:transparent;border:none;color:#d4c08a;
+  font-family:var(--mono);font-size:0.72rem;line-height:1.6;
+  padding:0.8rem;outline:none;resize:none;tab-size:4;overflow-y:auto;white-space:pre}
+#codeEditor::placeholder{color:#1e1e1e}
+#codeEditor::-webkit-scrollbar{width:4px}
+#codeEditor::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.15)}
+
+/* ─── BOTTOM PANEL ─── */
+.bottom-panel{height:160px;border-top:1px solid rgba(201,168,76,0.12);
+  display:flex;flex-direction:column;flex-shrink:0}
+.bp-tabs{display:flex;align-items:center;border-bottom:1px solid rgba(201,168,76,0.08);
+  background:rgba(0,0,0,0.2);height:28px;flex-shrink:0}
+.bp-tab{padding:0 0.9rem;font-size:0.5rem;letter-spacing:0.2em;cursor:pointer;
+  color:#444;height:100%;display:flex;align-items:center;transition:all 0.12s;border-right:1px solid rgba(201,168,76,0.06)}
+.bp-tab.active{color:var(--gold);background:var(--gold3)}
+.bp-tab:hover{color:var(--gold)}
+.bp-content{flex:1;overflow-y:auto;padding:0.5rem 0.8rem;font-size:0.62rem;line-height:1.6}
+#termLog{color:#666}
+.term-line{padding:0.1rem 0}
+.term-line.info{color:#666}
+.term-line.ok{color:var(--green)}
+.term-line.err{color:var(--red)}
+.term-line.warn{color:var(--yellow)}
+.term-line.odin{color:#9ecfff}
+
+/* ─── RIGHT PANEL ─── */
+.right-panel{width:240px;min-width:240px;border-left:1px solid rgba(201,168,76,0.12);
+  background:rgba(0,0,0,0.2);display:flex;flex-direction:column;overflow:hidden}
+.rp-section{border-bottom:1px solid rgba(201,168,76,0.08);padding:0.7rem}
+.rp-title{font-family:var(--display);font-size:0.65rem;letter-spacing:0.3em;color:#444;margin-bottom:0.6rem}
+.rp-btn{width:100%;background:transparent;border:1px solid rgba(201,168,76,0.2);
+  color:#666;padding:0.4rem;font-family:var(--term);font-size:0.55rem;letter-spacing:0.15em;
+  cursor:pointer;transition:all 0.15s;margin-bottom:0.4rem;text-align:left}
+.rp-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold3)}
+.rp-btn:last-child{margin-bottom:0}
+.rp-btn.primary{border-color:var(--gold5);color:var(--gold)}
+.rp-btn.danger{border-color:rgba(244,67,54,0.3);color:#666}
+.rp-btn.danger:hover{border-color:var(--red);color:var(--red)}
+.send-opts{display:flex;flex-direction:column;gap:0.4rem}
+.send-instruction{width:100%;background:transparent;border:1px solid rgba(201,168,76,0.15);
+  color:#888;padding:0.4rem;font-family:var(--term);font-size:0.55rem;outline:none;
+  resize:none;height:60px;line-height:1.5}
+.send-instruction::placeholder{color:#2a2a2a}
+.send-instruction:focus{border-color:var(--gold5)}
+#fileInfo{font-size:0.52rem;color:#333;letter-spacing:0.08em;line-height:1.8}
+#fileInfo span{color:#555}
+.upload-drop{border:1px dashed rgba(201,168,76,0.2);padding:0.6rem;text-align:center;
+  font-size:0.52rem;color:#333;letter-spacing:0.1em;cursor:pointer;transition:all 0.15s}
+.upload-drop:hover{border-color:var(--gold5);color:var(--gold)}
+
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.15)}
+</style>
+</head>
+<body>
+
+<!-- ─── TOP BAR ─── -->
+<div class="topbar">
+  <div class="brand">ODIN IDE</div>
+  <div class="tb-sep"></div>
+  <button class="tb-btn active" onclick="newFile()">NEW</button>
+  <button class="tb-btn" onclick="saveFile()">SAVE</button>
+  <button class="tb-btn" onclick="downloadFile()">DOWNLOAD</button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" onclick="sendToOdin()">→ SEND TO ODIN</button>
+  <button class="tb-btn" onclick="runCheck()">SYNTAX CHECK</button>
+  <div class="tb-spacer"></div>
+  <div class="tb-path" id="tbPath">No file open</div>
+  <div id="bridgeKeyWrap">
+    <label>BRIDGE KEY</label>
+    <input id="bridgeKey" type="password" placeholder="odin-super-secret-2026" value="odin-super-secret-2026">
+  </div>
+  <div class="tb-status ok" id="tbStatus">● READY</div>
+</div>
+
+<!-- ─── IDE BODY ─── -->
+<div class="ide-body">
+
+  <!-- FILE TREE -->
+  <div class="file-tree">
+    <div class="tree-header">
+      <div class="tree-title">EXPLORER</div>
+      <div class="tree-actions">
+        <button class="tree-btn" title="Refresh" onclick="loadDir()">⟳</button>
+        <button class="tree-btn" title="Go up" onclick="goUp()">↑</button>
+      </div>
+    </div>
+    <div class="path-input-row">
+      <input id="pathInput" placeholder="C:\AI\MyOdin" value="C:\AI\MyOdin">
+    </div>
+    <div class="tree-scroll" id="treeScroll">
+      <div class="tree-empty">Enter a path and press ENTER to browse via bridge</div>
+    </div>
+  </div>
+
+  <!-- EDITOR + BOTTOM -->
+  <div class="editor-wrap">
+    <div class="editor-tabs" id="editorTabs">
+      <div class="no-tabs">Open a file from the explorer ↑ or create a new file</div>
+    </div>
+    <div class="code-area">
+      <div class="line-nums" id="lineNums">1</div>
+      <textarea id="codeEditor" placeholder="// Code loads here. Use the file tree to open files via bridge, or paste code directly.
+// Files are read/written through the ODIN bridge at port 8099.
+// Bridge key required in the top bar." spellcheck="false"></textarea>
+    </div>
+    <div class="bottom-panel">
+      <div class="bp-tabs">
+        <div class="bp-tab active" onclick="switchBP(this,'termLog')">TERMINAL</div>
+        <div class="bp-tab" onclick="switchBP(this,'odinLog')">ODIN REPLY</div>
+      </div>
+      <div class="bp-content" id="termLog">
+        <div class="term-line info">[ODIN IDE] Ready. Bridge: localhost:8099</div>
+        <div class="term-line info">[ODIN IDE] File ops use bridge — no tokens wasted.</div>
+      </div>
+      <div class="bp-content" id="odinLog" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="rp-section">
+      <div class="rp-title">FILE INFO</div>
+      <div id="fileInfo">
+        <div>Name: <span id="fi-name">—</span></div>
+        <div>Path: <span id="fi-path" style="word-break:break-all">—</span></div>
+        <div>Lines: <span id="fi-lines">—</span></div>
+        <div>Chars: <span id="fi-chars">—</span></div>
+      </div>
+    </div>
+    <div class="rp-section">
+      <div class="rp-title">SEND TO ODIN</div>
+      <div class="send-opts">
+        <textarea class="send-instruction" id="sendInstruction" placeholder="Instructions for ODIN...&#10;e.g. Fix the bug in this file"></textarea>
+        <button class="rp-btn primary" onclick="sendToOdin()">→ SEND FILE + INSTRUCTION</button>
+        <button class="rp-btn" onclick="sendSelectionToOdin()">→ SEND SELECTION ONLY</button>
+        <button class="rp-btn" onclick="sendFolderList()">→ SEND FOLDER STRUCTURE</button>
+      </div>
+    </div>
+    <div class="rp-section">
+      <div class="rp-title">FILE OPS</div>
+      <button class="rp-btn" onclick="loadDir()">BROWSE VIA BRIDGE</button>
+      <button class="rp-btn" onclick="saveFileToBridge()">WRITE TO BRIDGE PATH</button>
+      <button class="rp-btn" onclick="downloadFile()">DOWNLOAD LOCAL COPY</button>
+      <label class="upload-drop" for="uploadInput">UPLOAD FILE ↑</label>
+      <input type="file" id="uploadInput" style="display:none" onchange="handleUpload(event)">
+    </div>
+    <div class="rp-section">
+      <div class="rp-title">QUICK NAV</div>
+      <button class="rp-btn" onclick="quickNav('C:\\AI\\MyOdin')">ODIN ROOT</button>
+      <button class="rp-btn" onclick="quickNav('C:\\AI\\MyOdin\\M1')">M1 BRAIN</button>
+      <button class="rp-btn" onclick="quickNav('C:\\AI\\MyOdin\\M1\\Brain\\config')">CONFIG</button>
+      <button class="rp-btn" onclick="quickNav('C:\\AI\\MyOdin\\dashboards\\static\\new')">STATIC/NEW</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const BRIDGE='http://localhost:8099';
+const BRAIN='http://localhost:8000';
+let currentPath='';
+let currentFile='';
+let currentDir='C:\\AI\\MyOdin';
+let tabs=[];
+let activeTab=-1;
+let lastDirContents=[];
+
+function getBridgeKey(){return document.getElementById('bridgeKey').value||'odin-super-secret-2026';}
+
+function tlog(msg,type='info'){
+  const el=document.getElementById('termLog');
+  const d=document.createElement('div');
+  d.className='term-line '+type;
+  const t=new Date().toLocaleTimeString('en-US',{hour12:false});
+  d.textContent=`[${t}] ${msg}`;
+  el.appendChild(d);
+  el.scrollTop=el.scrollHeight;
+}
+
+function odinLog(msg){
+  const el=document.getElementById('odinLog');
+  const d=document.createElement('div');
+  d.className='term-line odin';
+  d.textContent=msg;
+  el.appendChild(d);
+  el.scrollTop=el.scrollHeight;
+}
+
+function setStatus(msg,ok=true){
+  const s=document.getElementById('tbStatus');
+  s.textContent='● '+msg;
+  s.className='tb-status '+(ok?'ok':'err');
+}
+
+// ─── LINE NUMBERS ──────────────────────────────────────
+const editor=document.getElementById('codeEditor');
+const lineNums=document.getElementById('lineNums');
+
+function updateLineNums(){
+  const lines=editor.value.split('\n').length;
+  lineNums.textContent=Array.from({length:lines},(_,i)=>i+1).join('\n');
+  updateFileInfo();
+}
+editor.addEventListener('input',updateLineNums);
+editor.addEventListener('scroll',()=>{lineNums.scrollTop=editor.scrollTop;});
+editor.addEventListener('keydown',e=>{
+  if(e.key==='Tab'){e.preventDefault();const s=editor.selectionStart;const end=editor.selectionEnd;
+    editor.value=editor.value.substring(0,s)+'    '+editor.value.substring(end);
+    editor.selectionStart=editor.selectionEnd=s+4;updateLineNums();}
+});
+updateLineNums();
+
+// ─── FILE INFO ──────────────────────────────────────────
+function updateFileInfo(){
+  const v=editor.value;
+  document.getElementById('fi-lines').textContent=v.split('\n').length;
+  document.getElementById('fi-chars').textContent=v.length;
+}
+
+// ─── TABS ──────────────────────────────────────────────
+function renderTabs(){
+  const tc=document.getElementById('editorTabs');
+  if(!tabs.length){tc.innerHTML='<div class="no-tabs">Open a file from the explorer</div>';return;}
+  tc.innerHTML='';
+  tabs.forEach((t,i)=>{
+    const d=document.createElement('div');
+    d.className='editor-tab'+(i===activeTab?' active':'');
+    d.onclick=()=>activateTab(i);
+    d.innerHTML=`${t.name}<span class="close-tab" onclick="event.stopPropagation();closeTab(${i})">×</span>`;
+    tc.appendChild(d);
+  });
+}
+
+function activateTab(i){
+  if(activeTab>=0&&activeTab<tabs.length)tabs[activeTab].content=editor.value;
+  activeTab=i;
+  editor.value=tabs[i].content;
+  currentPath=tabs[i].path;
+  currentFile=tabs[i].name;
+  document.getElementById('tbPath').textContent=currentPath||'untitled';
+  document.getElementById('fi-name').textContent=tabs[i].name;
+  document.getElementById('fi-path').textContent=currentPath;
+  updateLineNums();
+  renderTabs();
+}
+
+function closeTab(i){
+  tabs.splice(i,1);
+  if(activeTab>=tabs.length)activeTab=tabs.length-1;
+  if(tabs.length)activateTab(activeTab);
+  else{editor.value='';updateLineNums();document.getElementById('tbPath').textContent='No file open';}
+  renderTabs();
+}
+
+function openFileInEditor(name,path,content){
+  const existing=tabs.findIndex(t=>t.path===path);
+  if(existing>=0){activateTab(existing);return;}
+  if(activeTab>=0&&activeTab<tabs.length)tabs[activeTab].content=editor.value;
+  tabs.push({name,path,content});
+  activeTab=tabs.length-1;
+  editor.value=content;
+  currentPath=path;currentFile=name;
+  document.getElementById('tbPath').textContent=path;
+  document.getElementById('fi-name').textContent=name;
+  document.getElementById('fi-path').textContent=path;
+  updateLineNums();
+  renderTabs();
+  tlog('Opened: '+path,'ok');
+}
+
+function newFile(){
+  openFileInEditor('untitled.py','','');
+}
+
+// ─── FILE TREE ──────────────────────────────────────────
+async function loadDir(dir){
+  dir=dir||document.getElementById('pathInput').value.trim()||currentDir;
+  currentDir=dir;
+  document.getElementById('pathInput').value=dir;
+  tlog('Browsing: '+dir);
+  setStatus('BROWSING...');
+  try{
+    const r=await fetch(BRIDGE+'/list_dir',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-ODIN-KEY':getBridgeKey()},
+      body:JSON.stringify({path:dir})
+    });
+    if(!r.ok){tlog('Bridge error: '+r.status,'err');setStatus('BRIDGE ERR',false);return;}
+    const d=await r.json();
+    lastDirContents=d.entries||[];
+    renderTree(d.entries||[],dir);
+    setStatus('READY');
+  }catch(e){
+    tlog('Bridge offline: '+e.message,'warn');
+    setStatus('BRIDGE OFFLINE',false);
+    document.getElementById('treeScroll').innerHTML='<div class="tree-empty">Bridge offline. Start ODIN bridge at :8099</div>';
+  }
+}
+
+function renderTree(entries,dir){
+  const scroll=document.getElementById('treeScroll');
+  if(!entries.length){scroll.innerHTML='<div class="tree-empty">Empty directory</div>';return;}
+  scroll.innerHTML='';
+  const sorted=[...entries].sort((a,b)=>{
+    if(a.type===b.type)return a.name.localeCompare(b.name);
+    return a.type==='dir'?-1:1;
+  });
+  sorted.forEach(e=>{
+    const d=document.createElement('div');
+    const ext=e.name.split('.').pop().toLowerCase();
+    d.className='tree-item '+(e.type==='dir'?'dir':'file '+ext);
+    d.textContent=e.name;
+    d.title=dir+'\\'+e.name;
+    if(e.type==='dir'){
+      d.onclick=()=>{loadDir(dir+'\\'+e.name);};
+    }else{
+      d.onclick=()=>{readFileBridge(dir+'\\'+e.name,e.name);};
+    }
+    scroll.appendChild(d);
+  });
+}
+
+async function readFileBridge(path,name){
+  tlog('Reading: '+path);
+  setStatus('LOADING...');
+  try{
+    const r=await fetch(BRIDGE+'/read_file',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-ODIN-KEY':getBridgeKey()},
+      body:JSON.stringify({path})
+    });
+    if(!r.ok){tlog('Read error: '+r.status,'err');setStatus('READ ERR',false);return;}
+    const d=await r.json();
+    openFileInEditor(name,path,d.content||'');
+    setStatus('READY');
+  }catch(e){
+    tlog('Read failed: '+e.message,'err');
+    setStatus('ERROR',false);
+  }
+}
+
+function goUp(){
+  const p=document.getElementById('pathInput').value;
+  const parts=p.replace(/\\/g,'/').split('/');
+  parts.pop();
+  const up=parts.join('\\');
+  if(up)loadDir(up);
+}
+
+function quickNav(path){
+  document.getElementById('pathInput').value=path;
+  loadDir(path);
+}
+
+document.getElementById('pathInput').addEventListener('keydown',e=>{if(e.key==='Enter')loadDir();});
+
+// ─── SAVE ──────────────────────────────────────────────
+function saveFile(){
+  if(activeTab>=0&&activeTab<tabs.length){
+    tabs[activeTab].content=editor.value;
+    tlog('Saved in memory: '+tabs[activeTab].name,'ok');
+  }
+}
+
+async function saveFileToBridge(){
+  const path=currentPath;
+  if(!path){tlog('No file path set','warn');return;}
+  setStatus('WRITING...');
+  try{
+    const r=await fetch(BRIDGE+'/write_file',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','X-ODIN-KEY':getBridgeKey()},
+      body:JSON.stringify({path,content:editor.value})
+    });
+    if(!r.ok){tlog('Write error: '+r.status,'err');setStatus('WRITE ERR',false);return;}
+    tlog('Written to: '+path,'ok');
+    setStatus('SAVED');
+  }catch(e){
+    tlog('Write failed: '+e.message,'err');
+    setStatus('ERROR',false);
+  }
+}
+
+function downloadFile(){
+  const name=currentFile||'odin_file.txt';
+  const blob=new Blob([editor.value],{type:'text/plain'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=name;a.click();
+  URL.revokeObjectURL(url);
+  tlog('Downloaded: '+name,'ok');
+}
+
+function handleUpload(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{openFileInEditor(file.name,'',ev.target.result);tlog('Uploaded: '+file.name,'ok');};
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+// ─── SYNTAX CHECK ──────────────────────────────────────
+function runCheck(){
+  const code=editor.value;
+  const issues=[];
+  const lines=code.split('\n');
+  lines.forEach((line,i)=>{
+    if(line.includes('print '&&!line.includes('print('))&&line.trim().startsWith('print '))
+      issues.push({line:i+1,msg:'print without parens (Python 3?)'});
+    if((line.match(/def /)||line.match(/if |for |while |class /))&&!line.trim().endsWith(':')&&!line.includes('#'))
+      null; // too many false positives, skip
+    if(line.includes('  =')||line.includes('= ='))
+      issues.push({line:i+1,msg:'Possible spacing issue around assignment'});
+  });
+  if(!issues.length){tlog('Quick check passed — no obvious issues','ok');}
+  else{issues.forEach(issue=>tlog(`Line ${issue.line}: ${issue.msg}`,'warn'));}
+}
+
+// ─── SEND TO ODIN ──────────────────────────────────────
+async function sendToOdin(){
+  const instruction=document.getElementById('sendInstruction').value.trim()||'Review this code and help me improve it.';
+  const code=editor.value;
+  const filename=currentFile||'code';
+  if(!code.trim()){tlog('No code to send','warn');return;}
+
+  // Estimate tokens — rough 4 chars per token
+  const estTokens=Math.round(code.length/4);
+  if(estTokens>3000){
+    tlog(`Warning: ~${estTokens} tokens. Consider sending folder structure or selection only.`,'warn');
+  }
+
+  tlog('Sending to ODIN brain...','info');
+  setStatus('SENDING...');
+  switchBP(null,'odinLog');
+
+  const msg=`${instruction}\n\nFile: ${filename}\n\`\`\`\n${code}\n\`\`\``;
+  try{
+    const r=await fetch(BRAIN+'/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:msg})
+    });
+    const d=await r.json();
+    const reply=d.response||d.reply||'No response.';
+    odinLog('=== ODIN RESPONSE ===');
+    odinLog(reply);
+    odinLog('=== END ===');
+    tlog('ODIN replied','ok');
+    setStatus('READY');
+  }catch(e){
+    tlog('Brain offline: '+e.message,'err');
+    setStatus('ERROR',false);
+  }
+}
+
+async function sendSelectionToOdin(){
+  const start=editor.selectionStart;
+  const end=editor.selectionEnd;
+  const selection=editor.value.substring(start,end);
+  if(!selection.trim()){tlog('No text selected','warn');return;}
+  const instruction=document.getElementById('sendInstruction').value.trim()||'What does this code do?';
+  const msg=`${instruction}\n\n\`\`\`\n${selection}\n\`\`\``;
+  tlog('Sending selection to ODIN...');
+  switchBP(null,'odinLog');
+  try{
+    const r=await fetch(BRAIN+'/api/chat',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:msg})
+    });
+    const d=await r.json();
+    odinLog('=== SELECTION REPLY ===');
+    odinLog(d.response||d.reply||'No response.');
+    tlog('Done','ok');
+  }catch(e){tlog('Brain offline','err');}
+}
+
+async function sendFolderList(){
+  tlog('Sending folder structure to ODIN (no file content)...');
+  switchBP(null,'odinLog');
+  const instruction=document.getElementById('sendInstruction').value.trim()||'Review this folder structure.';
+  const structText=lastDirContents.map(e=>`${e.type==='dir'?'[DIR]':'[FILE]'} ${e.name}`).join('\n');
+  const msg=`${instruction}\n\nDirectory: ${currentDir}\n\`\`\`\n${structText||'(empty)'}\n\`\`\``;
+  try{
+    const r=await fetch(BRAIN+'/api/chat',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:msg})
+    });
+    const d=await r.json();
+    odinLog('=== FOLDER STRUCTURE REPLY ===');
+    odinLog(d.response||d.reply||'No response.');
+    tlog('Done','ok');
+  }catch(e){tlog('Brain offline','err');}
+}
+
+// ─── PANEL SWITCH ──────────────────────────────────────
+function switchBP(btn,panel){
+  document.querySelectorAll('.bp-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('termLog').style.display='none';
+  document.getElementById('odinLog').style.display='none';
+  document.getElementById(panel).style.display='block';
+  if(btn)btn.classList.add('active');
+  else{
+    document.querySelectorAll('.bp-tab').forEach(t=>{
+      if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes(panel))t.classList.add('active');
+    });
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+import { ToolLoopAgent } from 'ai';
+
+const agent = new ToolLoopAgent({
+    model: "anthropic/claude-sonnet-4.5",
+    tools: {
+        // your tools here
+    },
+    toolChoice: 'required', // Force tool use
+    // or toolChoice: 'none' to disable tools
+    // or toolChoice: 'auto' (default) to let the model decide
+});

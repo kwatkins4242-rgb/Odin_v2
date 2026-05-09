@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ODIN // MAIN CHAT HUB</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #050d1a;
+            --panel: #070f1c;
+            --panel2: #081422;
+            --border: rgba(156, 225, 250, 0.1);
+            --border2: rgba(156, 225, 250, 0.2);
+            --accent: #9ce1fa;
+            --accent2: #00ff88;
+            --gold: #f3cc92;
+            --red: #f87171;
+            --amber: #fbbf24;
+            --purple: #c084fc;
+            --text: rgba(255, 255, 255, 0.88);
+            --dim: rgba(156, 225, 250, 0.45);
+            --glow: 0 0 20px rgba(156, 225, 250, 0.25);
+            --radius: 10px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(ellipse 70% 50% at 50% -5%, rgba(16, 54, 106, 0.6) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 40% at 90% 90%, rgba(0, 255, 136, 0.04) 0%, transparent 60%);
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background-image: linear-gradient(rgba(156, 225, 250, 0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(156, 225, 250, 0.015) 1px, transparent 1px);
+            background-size: 48px 48px;
+        }
+
+        #app {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        #header {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0 8px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        #header::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, var(--accent), transparent 50%);
+            opacity: 0.3;
+            bottom: -1px;
+        }
+
+        .logo-ring {
+            width: 38px;
+            height: 38px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            border: 1.5px solid rgba(156, 225, 250, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(16, 54, 106, 0.6) 0%, transparent 70%);
+            animation: ringPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes ringPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(156, 225, 250, 0.2);
+                border-color: rgba(156, 225, 250, 0.4)
+            }
+
+            50% {
+                box-shadow: 0 0 20px 4px rgba(156, 225, 250, 0.15);
+                border-color: rgba(156, 225, 250, 0.7)
+            }
+        }
+
+        .logo-ring svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .title-block {
+            flex-shrink: 0;
+        }
+
+        .odin-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 17px;
+            font-weight: 900;
+            letter-spacing: 8px;
+            color: var(--accent);
+            text-shadow: 0 0 20px rgba(156, 225, 250, 0.5);
+            line-height: 1;
+        }
+
+        .odin-sub {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 8px;
+            letter-spacing: 2px;
+            color: var(--dim);
+            margin-top: 2px;
+        }
+
+        .port-sel-wrap {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 3px 8px;
+        }
+
+        .port-sel-wrap label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 1px;
+            color: var(--dim);
+        }
+
+        #portSelect {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--gold);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            cursor: pointer;
+            appearance: none;
+            padding: 0 14px 0 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23f3cc92' opacity='0.6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 2px center;
+        }
+
+        #portSelect option {
+            background: #0b2549;
+            color: var(--text);
+        }
+
+        #portDot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--amber);
+            box-shadow: 0 0 6px var(--amber);
+            flex-shrink: 0;
+        }
+
+        #portDot.connected {
+            background: var(--accent2);
+            box-shadow: 0 0 6px var(--accent2);
+        }
+
+        #pingBtn {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            background: none;
+            border: none;
+            color: rgba(156, 225, 250, 0.4);
+            cursor: pointer;
+            padding: 0;
+            letter-spacing: 0.5px;
+        }
+
+        #pingBtn:hover {
+            color: var(--accent);
+        }
+
+        .prov-strip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .prov-btn {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            padding: 3px 8px;
+            background: transparent;
+            border: 1px solid var(--border2);
+            border-radius: 6px;
+            color: var(--dim);
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.15s;
+        }
+
+        .prov-btn.active {
+            background: rgba(156, 225, 250, 0.12);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .prov-btn:hover:not(.active) {
+            color: var(--accent);
+            border-color: rgba(156, 225, 250, 0.4);
+        }
+
+        #modelSel {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--gold);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            padding: 4px 8px;
+            outline: none;
+        }
+
+        #modelSel option {
+            background: #0b2549;
+        }
+
+        #settingsBtn {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            color: var(--dim);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        #settingsBtn:hover {
+            color: var(--gold);
+            border-color: rgba(243, 204, 146, 0.3);
+        }
+
+        .header-clock {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            letter-spacing: 2px;
+            flex-shrink: 0;
+        }
+
+        #tabNav {
+            display: flex;
+            align-items: stretch;
+            height: 38px;
+            border-bottom: 1px solid var(--border);
+            padding: 0;
+            gap: 1px;
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 18px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--dim);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .view {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .view.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        #chatView {
+            flex-direction: row;
+            gap: 0;
+            padding-top: 8px;
+        }
+
+        #inputCol {
+            width: 58%;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            padding-right: 14px;
+            gap: 8px;
+        }
+
+        .col-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: var(--accent);
+            opacity: 0.7;
+            padding: 0 0 4px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        #attachZone {
+            flex-shrink: 0;
+            border: 1.5px dashed rgba(156, 225, 250, 0.15);
+            border-radius: var(--radius);
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            transition: border-color 0.2s;
+            cursor: pointer;
+        }
+
+        #attachZone:hover,
+        #attachZone.dragover {
+            border-color: var(--accent);
+            background: rgba(156, 225, 250, 0.04);
+        }
+
+        .attach-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .attach-icon {
+            font-size: 18px;
+            opacity: 0.5;
+        }
+
+        .attach-hint {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--dim);
+        }
+
+        .attach-btns {
+            display: flex;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .attach-btn {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            padding: 4px 10px;
+            background: rgba(156, 225, 250, 0.06);
+            border: 1px solid rgba(156, 225, 250, 0.2);
+            border-radius: 6px;
+            color: var(--dim);
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.15s;
+        }
+
+        .attach-btn:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .attach-btn.img {
+            border-color: rgba(0, 255, 136, 0.2);
+            color: rgba(0, 255, 136, 0.6);
+        }
+
+        .attach-btn.img:hover {
+            color: var(--accent2);
+            border-color: var(--accent2);
+        }
+
+        #attachPrev {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .file-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(156, 225, 250, 0.06);
+            border: 1px solid rgba(156, 225, 250, 0.2);
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 10px;
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--accent);
+        }
+
+        .file-chip .chip-rm {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: rgba(156, 225, 250, 0.4);
+            font-size: 13px;
+            padding: 0;
+            line-height: 1;
+            margin-left: 2px;
+        }
+
+        .file-chip .chip-rm:hover {
+            color: var(--red);
+        }
+
+        .img-thumb {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid var(--border2);
+        }
+
+        #userInput {
+            flex: 1;
+            resize: none;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            padding: 14px 16px;
+            outline: none;
+            caret-color: var(--accent);
+            min-height: 200px;
+            transition: border-color 0.2s;
+        }
+
+        #userInput:focus {
+            border-color: rgba(156, 225, 250, 0.35);
+        }
+
+        #userInput::placeholder {
+            color: rgba(156, 225, 250, 0.25);
+        }
+
+        #syspromptWrap {
+            flex-shrink: 0;
+        }
+
+        #sysPrompt {
+            width: 100%;
+            resize: none;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: rgba(156, 225, 250, 0.7);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            padding: 8px 12px;
+            outline: none;
+            height: 70px;
+            transition: border-color 0.2s;
+        }
+
+        #sysPrompt:focus {
+            border-color: rgba(156, 225, 250, 0.3);
+        }
+
+        #ctrlRow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .ctrl-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            height: 32px;
+            padding: 0 12px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--dim);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(156, 225, 250, 0.08);
+            border-color: rgba(156, 225, 250, 0.2);
+            color: var(--accent);
+        }
+
+        .ctrl-btn.danger:hover {
+            color: var(--red);
+            border-color: rgba(248, 113, 113, 0.3);
+            background: rgba(248, 113, 113, 0.05);
+        }
+
+        .ctrl-spacer {
+            flex: 1;
+        }
+
+        #sendBtn {
+            background: linear-gradient(135deg, rgba(16, 54, 106, 0.8), rgba(26, 74, 138, 0.6));
+            border: 1px solid rgba(156, 225, 250, 0.35);
+            color: var(--accent);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            padding: 0 20px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #sendBtn:hover {
+            background: rgba(156, 225, 250, 0.15);
+            box-shadow: 0 0 16px rgba(156, 225, 250, 0.2);
+        }
+
+        #sendBtn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .token-count {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            color: var(--dim);
+        }
+
+        #outputCol {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding-left: 14px;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .out-topbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .out-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: var(--accent2);
+            opacity: 0.7;
+        }
+
+        .out-actions {
+            display: flex;
+            gap: 5px;
+            margin-left: auto;
+        }
+
+        .out-btn {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            padding: 3px 10px;
+            background: rgba(0, 255, 136, 0.06);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 6px;
+            color: rgba(0, 255, 136, 0.6);
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.15s;
+        }
+
+        .out-btn:hover {
+            color: var(--accent2);
+            border-color: var(--accent2);
+        }
+
+        .out-btn.copy:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+            background: rgba(156, 225, 250, 0.06);
+        }
+
+        #chatLog {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 255, 136, 0.15) transparent;
+            padding-right: 4px;
+        }
+
+        #chatLog::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        #chatLog::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 136, 0.15);
+            border-radius: 3px;
+        }
+
+        .msg {
+            padding: 10px 14px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            line-height: 1.6;
+            animation: msgIn 0.2s ease;
+        }
+
+        @keyframes msgIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        .msg.user {
+            background: rgba(16, 54, 106, 0.4);
+            border: 1px solid rgba(156, 225, 250, 0.15);
+            align-self: flex-end;
+            max-width: 90%;
+        }
+
+        .msg.odin {
+            background: rgba(5, 13, 26, 0.7);
+            border: 1px solid var(--border);
+            color: rgba(220, 235, 255, 0.9);
+        }
+
+        .msg-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 8px;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .msg.error {
+            background: rgba(248, 113, 113, 0.08);
+            border: 1px solid rgba(248, 113, 113, 0.25);
+            color: rgba(248, 113, 113, 0.9);
+            font-size: 12px;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 255, 136, 0.15);
+            border-left: 3px solid var(--accent2);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(0, 255, 136, 0.04);
+            border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+        }
+
+        .code-lang {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            color: rgba(0, 255, 136, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .code-actions {
+            display: flex;
+            gap: 5px;
+            margin-left: auto;
+        }
+
+        .code-act-btn {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            padding: 2px 8px;
+            background: transparent;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 4px;
+            color: rgba(0, 255, 136, 0.5);
+            cursor: pointer;
+            transition: all 0.15s;
+            letter-spacing: 1px;
+        }
+
+        .code-act-btn:hover {
+            color: var(--accent2);
+            border-color: var(--accent2);
+        }
+
+        .code-act-btn.dl:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .code-block pre {
+            padding: 12px 14px;
+            overflow-x: auto;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11.5px;
+            line-height: 1.65;
+            color: #a8d8f0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        #typingIndi {
+            display: none;
+            align-self: flex-start;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 14px;
+            background: rgba(5, 13, 26, 0.7);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        #typingIndi.visible {
+            display: flex;
+        }
+
+        .tdots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .tdot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.4;
+            animation: td 1.2s ease-in-out infinite;
+        }
+
+        .tdot:nth-child(2) {
+            animation-delay: 0.2s
+        }
+
+        .tdot:nth-child(3) {
+            animation-delay: 0.4s
+        }
+
+        @keyframes td {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+                opacity: 0.3
+            }
+
+            30% {
+                transform: translateY(-5px);
+                opacity: 1
+            }
+        }
+
+        #downloadsView {
+            padding-top: 10px;
+            gap: 12px;
+        }
+
+        .dl-header {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dl-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 13px;
+            letter-spacing: 4px;
+            color: var(--accent2);
+        }
+
+        .dl-count {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            padding: 2px 10px;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 6px;
+            color: var(--accent2);
+        }
+
+        .dl-clear {
+            margin-left: auto;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            padding: 4px 12px;
+            background: transparent;
+            border: 1px solid rgba(248, 113, 113, 0.25);
+            border-radius: 6px;
+            color: rgba(248, 113, 113, 0.5);
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.15s;
+        }
+
+        .dl-clear:hover {
+            color: var(--red);
+            border-color: var(--red);
+        }
+
+        #dlList {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            scrollbar-width: thin;
+        }
+
+        .dl-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(5, 13, 26, 0.6);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: border-color 0.15s;
+        }
+
+        .dl-item:hover {
+            border-color: rgba(0, 255, 136, 0.25);
+        }
+
+        .dl-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .dl-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .dl-name {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .dl-meta {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            color: var(--dim);
+            margin-top: 3px;
+        }
+
+        .dl-btn {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            padding: 5px 14px;
+            background: rgba(0, 255, 136, 0.08);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 6px;
+            color: var(--accent2);
+            cursor: pointer;
+            letter-spacing: 1px;
+            flex-shrink: 0;
+            transition: all 0.15s;
+        }
+
+        .dl-btn:hover {
+            background: rgba(0, 255, 136, 0.15);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+        }
+
+        .dl-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            gap: 12px;
+            color: var(--dim);
+        }
+
+        .dl-empty-icon {
+            font-size: 48px;
+            opacity: 0.15;
+        }
+
+        .dl-empty-text {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+        }
+
+        #settingsModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        #settingsModal.open {
+            display: flex;
+        }
+
+        #settingsBox {
+            background: #0a1e3d;
+            border: 1px solid rgba(156, 225, 250, 0.2);
+            border-radius: var(--radius);
+            padding: 22px 26px;
+            width: 500px;
+            max-width: 94vw;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+        }
+
+        #settingsBox h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--accent);
+            border-bottom: 1px solid rgba(156, 225, 250, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .srow {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .slabel {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 1.5px;
+            color: var(--dim);
+        }
+
+        .sinput {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(156, 225, 250, 0.15);
+            border-radius: 7px;
+            padding: 8px 12px;
+            color: var(--gold);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            outline: none;
+            width: 100%;
+        }
+
+        .sinput:focus {
+            border-color: rgba(243, 204, 146, 0.4);
+        }
+
+        .sinput option {
+            background: #0b2549;
+        }
+
+        .sprovider-keys {
+            display: grid;
+            gap: 8px;
+        }
+
+        .key-row {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .key-row span {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 10px;
+            color: var(--dim);
+        }
+
+        #settingsSaveBtn {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, rgba(156, 225, 250, 0.15), rgba(16, 54, 106, 0.3));
+            border: 1px solid rgba(156, 225, 250, 0.35);
+            border-radius: 8px;
+            color: var(--accent);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            align-self: flex-end;
+        }
+
+        #settingsSaveBtn:hover {
+            background: rgba(156, 225, 250, 0.15);
+        }
+
+        @media(max-width:800px) {
+            #chatView {
+                flex-direction: column
+            }
+
+            #inputCol {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding-right: 0;
+                padding-bottom: 12px
+            }
+
+            #outputCol {
+                padding-left: 0
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+
+        <!-- SETTINGS MODAL -->
+        <div id="settingsModal">
+            <div id="settingsBox">
+                <h2>⚙ ODIN CONFIG</h2>
+                <div class="srow">
+                    <div class="slabel">PRIMARY PROVIDER</div>
+                    <select class="sinput" id="cfgProvider">
+                        <option value="kimi">⬡ kimi (moonshot)</option>
+                        <option value="nvidia">◉ NVIDIA NIM</option>
+                        <option value="gemini">◈ Gemini</option>
+                        <option value="openrouter">◈ OpenRouter</option>
+                        <option value="openai">◎ OpenAI</option>
+                        <option value="moonshot">◆ Moonshot</option>
+                    </select>
+                </div>
+                <div class="srow">
+                    <div class="slabel">API KEYS</div>
+                    <div class="sprovider-keys">
+                        <div class="key-row"><span>NVIDIA NIM</span><input class="sinput" id="kNvidia" type="password"
+                                placeholder="nvapi-..." /></div>
+                        <div class="key-row"><span>KIMI (MOONSHOT)</span><input class="sinput" id="kKimi"
+                                type="password" placeholder="sk-or..." />
+                        </div>
+                        <div class="key-row"><span>GEMINI</span><input class="sinput" id="kGemini" type="password"
+                                placeholder="AIza..." /></div>
+                        <div class="key-row"><span>OPENROUTER</span><input class="sinput" id="kOpenrouter"
+                                type="password" placeholder="sk-or-..." /></div>
+                        <div class="key-row"><span>OPENAI</span><input class="sinput" id="kOpenai" type="password"
+                                placeholder="sk-..." /></div>
+                        <div class="key-row"><span>MOONSHOT</span><input class="sinput" id="kMoonshot" type="password"
+                                placeholder="sk-ant-..." /></div>
+                    </div>
+                </div>
+                <div class="srow">
+                    <div class="slabel">MAX TOKENS</div><input class="sinput" id="cfgMaxTok" type="number" value="4096"
+                        min="256" max="16384" />
+                </div>
+                <div class="srow">
+                    <div class="slabel">TEMPERATURE</div><input class="sinput" id="cfgTemp" type="number" value="1.0"
+                        min="0" max="2" step="0.1" />
+                </div>
+                <button id="settingsSaveBtn" onclick="saveSettings()">✓ SAVE SETTINGS</button>
+            </div>
+        </div>
+
+        <!-- HEADER -->
+        <div id="header">
+            <div class="logo-ring">
+                <svg viewBox="0 0 100 100" fill="none">
+                    <circle cx="50" cy="50" r="35" stroke="#9ce1fa" stroke-width="3" stroke-dasharray="8 4"
+                        opacity="0.6" />
+                    <polygon points="50,20 65,45 80,40 65,60 70,80 50,65 30,80 35,60 20,40 35,45" fill="none"
+                        stroke="#9ce1fa" stroke-width="2.5" stroke-linejoin="round" />
+                    <circle cx="50" cy="50" r="8" fill="#9ce1fa" opacity="0.5" />
+                    <circle cx="50" cy="50" r="4" fill="#9ce1fa" />
+                </svg>
+            </div>
+            <div class="title-block">
+                <div class="odin-title">ODIN</div>
+                <div class="odin-sub">MAIN CHAT HUB</div>
+            </div>
+            <div class="port-sel-wrap" style="margin-left:16px;">
+                <label>PORT</label>
+                <select id="portSelect" onchange="onPortChange()">
+                    <option value="8000">8000 — M1 BRAIN</option>
+                    <option value="8010">8010 — M2 SENSES</option>
+                    <option value="8020">8020 — M3 BODY</option>
+                    <option value="8030">8030 — P1 MOBILE</option>
+                    <option value="8040">8040 — P2 HUNTER</option>
+                    <option value="8099">8099 — BRIDGE</option>
+                    <option value="5678">5678 — n8n</option>
+                </select>
+                <div id="portDot"></div>
+                <button id="pingBtn" onclick="testPort()">PING</button>
+            </div>
+            <div class="prov-strip">
+                <button class="prov-btn active" id="pb_nvidia" onclick="setProvider('nvidia')">NVIDIA</button>
+                <button class="prov-btn" id="pb_kimi" onclick="setProvider('kimi')">KIMI</button>
+                <button class="prov-btn" id="pb_gemini" onclick="setProvider('gemini')">GEMINI</button>
+                <button class="prov-btn" id="pb_openrouter" onclick="setProvider('openrouter')">OR</button>
+                <button class="prov-btn" id="pb_openai" onclick="setProvider('openai')">OPENAI</button>
+                <button class="prov-btn" id="pb_moonshot" onclick="setProvider('moonshot')">KIMI-K2</button>
+                <select id="modelSel">
+                    <optgroup label="── NVIDIA NIM ──">
+                        <option value="moonshotai/kimi-k2.5">Kimi K2.5 (Best)</option>
+                        <option value="nvidia/llama-3.1-nemotron-70b-instruct">Nemotron 70B</option>
+                        <option value="meta/llama-3.3-70b-instruct">Llama 3.3 70B</option>
+                        <option value="meta/llama-3.1-8b-instruct">Llama 3.1 8B (Fast)</option>
+                    </optgroup>
+                    <optgroup label="── KIMI (MOONSHOT) ──">
+                        <option value="moonshot-v1-8k">Moonshot V1 8K</option>
+                        <option value="moonshot-v1-32k">Moonshot V1 32K</option>
+                        <option value="moonshot-v1-128k">Moonshot V1 128K</option>
+                    </optgroup>
+                    <optgroup label="── GEMINI ──">
+                        <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                        <option value="gemini-2.5-pro-preview-06-05">Gemini 2.5 Pro</option>
+                    </optgroup>
+                    <optgroup label="── OPENROUTER ──">
+                        <option value="openai/gpt-4.1">GPT-4.1</option>
+                        <option value="moonshot/kimi-k2-thinking-turbo">Kimi-K2-Thinking-Turbo</option>
+                        <option value="meta-llama/llama-4-maverick">Llama 4 Maverick</option>
+                    </optgroup>
+                    <optgroup label="── OPENAI ──">
+                        <option value="gpt-4.1">GPT-4.1</option>
+                        <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
+                    </optgroup>
+                    <optgroup label="── MOONSHOT ──">
+                        <option value="moonshot-kimi-k2-thinking-turbo">Moonshot-Kimi-K2-Thinking-Turbo</option>
+                        <option value="moonshot-kimi-k2-thinking-turbo">Moonshot-Kimi-K2-Thinking-Turbo</option>
+                        <option value="moonshot-kimi-k2-thinking-turbo">Moonshot-Kimi-K2-Thinking-Turbo</option>
+                    </optgroup>
+                </select>
+            </div>
+            <button id="settingsBtn" onclick="openSettings()">⚙</button>
+            <div class="header-clock" id="clock">00:00:00</div>
+        </div>
+
+        <!-- TAB NAV -->
+        <div id="tabNav">
+            <button class="tab-btn active" onclick="switchTab('chatView',this)">💬 CHAT</button>
+            <button class="tab-btn" onclick="switchTab('downloadsView',this)">⬇ DOWNLOADS <span id="dlBadge"
+                    style="font-family:'Share Tech Mono',monospace;font-size:9px;padding:1px 6px;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.3);border-radius:5px;color:var(--accent2);margin-left:4px;">0</span></button>
+        </div>
+
+        <!-- CHAT VIEW -->
+        <div id="chatView" class="view active">
+            <div id="inputCol">
+                <div class="col-label">// INPUT &amp; CONTEXT</div>
+                <div id="attachZone" onclick="handleAttachClick(event)">
+                    <div class="attach-top">
+                        <span class="attach-icon">📎</span>
+                        <span class="attach-hint">DROP FILES HERE — or click to attach</span>
+                        <div class="attach-btns">
+                            <button class="attach-btn"
+                                onclick="event.stopPropagation();document.getElementById('fileIn').click()">📄
+                                FILE</button>
+                            <button class="attach-btn img"
+                                onclick="event.stopPropagation();document.getElementById('imgIn').click()">🖼
+                                IMAGE</button>
+                        </div>
+                    </div>
+                    <div id="attachPrev"></div>
+                </div>
+                <input type="file" id="fileIn" multiple style="display:none" onchange="onFileAttach(event)" />
+                <input type="file" id="imgIn" accept="image/*" multiple style="display:none"
+                    onchange="onImgAttach(event)" />
+                <textarea id="userInput" placeholder="Talk to ODIN...&#10;&#10;Shift+Enter for newline. Enter to send."
+                    onkeydown="handleKey(event)" onpaste="handlePaste(event)"></textarea>
+                <div id="syspromptWrap">
+                    <div class="slabel"
+                        style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);margin-bottom:5px;letter-spacing:1px;">
+                        // SYSTEM PROMPT <span style="opacity:0.5;">(ODIN personality — auto-loaded)</span></div>
+                    <textarea id="sysPrompt" placeholder="Loading ODIN personality..."></textarea>
+                </div>
+                <div id="ctrlRow">
+                    <button class="ctrl-btn" onclick="toggleVoice(this)" id="voiceBtn">🎤 VOICE</button>
+                    <button class="ctrl-btn" onclick="toggleSpeak(this)" id="speakBtn"><span id="speakDot"
+                            style="width:6px;height:6px;border-radius:50%;background:rgba(156,225,250,0.3);display:inline-block;"></span>
+                        SPEAK</button>
+                    <div class="ctrl-spacer"></div>
+                    <span class="token-count" id="tokenCount">0 TOKENS</span>
+                    <button class="ctrl-btn danger" onclick="clearChat()">✕ CLEAR</button>
+                    <button id="sendBtn" onclick="sendMsg()">➤ SEND</button>
+                </div>
+            </div>
+            <div id="outputCol">
+                <div class="out-topbar">
+                    <div class="out-label">// ODIN RESPONSE</div>
+                    <div class="out-actions">
+                        <button class="out-btn copy" onclick="copyAll()">⧉ COPY ALL</button>
+                        <button class="out-btn" onclick="downloadAll()">⬇ DOWNLOAD ALL</button>
+                    </div>
+                </div>
+                <div id="chatLog">
+                    <div class="msg odin">
+                        <div class="msg-label">ODIN // MAIN CHAT HUB</div>
+                        Ready, Charles. Personality loading...
+                    </div>
+                    <div id="typingIndi">
+                        <div class="tdots">
+                            <div class="tdot"></div>
+                            <div class="tdot"></div>
+                            <div class="tdot"></div>
+                        </div>
+                        <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);">ODIN
+                            thinking...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DOWNLOADS VIEW -->
+        <div id="downloadsView" class="view">
+            <div class="dl-header">
+                <div class="dl-title">⬇ DOWNLOADS</div>
+                <span class="dl-count" id="dlCountLabel">0 FILES</span>
+                <button class="dl-clear" onclick="clearDownloads()">✕ CLEAR ALL</button>
+            </div>
+            <div id="dlList">
+                <div class="dl-empty" id="dlEmpty">
+                    <div class="dl-empty-icon">📂</div>
+                    <div class="dl-empty-text">// NO FILES YET</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PROVIDER_URLS = {
+            nvidia: 'https://integrate.api.nvidia.com/v1/chat/completions',
+            kimi: 'https://api.moonshot.ai/v1/chat/completions',
+            gemini: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+            openrouter: 'https://openrouter.ai/api/v1/chat/completions',
+            openai: 'https://api.openai.com/v1/chat/completions',
+            moonshot: 'https://api.moonshot.ai/v1',
+        };
+        const PROVIDER_DEF_MODELS = {
+            nvidia: 'moonshotai/kimi-k2.5', kimi: 'moonshot-v1-8k', gemini: 'gemini-2.0-flash',
+            openrouter: 'openai/gpt-4.1', openai: 'gpt-4.1', anthropic: 'claude-sonnet-4-6',
+        };
+
+        let CFG = {
+            provider: sessionStorage.getItem('och_provider') || 'kimi',
+            keys: JSON.parse(sessionStorage.getItem('och_keys') || '{}'),
+            maxTokens: parseInt(sessionStorage.getItem('och_maxtok') || '4096'),
+            temp: parseFloat(sessionStorage.getItem('och_temp') || '1.0'),
+            port: sessionStorage.getItem('och_port') || '8000',
+        };
+        let history = [], totalTokens = 0, speakOn = false, recognition = null, attachedFiles = [], downloads = [];
+
+        function getKey() { return CFG.keys[CFG.provider] || ''; }
+        function getBaseUrl() { return `http://localhost:${CFG.port}`; }
+
+        // ── Auto-load personality from M1 API ────────────────────────
+        async function loadPersonality() {
+            try {
+                const res = await fetch('/api/personality', { signal: AbortSignal.timeout(3000) });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.system_prompt) {
+                        document.getElementById('sysPrompt').value = data.system_prompt;
+                        addOdinMsg('Online. Personality loaded from M1. What are we working on, sir?');
+                        return;
+                    }
+                }
+            } catch (e) { /* M1 not running or different port */ }
+            // Fallback
+            document.getElementById('sysPrompt').value = 'You are ODIN — Charles\'s personal AI partner, built by Charles, loyal to Charles. Sharp, direct, never a help desk. Address Charles as \'sir\'. One step at a time. No walls of text.';
+            addOdinMsg('Ready, Charles. Set your API key in ⚙ Settings to begin.');
+        }
+
+        function openSettings() {
+            document.getElementById('cfgProvider').value = CFG.provider;
+            ['nvidia', 'kimi', 'gemini', 'openrouter', 'openai', 'anthropic'].forEach(p => {
+                const el = document.getElementById('k' + p.charAt(0).toUpperCase() + p.slice(1));
+                if (el && CFG.keys[p]) el.value = CFG.keys[p];
+            });
+            document.getElementById('cfgMaxTok').value = CFG.maxTokens;
+            document.getElementById('cfgTemp').value = CFG.temp;
+            document.getElementById('settingsModal').classList.add('open');
+        }
+
+        function saveSettings() {
+            CFG.provider = document.getElementById('cfgProvider').value;
+            CFG.maxTokens = parseInt(document.getElementById('cfgMaxTok').value);
+            CFG.temp = parseFloat(document.getElementById('cfgTemp').value);
+            ['nvidia', 'kimi', 'gemini', 'openrouter', 'openai', 'anthropic'].forEach(p => {
+                const el = document.getElementById('k' + p.charAt(0).toUpperCase() + p.slice(1));
+                if (el && el.value.trim()) CFG.keys[p] = el.value.trim();
+            });
+            sessionStorage.setItem('och_provider', CFG.provider);
+            sessionStorage.setItem('och_keys', JSON.stringify(CFG.keys));
+            sessionStorage.setItem('och_maxtok', CFG.maxTokens);
+            sessionStorage.setItem('och_temp', CFG.temp);
+            updateProviderUI();
+            document.getElementById('settingsModal').classList.remove('open');
+        }
+
+        document.getElementById('settingsModal').addEventListener('click', e => {
+            if (e.target === document.getElementById('settingsModal'))
+                document.getElementById('settingsModal').classList.remove('open');
+        });
+
+        function setProvider(p) { CFG.provider = p; sessionStorage.setItem('och_provider', p); updateProviderUI(); }
+        function updateProviderUI() {
+            document.querySelectorAll('.prov-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('pb_' + CFG.provider)?.classList.add('active');
+            document.getElementById('modelSel').value = PROVIDER_DEF_MODELS[CFG.provider] || '';
+        }
+
+        function onPortChange() { CFG.port = document.getElementById('portSelect').value; sessionStorage.setItem('och_port', CFG.port); document.getElementById('portDot').classList.remove('connected'); }
+
+        async function testPort() {
+            const btn = document.getElementById('pingBtn'); btn.textContent = '...';
+            try {
+                let res = await fetch(`${getBaseUrl()}/health`, { signal: AbortSignal.timeout(2000) }).catch(() => null);
+                if (!res || !res.ok) res = await fetch(`${getBaseUrl()}/api/status`, { signal: AbortSignal.timeout(2000) });
+                if (res.ok) { document.getElementById('portDot').classList.add('connected'); btn.textContent = '✓'; }
+                else btn.textContent = res.status;
+            } catch { btn.textContent = 'FAIL'; }
+            setTimeout(() => btn.textContent = 'PING', 3000);
+        }
+
+        function switchTab(id, btn) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active'); btn.classList.add('active');
+        }
+
+        setInterval(() => { document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', { hour12: false }); }, 1000);
+
+        function handleAttachClick(e) { if (e.target.classList.contains('attach-btn') || e.target.closest('.attach-btn')) return; document.getElementById('fileIn').click(); }
+        function onFileAttach(e) { Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = ev => { attachedFiles.push({ name: f.name, type: 'file', content: ev.target.result }); renderAttach(); }; r.readAsText(f); }); e.target.value = ''; }
+        function onImgAttach(e) { Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = ev => { attachedFiles.push({ name: f.name, type: 'image', dataUrl: ev.target.result }); renderAttach(); }; r.readAsDataURL(f); }); e.target.value = ''; }
+        function handlePaste(e) { const items = e.clipboardData?.items; if (!items) return; for (const item of items) { if (item.type.startsWith('image/')) { const blob = item.getAsFile(); const r = new FileReader(); r.onload = ev => { attachedFiles.push({ name: 'pasted_image.png', type: 'image', dataUrl: ev.target.result }); renderAttach(); }; r.readAsDataURL(blob); } } }
+        function renderAttach() { document.getElementById('attachPrev').innerHTML = attachedFiles.map((a, i) => a.type === 'image' ? `<span style="position:relative;display:inline-block;"><img class="img-thumb" src="${a.dataUrl}"/><span class="file-chip" style="position:absolute;top:-4px;right:-4px;padding:0;width:16px;height:16px;border-radius:50%;justify-content:center;font-size:9px;cursor:pointer;" onclick="removeAttach(${i})">✕</span></span>` : `<div class="file-chip">📄 ${a.name} <button class="chip-rm" onclick="removeAttach(${i})">✕</button></div>`).join(''); }
+        function removeAttach(i) { attachedFiles.splice(i, 1); renderAttach(); }
+        function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); } }
+        function escH(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+        function fmtResponse(text) {
+            text = text.replace(/```([\w]*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+                const id = 'cb_' + Math.random().toString(36).slice(2, 8);
+                const fname = (lang || 'output') + '_' + Date.now() + '.' + ({ python: 'py', javascript: 'js', js: 'js', html: 'html', css: 'css' }[lang] || 'txt');
+                const safe = escH(code.trim());
+                return `<div class="code-block"><div class="code-header"><span class="code-lang">${(lang || 'CODE').toUpperCase()}</span><div class="code-actions"><button class="code-act-btn" onclick="copyBlock('${id}')">⧉ COPY</button><button class="code-act-btn dl" onclick="downloadBlock('${id}','${fname}')">⬇ DL</button></div></div><pre id="${id}">${safe}</pre></div>`;
+            });
+            text = text.replace(/`([^`\n]+)`/g, '<code style="background:rgba(0,0,0,0.5);color:#9ce1fa;padding:1px 6px;border-radius:4px;font-family:Share Tech Mono,monospace;font-size:11px;border:1px solid rgba(156,225,250,0.1);">$1</code>');
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#9ce1fa">$1</strong>');
+            text = text.replace(/\n/g, '<br>');
+            return text;
+        }
+
+        function copyBlock(id) { const el = document.getElementById(id); if (!el) return; navigator.clipboard.writeText(el.textContent).then(() => { const btn = el.closest('.code-block').querySelector('.code-act-btn'); if (btn) { const old = btn.textContent; btn.textContent = '✓'; setTimeout(() => btn.textContent = old, 2000); } }); }
+        function downloadBlock(id, fname) { const el = document.getElementById(id); if (!el) return; addDownload(fname, el.textContent); triggerDownload(fname, el.textContent); }
+        function triggerDownload(fname, content) { const blob = new Blob([content], { type: 'text/plain' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = fname; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); }
+        function addDownload(name, content) { downloads.unshift({ name, content, ts: new Date().toLocaleTimeString() }); document.getElementById('dlBadge').textContent = downloads.length; document.getElementById('dlCountLabel').textContent = downloads.length + ' FILE' + (downloads.length !== 1 ? 'S' : ''); renderDownloads(); }
+        function renderDownloads() { const list = document.getElementById('dlList'); const empty = document.getElementById('dlEmpty'); if (!downloads.length) { if (empty) empty.style.display = 'flex'; return; } if (empty) empty.style.display = 'none'; list.innerHTML = downloads.map((d, i) => { const ext = d.name.split('.').pop(); const icon = { py: '🐍', js: '📜', html: '🌐', css: '🎨', json: '📋', txt: '📄', md: '📝' }[ext] || '📄'; return `<div class="dl-item"><div class="dl-icon">${icon}</div><div class="dl-info"><div class="dl-name">${d.name}</div><div class="dl-meta">${d.ts} · ${d.content.length.toLocaleString()} chars</div></div><button class="dl-btn" onclick="reDownload(${i})">⬇ DOWNLOAD</button></div>`; }).join(''); }
+        function reDownload(i) { const d = downloads[i]; if (d) triggerDownload(d.name, d.content); }
+        function clearDownloads() { downloads = []; document.getElementById('dlBadge').textContent = '0'; document.getElementById('dlCountLabel').textContent = '0 FILES'; document.getElementById('dlList').innerHTML = '<div class="dl-empty" id="dlEmpty"><div class="dl-empty-icon">📂</div><div class="dl-empty-text">// NO FILES YET</div></div>'; }
+        function copyAll() { const all = Array.from(document.querySelectorAll('#chatLog .msg.odin')).map(m => m.innerText).join('\n\n---\n\n'); navigator.clipboard.writeText(all); }
+        function downloadAll() { const all = Array.from(document.querySelectorAll('#chatLog .msg.odin')).map(m => m.innerText).join('\n\n---\n\n'); const fname = 'odin_session_' + Date.now() + '.txt'; addDownload(fname, all); triggerDownload(fname, all); }
+
+        function addUserMsg(text) { const log = document.getElementById('chatLog'); const d = document.createElement('div'); d.className = 'msg user'; const lines = [...attachedFiles.map(a => a.type === 'image' ? `<img src="${a.dataUrl}" style="max-width:200px;max-height:120px;border-radius:6px;border:1px solid var(--border2);display:block;margin-bottom:5px;">` : ` <div style="font-family:Share Tech Mono,monospace;font-size:10px;color:var(--accent);margin-bottom:4px;">📄 ${a.name}</div>`), text ? escH(text) : '']; d.innerHTML = lines.join(''); log.insertBefore(d, document.getElementById('typingIndi')); log.scrollTop = log.scrollHeight; }
+        function addOdinMsg(text) { const log = document.getElementById('chatLog'); const d = document.createElement('div'); d.className = 'msg odin'; d.innerHTML = `<div class="msg-label">ODIN // ${CFG.provider.toUpperCase()}</div>${fmtResponse(text)}`; log.insertBefore(d, document.getElementById('typingIndi')); log.scrollTop = log.scrollHeight; }
+        function addErrMsg(text) { const log = document.getElementById('chatLog'); const d = document.createElement('div'); d.className = 'msg error'; d.textContent = '⚠ ' + text; log.insertBefore(d, document.getElementById('typingIndi')); log.scrollTop = log.scrollHeight; }
+
+        async function sendMsg() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            const files = [...attachedFiles];
+            if (!text && !files.length) return;
+            const key = getKey();
+            if (!key) { addErrMsg(`No API key for ${CFG.provider.toUpperCase()}. Open ⚙ Settings and paste your key.`); return; }
+            addUserMsg(text);
+            input.value = ''; attachedFiles = []; renderAttach();
+            document.getElementById('typingIndi').classList.add('visible');
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('chatLog').scrollTop = 99999;
+            let userText = text || 'Analyze the attached content.';
+            if (files.length) { const fileDescs = files.map(f => f.type === 'image' ? `[IMAGE: ${f.name}]` : `[FILE: ${f.name}]\n\`\`\`\n${f.content?.slice(0, 8000)}\n\`\`\``).join('\n\n'); userText = fileDescs + (text ? '\n\n' + text : ''); }
+            const sysText = document.getElementById('sysPrompt').value.trim();
+            const model = document.getElementById('modelSel').value;
+            history.push({ role: 'user', content: userText });
+            try {
+                let reply = '';
+                if (CFG.provider === 'moonshot') {
+                    const res = await fetch(PROVIDER_URLS.moonshot, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'moonshot-version': '2023-06-01' }, body: JSON.stringify({ model, max_tokens: CFG.maxTokens, temperature: CFG.temp, system: sysText, messages: history }) });
+                    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || `HTTP ${res.status}`); }
+                    const data = await res.json(); reply = data.content?.[0]?.text || '';
+                    if (data.usage) totalTokens += (data.usage.input_tokens || 0) + (data.usage.output_tokens || 0);
+                } else {
+                    const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` };
+                    if (CFG.provider === 'openrouter') { headers['HTTP-Referer'] = 'https://odin.local'; headers['X-Title'] = 'ODIN'; }
+                    const msgs = sysText ? [{ role: 'system', content: sysText }, ...history] : history;
+                    let finalMsgs = msgs;
+                    if (files.some(f => f.type === 'image')) { const lastIdx = finalMsgs.length - 1; if (finalMsgs[lastIdx]?.role === 'user') { const parts = [{ type: 'text', text: userText }]; files.filter(f => f.type === 'image').forEach(f => { parts.push({ type: 'image_url', image_url: { url: f.dataUrl } }); }); finalMsgs = [...finalMsgs.slice(0, -1), { role: 'user', content: parts }]; } }
+                    const res = await fetch(PROVIDER_URLS[CFG.provider], { method: 'POST', headers, body: JSON.stringify({ model, messages: finalMsgs, max_tokens: CFG.maxTokens, temperature: CFG.temp }) });
+                    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || `HTTP ${res.status}`); }
+                    const data = await res.json(); reply = data.choices?.[0]?.message?.content || '';
+                    if (data.usage) totalTokens += data.usage.total_tokens || 0;
+                }
+                history.push({ role: 'assistant', content: reply });
+                document.getElementById('typingIndi').classList.remove('visible');
+                addOdinMsg(reply);
+                document.getElementById('tokenCount').textContent = totalTokens.toLocaleString() + ' TOKENS';
+                if (speakOn) speakText(reply);
+                // Save turn to M1 memory
+                try { await fetch('/api/memory/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user: userText, assistant: reply }) }); } catch (e) { }
+                const codeMatches = reply.match(/```[\w]*\n?([\s\S]*?)```/g);
+                if (codeMatches) { codeMatches.forEach((block, idx) => { const langMatch = block.match(/^```([\w]*)/); const lang = langMatch?.[1] || 'txt'; const code = block.replace(/^```[\w]*\n?/, '').replace(/```$/, '').trim(); const ext = { python: 'py', javascript: 'js', js: 'js', typescript: 'ts', html: 'html', css: 'css', json: 'json', bash: 'sh', shell: 'sh' }[lang] || 'txt'; addDownload(`odin_code_${idx + 1}_${Date.now()}.${ext}`, code); }); }
+            } catch (err) {
+                document.getElementById('typingIndi').classList.remove('visible');
+                addErrMsg(err.message);
+            }
+            document.getElementById('sendBtn').disabled = false;
+        }
+
+        function clearChat() { history = []; totalTokens = 0; Array.from(document.querySelectorAll('#chatLog .msg')).forEach(m => m.remove()); document.getElementById('tokenCount').textContent = '0 TOKENS'; addOdinMsg('Context cleared. Ready, Charles.'); }
+
+        function toggleVoice(btn) { const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) { addErrMsg('Voice not supported.'); return; } if (recognition) { recognition.stop(); recognition = null; btn.style.color = ''; return; } recognition = new SR(); recognition.continuous = false; recognition.interimResults = false; recognition.lang = 'en-US'; recognition.onresult = e => { document.getElementById('userInput').value = e.results[0][0].transcript; sendMsg(); }; recognition.onend = () => { btn.style.color = ''; recognition = null; }; recognition.start(); btn.style.color = 'var(--accent)'; }
+        function toggleSpeak(btn) { speakOn = !speakOn; document.getElementById('speakDot').style.background = speakOn ? 'var(--accent2)' : 'rgba(156,225,250,0.3)'; document.getElementById('speakDot').style.boxShadow = speakOn ? '0 0 6px var(--accent2)' : 'none'; }
+        function speakText(text) { window.speechSynthesis.cancel(); const clean = text.replace(/```[\s\S]*?```/g, 'code block').replace(/[#*`_]/g, ''); const utt = new SpeechSynthesisUtterance(clean.slice(0, 600)); utt.rate = 1.05; utt.pitch = 0.95; window.speechSynthesis.speak(utt); }
+
+        const zone = document.getElementById('attachZone');
+        zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+        zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); Array.from(e.dataTransfer.files).forEach(f => { if (f.type.startsWith('image/')) { const r = new FileReader(); r.onload = ev => { attachedFiles.push({ name: f.name, type: 'image', dataUrl: ev.target.result }); renderAttach(); }; r.readAsDataURL(f); } else { const r = new FileReader(); r.onload = ev => { attachedFiles.push({ name: f.name, type: 'file', content: ev.target.result }); renderAttach(); }; r.readAsText(f); } }); });
+
+        (function init() {
+            document.getElementById('portSelect').value = CFG.port;
+            updateProviderUI();
+            // Remove placeholder welcome message and load personality
+            Array.from(document.querySelectorAll('#chatLog .msg')).forEach(m => m.remove());
+            loadPersonality();
+        })();
+    </script>
+</body>
+
+</html>
